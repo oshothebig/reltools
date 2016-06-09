@@ -23,13 +23,15 @@ COMPS=$(SR_CODE_BASE)/snaproute/src/asicd\
 		$(SR_CODE_BASE)/snaproute/src/infra\
 		$(SR_CODE_BASE)/snaproute/src/l3\
 		$(SR_CODE_BASE)/snaproute/src/l2\
+		$(SR_CODE_BASE)/snaproute/src/mpls\
 		$(SR_CODE_BASE)/snaproute/src/flexSdk\
 		$(SR_CODE_BASE)/snaproute/src/apps
 
 COMPS_WITH_IPC=$(SR_CODE_BASE)/snaproute/src/asicd\
 		$(SR_CODE_BASE)/snaproute/src/infra\
 		$(SR_CODE_BASE)/snaproute/src/l3\
-		$(SR_CODE_BASE)/snaproute/src/l2
+		$(SR_CODE_BASE)/snaproute/src/l2\
+		$(SR_CODE_BASE)/snaproute/src/mpls
 
 define timedMake
 @echo -n "Building component $(1) started at :`date`\n"

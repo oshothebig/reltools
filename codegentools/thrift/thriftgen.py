@@ -4,19 +4,19 @@ import re
 
 OBJECT_MAP_NAME = "genObjMap.go"
 
-MODEL_NAME = 'models'
+OBJECTS_NAME = 'objects'
 srBase = os.environ.get('SR_CODE_BASE', None)
-GO_MODEL_BASE_PATH_LIST = [srBase + "/generated/src/%s/" % MODEL_NAME,
-                           srBase + "/snaproute/src/models/"]
-JSON_MODEL_REGISTRAION_PATH = srBase + "/snaproute/src/models/"
-THRIFT_UTILS_PATH = srBase + "/snaproute/src/models/"
+GO_MODEL_BASE_PATH_LIST = [srBase + "/generated/src/models/%s/" % OBJECTS_NAME,
+                           srBase + "/snaproute/src/models/objects/"]
+JSON_MODEL_REGISTRAION_PATH = srBase + "/snaproute/src/models/objects/"
+THRIFT_UTILS_PATH = srBase + "/snaproute/src/models/objects/"
 CLIENTIF_SRC_PATH = srBase + "/snaproute/src/config/clients/"
 #JSON_MODEL_REGISTRAION_PATH = HOME + "/git/reltools/codegentools/gotojson/"
 CODE_GENERATION_PATH = srBase + "/reltools/codegentools/gotothrift/"
 CLIENTIF_CODE_GENERATION_PATH = srBase + "/generated/src/config/clients/"
 CLIENTIF_FILE_PATH = srBase + "/src/config/clients/"
 SRC_BASE = srBase + "/snaproute/src/"
-OBJMAP_CODE_GENERATION_PATH = srBase + "/snaproute/src/%s/" % MODEL_NAME
+OBJMAP_CODE_GENERATION_PATH = srBase + "/snaproute/src/models/%s/" % OBJECTS_NAME
 THRIFT_CODE_GENERATION_PATH = srBase + "/generated/src/gorpc/"
 DBUTIL_CODE_GENERATION_PATH = THRIFT_CODE_GENERATION_PATH + "dbutils/"
 GENERATED_FILES_LIST = srBase + "/reltools/codegentools/._genInfo/generatedGoFiles.txt"
@@ -209,7 +209,7 @@ class DaemonObjectsInfo (object) :
     def createConvertObjToThriftObj(self, objectNames):
         thriftdbutilfd = open(self.thriftUtilsFileName, 'w+')
 
-        thriftdbutilfd.write("package models\n")
+        thriftdbutilfd.write("package objects\n")
         thriftdbutilfd.write("""import (\n 
                                 "%s"\n)""" %(self.servicesName))
 
@@ -318,7 +318,7 @@ class DaemonObjectsInfo (object) :
 
     def createClientIfCreateObject(self, clientIfFd, objectNames):
         clientIfFd.write("""
-                            func (clnt *%sClient) CreateObject(obj models.ConfigObj, dbHdl *dbutils.DBUtil) (error, bool) {
+                            func (clnt *%sClient) CreateObject(obj objects.ConfigObj, dbHdl *dbutils.DBUtil) (error, bool) {
                             var err error
                             var ok bool
                                 switch obj.(type) {\n""" % (self.newDeamonName,))
@@ -328,10 +328,10 @@ class DaemonObjectsInfo (object) :
             d = self.name
             if structInfo['access'] in ['w', 'rw']:
                 clientIfFd.write("""
-                                    case models.%s :
-                                    data := obj.(models.%s)
+                                    case objects.%s :
+                                    data := obj.(objects.%s)
                                     conf := %s.New%s()\n""" % (s, s, self.servicesName, s))
-                clientIfFd.write("""models.Convert%s%sObjToThrift(&data, conf)""" %(d, s))
+                clientIfFd.write("""objects.Convert%s%sObjToThrift(&data, conf)""" %(d, s))
                 clientIfFd.write("""
                                     ok, err = clnt.ClientHdl.Create%s(conf)
                                     if err == nil && ok == true {
@@ -354,7 +354,7 @@ class DaemonObjectsInfo (object) :
 
     def createClientIfDeleteObject(self, clientIfFd, objectNames):
         clientIfFd.write("""
-                            func (clnt *%sClient) DeleteObject(obj models.ConfigObj, objKey string, dbHdl *dbutils.DBUtil) (error, bool) {
+                            func (clnt *%sClient) DeleteObject(obj objects.ConfigObj, objKey string, dbHdl *dbutils.DBUtil) (error, bool) {
                                 var err error
                                 var ok bool
                                 switch obj.(type) {\n""" % (self.newDeamonName,))
@@ -364,10 +364,10 @@ class DaemonObjectsInfo (object) :
             d = self.name
             if structInfo['access'] in ['w', 'rw']:
                 clientIfFd.write("""
-                                    case models.%s :
-                                    data := obj.(models.%s)
+                                    case objects.%s :
+                                    data := obj.(objects.%s)
                                     conf := %s.New%s()\n""" % (s, s, self.servicesName, s))
-                clientIfFd.write("""models.Convert%s%sObjToThrift(&data, conf)""" %(d, s))
+                clientIfFd.write("""objects.Convert%s%sObjToThrift(&data, conf)""" %(d, s))
                 clientIfFd.write("""
                                     ok, err = clnt.ClientHdl.Delete%s(conf)
                                     if err == nil && ok == true {
@@ -390,7 +390,7 @@ class DaemonObjectsInfo (object) :
 
     def createClientIfGetObject(self, clientIfFd, objectNames):
         clientIfFd.write("""
-                            func (clnt *%sClient) GetObject(obj models.ConfigObj, dbHdl *dbutils.DBUtil) (error, models.ConfigObj) {
+                            func (clnt *%sClient) GetObject(obj objects.ConfigObj, dbHdl *dbutils.DBUtil) (error, objects.ConfigObj) {
             switch obj.(type) {\n""" % (self.newDeamonName))
         for structName, structInfo in objectNames.objectDict.iteritems ():
             structName = str(structName)
@@ -398,10 +398,10 @@ class DaemonObjectsInfo (object) :
             d = self.name
             if 'r' in structInfo['access'] and 'usesStateDB' in structInfo and not(structInfo['usesStateDB']):
                 clientIfFd.write("""
-                                    case models.%s :
-                                    data := obj.(models.%s)
+                                    case objects.%s :
+                                    data := obj.(objects.%s)
                                     conf := %s.New%s()\n""" % (s, s, self.servicesName, s))
-                clientIfFd.write("""models.Convert%s%sObjToThrift(&data, conf)\n""" %(d, s))
+                clientIfFd.write("""objects.Convert%s%sObjToThrift(&data, conf)\n""" %(d, s))
                 keyIndex = 1
                 keyList = ""
                 for attrName, attrInfo in self.convertMemberInfoToOrderedList(structName, structInfo):
@@ -412,12 +412,12 @@ class DaemonObjectsInfo (object) :
                             keyList = keyList + ", " + "conf." + attrName
                         keyIndex = keyIndex + 1
 
-                clientIfFd.write("""stateObj := new(models.%s)\n""" %(s))
+                clientIfFd.write("""stateObj := new(objects.%s)\n""" %(s))
                 clientIfFd.write("""
                     if clnt.ClientHdl != nil {
                         retObj, err := clnt.ClientHdl.Get%s(%s)
                         if err == nil {\n""" %(s, keyList))
-                clientIfFd.write("""models.ConvertThriftTo%s%sObj(retObj, stateObj)\n""" % (d, s))
+                clientIfFd.write("""objects.ConvertThriftTo%s%sObj(retObj, stateObj)\n""" % (d, s))
                 clientIfFd.write("""
                             return err, stateObj
                         } else {
@@ -426,7 +426,7 @@ class DaemonObjectsInfo (object) :
                     }
                     break\n""")
             elif 'usesStateDB' in structInfo and structInfo['usesStateDB']:
-                clientIfFd.write("""\ncase models.%s :\n""" % (s,))
+                clientIfFd.write("""\ncase objects.%s :\n""" % (s,))
                 clientIfFd.write("""
                         retObj, err := dbHdl.GetObjectFromDb(obj, obj.GetKey())
                         if err != nil {
@@ -444,7 +444,7 @@ class DaemonObjectsInfo (object) :
 
     def createClientIfExecuteAction(self, clientIfFd, objectNames):
         clientIfFd.write("""
-                            func (clnt *%sClient) ExecuteAction(obj models.ConfigObj) error {
+                            func (clnt *%sClient) ExecuteAction(obj objects.ConfigObj) error {
             switch obj.(type) {\n""" % (self.newDeamonName))
         for structName, structInfo in objectNames.objectDict.iteritems ():
             structName = str(structName)
@@ -452,10 +452,10 @@ class DaemonObjectsInfo (object) :
             d = self.name
             if 'x' in structInfo['access']:
                 clientIfFd.write("""
-                                    case models.%s :
-                                    data := obj.(models.%s)
+                                    case objects.%s :
+                                    data := obj.(objects.%s)
                                     conf := %s.New%s()\n""" % (s, s, self.servicesName, s))
-                clientIfFd.write("""models.Convert%s%sObjToThrift(&data, conf)""" %(d, s))
+                clientIfFd.write("""objects.Convert%s%sObjToThrift(&data, conf)""" %(d, s))
                 clientIfFd.write("""
                     if clnt.ClientHdl != nil {
                         _, err := clnt.ClientHdl.ExecuteAction%s(conf)
@@ -471,7 +471,7 @@ class DaemonObjectsInfo (object) :
 
     def createClientIfUpdateObject(self, clientIfFd, objectNames):
         clientIfFd.write("""
-                            func (clnt *%sClient) UpdateObject(dbObj models.ConfigObj, obj models.ConfigObj, attrSet []bool, patchOpInfo []models.PatchOpInfo, objKey string, dbHdl *dbutils.DBUtil) (error, bool) {
+                            func (clnt *%sClient) UpdateObject(dbObj objects.ConfigObj, obj objects.ConfigObj, attrSet []bool, patchOpInfo []objects.PatchOpInfo, objKey string, dbHdl *dbutils.DBUtil) (error, bool) {
             var ok bool
             var err error
 	    ok = false
@@ -497,14 +497,14 @@ class DaemonObjectsInfo (object) :
                 if attrInfo['isArray'] != 'False' :
                     array_obj = 'True'				
             if structInfo['access'] in ['w', 'rw']:
-                clientIfFd.write("""\ncase models.%s :""" % (s,))
+                clientIfFd.write("""\ncase objects.%s :""" % (s,))
                 clientIfFd.write("""\n// cast original object
-                origdata := dbObj.(models.%s)
-                updatedata := obj.(models.%s)\n""" %(s, s) )
+                origdata := dbObj.(objects.%s)
+                updatedata := obj.(objects.%s)\n""" %(s, s) )
                 clientIfFd.write("""// create new thrift objects
                 origconf := %s.New%s()\nupdateconf := %s.New%s()\n""" %(self.servicesName, s, self.servicesName, s))
-                clientIfFd.write("""models.Convert%s%sObjToThrift(&origdata, origconf)
-                models.Convert%s%sObjToThrift(&updatedata, updateconf)""" %(d, s, d, s))
+                clientIfFd.write("""objects.Convert%s%sObjToThrift(&origdata, origconf)
+                objects.Convert%s%sObjToThrift(&updatedata, updateconf)""" %(d, s, d, s))
                 clientIfFd.write("""
                     if clnt.ClientHdl != nil {
                         ok, err = clnt.ClientHdl.Update%s(origconf, updateconf, attrSet, op)
@@ -530,11 +530,11 @@ class DaemonObjectsInfo (object) :
 
     def createClientIfGetBulkObject(self, clientIfFd, objectNames):
         clientIfFd.write("""
-                            func (clnt *%sClient) GetBulkObject(obj models.ConfigObj, dbHdl *dbutils.DBUtil, currMarker int64, count int64) (err error,
+                            func (clnt *%sClient) GetBulkObject(obj objects.ConfigObj, dbHdl *dbutils.DBUtil, currMarker int64, count int64) (err error,
                                             objCount int64,
                                             nextMarker int64,
                                             more bool,
-                                            objs []models.ConfigObj) {
+                                            objs []objects.ConfigObj) {
 
             switch obj.(type) {
         \n""" %(self.newDeamonName))
@@ -543,7 +543,7 @@ class DaemonObjectsInfo (object) :
             s = structName
             d = self.name
             if 'r' in structInfo['access'] and 'usesStateDB' in structInfo and not (structInfo['usesStateDB']):
-                clientIfFd.write("""\ncase models.%s :\n""" % (s,))
+                clientIfFd.write("""\ncase objects.%s :\n""" % (s,))
 
                 clientIfFd.write("""
                     if clnt.ClientHdl != nil {
@@ -553,12 +553,12 @@ class DaemonObjectsInfo (object) :
                             more = bool(bulkInfo.More)
                             nextMarker = int64(bulkInfo.EndIdx)
                             for i := 0; i < int(bulkInfo.Count); i++ {
-                                ret_obj := new(models.%s)
+                                ret_obj := new(objects.%s)
                                 if len(objs) == 0 {
-                                    objs = make([]models.ConfigObj, 0)
+                                    objs = make([]objects.ConfigObj, 0)
                                 }\n""" %(s, self.servicesName, self.servicesName, s))
 
-                clientIfFd.write("""\nmodels.ConvertThriftTo%s%sObj(bulkInfo.%sList[i], ret_obj)""" % (d, s, s))
+                clientIfFd.write("""\nobjects.ConvertThriftTo%s%sObj(bulkInfo.%sList[i], ret_obj)""" % (d, s, s))
                 clientIfFd.write("""\nobjs = append(objs, ret_obj)
                                         }
 
@@ -567,7 +567,7 @@ class DaemonObjectsInfo (object) :
                     }
                     break\n""")
             elif 'usesStateDB' in structInfo and structInfo['usesStateDB']:
-                clientIfFd.write("""\ncase models.%s :\n""" % (s,))
+                clientIfFd.write("""\ncase objects.%s :\n""" % (s,))
                 clientIfFd.write("""
                         err, objCount, nextMarker, more, objs = dbHdl.GetBulkObjFromDb(obj, currMarker, count)
                         if err != nil {
@@ -618,7 +618,7 @@ class DaemonObjectsInfo (object) :
         clientIfFd.write("package clients\n")
         #if (len([ x for x,y in accessDict.iteritems() if x in crudStructsList and 'r' in y]) > 0):
         # BELOW CODE WILL BE FORMATED BY GOFMT
-        clientIfFd.write("""import (\n "%s"\n"fmt"\n"models"\n"utils/ipcutils"\n"utils/dbutils"\n""" % self.servicesName)
+        clientIfFd.write("""import (\n "%s"\n"fmt"\n"models/objects"\n"utils/ipcutils"\n"utils/dbutils"\n""" % self.servicesName)
         #if array_obj == 'True' :
             #clientIfFd.write(""" "reflect"\n""" )		
         clientIfFd.write(""")\n""")
@@ -747,7 +747,7 @@ def generateThriftAndClientIfs():
 def generateObjectMap():
     genObjInfoJson = JSON_MODEL_REGISTRAION_PATH + 'genObjectConfig.json'
     fd = open(OBJMAP_CODE_GENERATION_PATH + OBJECT_MAP_NAME, 'w+')
-    fd.write("""package %s\n\n""" % MODEL_NAME)
+    fd.write("""package %s\n\n""" % OBJECTS_NAME)
     fd.write("""var GenConfigObjectMap = map[string] ConfigObj{\n""")
 
     with open(genObjInfoJson) as infoFile:

@@ -121,10 +121,10 @@ reserved_name = ["list", "str", "int", "global", "decimal", "float",
 
 
 ENABLE_CAMEL_CASE = True
-MODEL_NAME = 'models'
+OBJECTS_NAME = 'objects'
 srBase = os.environ.get('SR_CODE_BASE', None)
-MODELS_PATH_LIST = [srBase + "/generated/src/models/"]
-CODE_GENERATION_PATH = srBase + "/generated/src/models/"
+OBJECTS_PATH_LIST = [srBase + "/generated/src/models/objects/"]
+CODE_GENERATION_PATH = srBase + "/generated/src/models/objects/"
 GENERATED_FILES_LIST = srBase + "/reltools/codegentools/._genInfo/generatedGoFiles.txt"
 gYangObjInfo = None
 gOwnersInfo  = None
@@ -190,7 +190,7 @@ class BTPyGOClass(plugin.PyangPlugin):
             fp.write(modelFileName + '\n')
             #fp.write(serializerName+ '\n')
 
-        objsData = srBase+ '/snaproute/src/models/'+'genObjectConfig.json' 
+        objsData = srBase+ '/snaproute/src/models/objects/'+'genObjectConfig.json' 
         with open(objsData, 'w+') as fp:
             json.dump(gYangObjInfo, fp,  indent=2)
 
@@ -359,7 +359,7 @@ def build_pybind(ctx, modules, fdDict):
     #for modname in pyang_called_modules:
     #  print 'found module', modname
 
-    ctx.pybind_common_hdr = "package %s\n\n" % (MODEL_NAME)
+    ctx.pybind_common_hdr = "package %s\n\n" % (OBJECTS_NAME)
     for fd in fdDict.values():
         fd.write(ctx.pybind_common_hdr)
 
@@ -912,8 +912,8 @@ def CreateStructSkeleton(module, nfd, parent, path, write=True):
 
     if write and structName != '':
         if not gOwnersInfo or not gYangObjInfo:
-            ownersData = srBase+ '/snaproute/src/models/'+'yangObjInfo.json' 
-            objsData = srBase+ '/snaproute/src/models/'+'genObjectConfig.json' 
+            ownersData = srBase+ '/snaproute/src/models/objects/'+'yangObjInfo.json' 
+            objsData = srBase+ '/snaproute/src/models/objects/'+'genObjectConfig.json' 
             with open(ownersData) as objInfoFile:    
                 gOwnersInfo = json.load(objInfoFile)
 

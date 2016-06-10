@@ -3,5 +3,5 @@
     "minor" : "0",
     "patch" : "0",
     "build" : "105",
-    "platforms" : ["cel_redstone", "accton_wedge40", "accton_wedge100", "accton_as5712"]
+    "platforms" : ["cel_redstone", "accton_wedge40", "accton_wedge100", "accton_as5712", "docker"]
 }

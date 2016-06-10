@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-var fileHeader = `package models
+var fileHeader = `package objects
 import (
    "fmt"
    "encoding/json"
@@ -22,7 +22,7 @@ var _ = errors.New("")
 
 `
 
-var fileHeaderForState = `package models
+var fileHeaderForState = `package objects
 import (
    "fmt"
    "github.com/garyburd/redigo/redis"
@@ -618,8 +618,8 @@ func (obj *ObjectInfoJson) WriteMergeDbAndConfigObjForPatchUpdateFcn(str *ast.St
 				`)
 	for _, attrInfo := range attrMap {
 		attrStr := "\"" + attrInfo.MemberName + "\""
-		lines = append(lines, "case "  + attrStr + ":\n")
-		lines = append(lines,"err := json.Unmarshal([]byte(patchOpInfo.Value), &tempObject."+attrInfo.MemberName+")\n")
+		lines = append(lines, "case "+attrStr+":\n")
+		lines = append(lines, "err := json.Unmarshal([]byte(patchOpInfo.Value), &tempObject."+attrInfo.MemberName+")\n")
 		lines = append(lines, `
 						                  if err != nil {
 							                 fmt.Println("error unmarshaling value:", err)
@@ -627,24 +627,24 @@ func (obj *ObjectInfoJson) WriteMergeDbAndConfigObjForPatchUpdateFcn(str *ast.St
 						                  }
 						                  switch patchOpInfo.Op {
 						`)
-		if attrInfo.IsArray{
-             lines = append(lines,`
+		if attrInfo.IsArray {
+			lines = append(lines, `
 						                      case "add":
 						   `)
-		    lines = append(lines," for j := 0;j< len(tempObject."+attrInfo.MemberName+");j++ {\n")
-		    lines = append(lines,"mergedObject."+attrInfo.MemberName+"= append(mergedObject."+attrInfo.MemberName+", tempObject."+attrInfo.MemberName+"[j])\n")
-		    lines = append(lines,"}\n")
-	         lines = append(lines, `
+			lines = append(lines, " for j := 0;j< len(tempObject."+attrInfo.MemberName+");j++ {\n")
+			lines = append(lines, "mergedObject."+attrInfo.MemberName+"= append(mergedObject."+attrInfo.MemberName+", tempObject."+attrInfo.MemberName+"[j])\n")
+			lines = append(lines, "}\n")
+			lines = append(lines, `
 						                      case "remove":
 						`)
 			lines = append(lines, "for k := 0; k < len(tempObject."+attrInfo.MemberName+"); k++ {\n")
-			lines = append(lines,`
+			lines = append(lines, `
 							found := false
 							match := -1
 					`)
-			lines = append(lines,	"for k2 := 0 ; k2 < len(mergedObject."+attrInfo.MemberName+");k2++{\n")
+			lines = append(lines, "for k2 := 0 ; k2 < len(mergedObject."+attrInfo.MemberName+");k2++{\n")
 			lines = append(lines, "if mergedObject."+attrInfo.MemberName+"[k2] == tempObject."+attrInfo.MemberName+"[k] {")
-			lines = append(lines,`
+			lines = append(lines, `
 								    found = true
 									match = k2 
 									break
@@ -654,12 +654,12 @@ func (obj *ObjectInfoJson) WriteMergeDbAndConfigObjForPatchUpdateFcn(str *ast.St
 					`)
 			lines = append(lines, "mergedObject."+attrInfo.MemberName+"[match]  = mergedObject."+attrInfo.MemberName+"[len(mergedObject."+attrInfo.MemberName+") - 1]\n")
 			lines = append(lines, "mergedObject."+attrInfo.MemberName+" = mergedObject."+attrInfo.MemberName+"[:(len(mergedObject."+attrInfo.MemberName+") - 1)]\n")
-			lines = append(lines,`
+			lines = append(lines, `
 							}
 						}
 						 `)
 		}
-	    lines = append(lines, `
+		lines = append(lines, `
 						                      case "replace":
 							                     fmt.Println("replace")
 											default:				   

@@ -67,8 +67,8 @@ func main() {
 		fmt.Println(" Environment Variable SR_CODE_BASE has not been set")
 		return
 	}
-	jsonFile := base + "/snaproute/src/models/genObjectConfig.json"
-	fileBase := base + "/snaproute/src/models/"
+	jsonFile := base + "/snaproute/src/models/objects/genObjectConfig.json"
+	fileBase := base + "/snaproute/src/models/objects/"
 	var objMap map[string]ObjectInfoJson
 
 	//
@@ -84,7 +84,7 @@ func main() {
 	// structure here.
 	//
 
-	goObjSources := base + "/snaproute/src/models/goObjInfo.json"
+	goObjSources := base + "/snaproute/src/models/objects/goObjInfo.json"
 
 	listingsFd, err := os.OpenFile(listingFile, os.O_RDWR|os.O_APPEND+os.O_CREATE, 0660)
 	if err != nil {
@@ -220,7 +220,7 @@ func getObjectMemberInfo(objMap map[string]ObjectInfoJson, objName string) (memb
 		fmt.Println(" Environment Variable SR_CODE_BASE has not been set")
 		return membersInfo
 	}
-	fileBase := base + "/snaproute/src/models/"
+	fileBase := base + "/snaproute/src/models/objects"
 	for name, obj := range objMap {
 		if objName == name {
 			obj.ObjName = name
@@ -519,7 +519,7 @@ func generateUnmarshalFcn(listingsFd *os.File, fileBase string, dirStore string,
 		}
 	}
 	if len(marshalFcnsLine) > 0 {
-		marshalFcnFd.WriteString(`package models
+		marshalFcnFd.WriteString(`package objects
 
 													import (
 													   "encoding/json"

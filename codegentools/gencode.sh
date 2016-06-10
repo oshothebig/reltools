@@ -1,11 +1,10 @@
 #!/bin/bash
 cd $SR_CODE_BASE/reltools/codegentools/structs/
 source env.sh
-pyang --plugindir `pwd` -f pybind  -o $SR_CODE_BASE/snaproute/src/models/gen_ospf.go $SR_CODE_BASE/snaproute/src/models/yangmodel/ospf/OSPF-MIB.yang
-pyang --plugindir `pwd` -f pybind  -o $SR_CODE_BASE/snaproute/src/models/gen_stp.go $SR_CODE_BASE/snaproute/src/models/yangmodel/stp/*.yang
-pyang --plugindir `pwd` -f pybind  -o $SR_CODE_BASE/snaproute/src/models/gen_vxlan.go $SR_CODE_BASE/snaproute/src/models/yangmodel/vxlan/*.yang
-pyang --plugindir `pwd` -f pybind  -o $SR_CODE_BASE/snaproute/src/models/gen_lacp.go $SR_CODE_BASE/snaproute/src/models/yangmodel/lacp/openconfig-if-aggregate.yang
-pyang --plugindir `pwd` -f pybind  -o $SR_CODE_BASE/snaproute/src/models/gen_ldp.go $SR_CODE_BASE/snaproute/src/models/yangmodel/ldp/ldp.yang
+pyang --plugindir `pwd` -f pybind  -o $SR_CODE_BASE/snaproute/src/models/objects/gen_stp.go $SR_CODE_BASE/snaproute/src/models/objects/yangmodel/stp/*.yang
+pyang --plugindir `pwd` -f pybind  -o $SR_CODE_BASE/snaproute/src/models/objects/gen_vxlan.go $SR_CODE_BASE/snaproute/src/models/objects/yangmodel/vxlan/*.yang
+pyang --plugindir `pwd` -f pybind  -o $SR_CODE_BASE/snaproute/src/models/objects/gen_lacp.go $SR_CODE_BASE/snaproute/src/models/objects/yangmodel/lacp/openconfig-if-aggregate.yang
+pyang --plugindir `pwd` -f pybind  -o $SR_CODE_BASE/snaproute/src/models/objects/gen_ldp.go $SR_CODE_BASE/snaproute/src/models/objects/yangmodel/ldp/ldp.yang
 mkdir -p  ._genInfo
 cd $SR_CODE_BASE/reltools/codegentools/dbif/
 ./dbifGen.sh

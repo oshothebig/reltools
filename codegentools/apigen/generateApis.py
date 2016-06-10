@@ -50,7 +50,7 @@ if __name__ == '__main__':
     if not baseDir:
         print 'Environment variable SR_CODE_BASE is not set'
     
-    objDescriptors = [ baseDir + '/snaproute/src/models/' + 'genObjectConfig.json', ]
+    objDescriptors = [ baseDir + '/snaproute/src/models/objects/' + 'genObjectConfig.json', ]
     attrDescriptorsLocation = baseDir+'/reltools/codegentools/._genInfo/'
     outputDir = baseDir+'/snaproute/src/flexSdk/py/'
     gen = apiGenie( outputDir, objDescriptors, attrDescriptorsLocation)

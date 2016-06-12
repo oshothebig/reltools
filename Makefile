@@ -75,6 +75,7 @@ install:installdir copy
 ifeq (,$(findstring $(PKG_BUILD), FALSE))
 	install $(SRCDIR)/$(BUILD_DIR)/confd $(DESTDIR)/$(EXT_INSTALL_PATH)/bin
 	install $(SRCDIR)/$(BUILD_DIR)/arpd $(DESTDIR)/$(EXT_INSTALL_PATH)/bin
+	install $(SRCDIR)/$(BUILD_DIR)/fMgrd $(DESTDIR)/$(EXT_INSTALL_PATH)/bin
 	install $(SRCDIR)/$(BUILD_DIR)/dhcpd $(DESTDIR)/$(EXT_INSTALL_PATH)/bin
 	install $(SRCDIR)/$(BUILD_DIR)/bgpd $(DESTDIR)/$(EXT_INSTALL_PATH)/bin
 	install $(SRCDIR)/$(BUILD_DIR)/ospfd $(DESTDIR)/$(EXT_INSTALL_PATH)/bin

@@ -98,6 +98,10 @@ def getDaemonsInfo (baseDir) :
                      'runlevel' : 5,
                      'params': '-params=' + baseDir + '/params'},
 
+                    {'name': 'fMgrd',
+                     'runlevel' : 14,
+                     'params': '-params=' + baseDir + '/params'},
+
                     {'name': 'dhcpd',
                      'runlevel' : 10,
                      'params': '-params=' + baseDir + '/params'},

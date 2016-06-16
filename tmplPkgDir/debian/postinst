@@ -19,6 +19,8 @@ set -e
 
 #FIXME: Create the sym links conditionally, depending on target + pass in directory
 ln -sf /opt/flexswitch/sharedlib/libopennsl.so.1 /opt/flexswitch/sharedlib/libopennsl.so
+ln -sf /opt/flexswitch/sharedlib/libbcmsdk.so.1 /opt/flexswitch/sharedlib/libbcmsdk.so
+ln -sf /opt/flexswitch/sharedlib/libhash.so.1 /opt/flexswitch/sharedlib/libhash.so
 ln -sf /opt/flexswitch/sharedlib/libnanomsg.so.4.0.0 /opt/flexswitch/sharedlib/libnanomsg.so
 ln -sf /opt/flexswitch/sharedlib/libnanomsg.so.4.0.0 /opt/flexswitch/sharedlib/libnanomsg.so.4
 ln -sf /opt/flexswitch/sharedlib/libip4tc.so.0.1.0 /opt/flexswitch/sharedlib/libip4tc.so

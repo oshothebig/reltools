@@ -9,6 +9,7 @@ srBase = os.environ.get('SR_CODE_BASE', None)
 GO_MODEL_BASE_PATH_LIST = [srBase + "/generated/src/models/%s/" % OBJECTS_NAME,
                            srBase + "/snaproute/src/models/objects/"]
 JSON_MODEL_REGISTRAION_PATH = srBase + "/snaproute/src/models/objects/"
+JSON_ACTION_REGISTRAION_PATH = srBase + "/snaproute/src/models/actions/"
 THRIFT_UTILS_PATH = srBase + "/snaproute/src/models/objects/"
 CLIENTIF_SRC_PATH = srBase + "/snaproute/src/config/clients/"
 #JSON_MODEL_REGISTRAION_PATH = HOME + "/git/reltools/codegentools/gotojson/"
@@ -696,6 +697,7 @@ gDryRun =  False
 def generateThriftAndClientIfs():
     # generate thrift code from go code
     genObjInfoJson = JSON_MODEL_REGISTRAION_PATH + 'genObjectConfig.json'
+    actionInfoJson = JSON_ACTION_REGISTRAION_PATH + 'genActionConfig.json'
     goDmnDirsInfoJson = JSON_MODEL_REGISTRAION_PATH + 'goObjInfo.json'
     yangDmnDirsInfoJson = JSON_MODEL_REGISTRAION_PATH + 'yangObjInfo.json'
 
@@ -720,6 +722,21 @@ def generateThriftAndClientIfs():
 
     ownerToObjMap = {}
     for name,  dtls in objData.iteritems():
+        finalSvcName =None 
+        if ownerFinalServiceInfo.has_key(dtls['owner']):
+            finalSvcName = ownerFinalServiceInfo[dtls['owner']]
+
+        if ownerToObjMap.has_key(dtls['owner']):
+            dmnObj = ownerToObjMap[dtls['owner']]
+        else :
+            dmnObj = DaemonObjectsInfo (dtls['owner'], ownerDirsInfo[dtls['owner']], ownerInternalServiceInfo[dtls['owner']], finalSvcName)
+            ownerToObjMap[dtls['owner']] = dmnObj
+        dmnObj.objectDict[name] = dtls
+
+    with open(actionInfoJson) as infoFile1:
+        objData1 = json.load(infoFile1)
+
+    for name,  dtls in objData1.iteritems():
         finalSvcName =None 
         if ownerFinalServiceInfo.has_key(dtls['owner']):
             finalSvcName = ownerFinalServiceInfo[dtls['owner']]

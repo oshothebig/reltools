@@ -69,7 +69,9 @@ func main() {
 	}
 	jsonFile := base + "/snaproute/src/models/objects/genObjectConfig.json"
 	fileBase := base + "/snaproute/src/models/objects/"
-	var objMap map[string]ObjectInfoJson
+
+	actionJsonFile := base + "/snaproute/src/models/actions/genActionConfig.json"
+	actionFileBase := base + "/snaproute/src/models/actions/"
 
 	//
 	// Create a directory to store all the temporary files
@@ -91,7 +93,6 @@ func main() {
 		fmt.Println("Failed to open the file", listingFile)
 		return
 	}
-	defer listingsFd.Close()
 	var goSrcsMap map[string]RawObjSrcInfo
 	bytes, err := ioutil.ReadFile(goObjSources)
 	if err != nil {
@@ -106,8 +107,18 @@ func main() {
 	for goSrcFile, ownerName := range goSrcsMap {
 		generateHandCodedObjectsInformation(listingsFd, fileBase, goSrcFile, ownerName.Owner)
 	}
-
-	bytes, err = ioutil.ReadFile(jsonFile)
+     processJsonFile(listingFile,fileBase,dirStore,jsonFile,fset,true)
+	 processJsonFile(listingFile,actionFileBase,dirStore,actionJsonFile,fset,false)
+}
+func processJsonFile(listingFile, fileBase, dirStore,jsonFile string, fset *token.FileSet, generateSerializer bool) {
+	var objMap map[string]ObjectInfoJson
+	listingsFd, err := os.OpenFile(listingFile, os.O_RDWR|os.O_APPEND+os.O_CREATE, 0660)
+	if err != nil {
+		fmt.Println("Failed to open the file", listingFile)
+		return
+	}
+	defer listingsFd.Close()
+	bytes, err := ioutil.ReadFile(jsonFile)
 	if err != nil {
 		fmt.Println("Error in reading Object configuration file", jsonFile)
 		return
@@ -175,11 +186,12 @@ func main() {
 		obj.ObjName = name
 		objectsByOwner[obj.Owner] = append(objectsByOwner[obj.Owner], obj)
 	}
-
-	generateSerializers(listingsFd, fileBase, dirStore, objectsByOwner)
+    if generateSerializer {
+	    generateSerializers(listingsFd, fileBase, dirStore, objectsByOwner)
+	}
 	genJsonSchema(dirStore, objectsByOwner)
+	
 }
-
 func addLinkedObjectToGenObjConfig(parentChild map[string][]string, childParent map[string]string,
 	objMap map[string]ObjectInfoJson, jsonFile string) {
 	//fmt.Println("ParentChild", parentChild)

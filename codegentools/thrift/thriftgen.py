@@ -9,7 +9,6 @@ srBase = os.environ.get('SR_CODE_BASE', None)
 GO_MODEL_BASE_PATH_LIST = [srBase + "/generated/src/models/%s/" % OBJECTS_NAME,
                            srBase + "/snaproute/src/models/objects/"]
 JSON_MODEL_REGISTRAION_PATH = srBase + "/snaproute/src/models/objects/"
-JSON_ACTION_REGISTRAION_PATH = srBase + "/snaproute/src/models/actions/"
 THRIFT_UTILS_PATH = srBase + "/snaproute/src/models/objects/"
 CLIENTIF_SRC_PATH = srBase + "/snaproute/src/config/clients/"
 #JSON_MODEL_REGISTRAION_PATH = HOME + "/git/reltools/codegentools/gotojson/"
@@ -282,7 +281,6 @@ class DaemonObjectsInfo (object) :
                             }\n""" % (self.newDeamonName,))
         clientIfFd.write("""
                             func (clnt *%sClient) ConnectToServer() bool {
-
                                 clnt.TTransport, clnt.PtrProtocolFactory, _ = ipcutils.CreateIPCHandles(clnt.Address)
                                 if clnt.TTransport != nil && clnt.PtrProtocolFactory != nil {
                                     clnt.ClientHdl = %s.New%sServicesClientFactory(clnt.TTransport, clnt.PtrProtocolFactory)
@@ -349,7 +347,6 @@ class DaemonObjectsInfo (object) :
         clientIfFd.write("""default:
                                     break
                                 }
-
                                 return nil, true
                             }\n""")
 
@@ -385,7 +382,6 @@ class DaemonObjectsInfo (object) :
         clientIfFd.write("""default:
                                     break
                                 }
-
                                 return nil, true
                             }\n""")
 
@@ -486,7 +482,6 @@ class DaemonObjectsInfo (object) :
 	        for opIdx := 0; opIdx < len(opArr); opIdx++ {
 	 	        op = append(op, &opArr[opIdx])
  	        }
-
             switch obj.(type) {
         """ %(self.newDeamonName,self.servicesName,self.servicesName,self.servicesName, self.servicesName, self.servicesName))
         for structName, structInfo in objectNames.objectDict.iteritems ():
@@ -526,7 +521,6 @@ class DaemonObjectsInfo (object) :
                                     break
                                 }
                     return nil, true
-
                 }\n""")
 
     def createClientIfGetBulkObject(self, clientIfFd, objectNames):
@@ -536,7 +530,6 @@ class DaemonObjectsInfo (object) :
                                             nextMarker int64,
                                             more bool,
                                             objs []objects.ConfigObj) {
-
             switch obj.(type) {
         \n""" %(self.newDeamonName))
         for structName, structInfo in objectNames.objectDict.iteritems ():
@@ -562,7 +555,6 @@ class DaemonObjectsInfo (object) :
                 clientIfFd.write("""\nobjects.ConvertThriftTo%s%sObj(bulkInfo.%sList[i], ret_obj)""" % (d, s, s))
                 clientIfFd.write("""\nobjs = append(objs, ret_obj)
                                         }
-
                             } else {
                             }
                     }
@@ -580,7 +572,6 @@ class DaemonObjectsInfo (object) :
                                     break
                                 }
                     return nil, objCount, nextMarker, more, objs
-
                 }\n""")
 
     def generateClientIf(self, objectNames):
@@ -697,7 +688,6 @@ gDryRun =  False
 def generateThriftAndClientIfs():
     # generate thrift code from go code
     genObjInfoJson = JSON_MODEL_REGISTRAION_PATH + 'genObjectConfig.json'
-    actionInfoJson = JSON_ACTION_REGISTRAION_PATH + 'genActionConfig.json'
     goDmnDirsInfoJson = JSON_MODEL_REGISTRAION_PATH + 'goObjInfo.json'
     yangDmnDirsInfoJson = JSON_MODEL_REGISTRAION_PATH + 'yangObjInfo.json'
 
@@ -722,21 +712,6 @@ def generateThriftAndClientIfs():
 
     ownerToObjMap = {}
     for name,  dtls in objData.iteritems():
-        finalSvcName =None 
-        if ownerFinalServiceInfo.has_key(dtls['owner']):
-            finalSvcName = ownerFinalServiceInfo[dtls['owner']]
-
-        if ownerToObjMap.has_key(dtls['owner']):
-            dmnObj = ownerToObjMap[dtls['owner']]
-        else :
-            dmnObj = DaemonObjectsInfo (dtls['owner'], ownerDirsInfo[dtls['owner']], ownerInternalServiceInfo[dtls['owner']], finalSvcName)
-            ownerToObjMap[dtls['owner']] = dmnObj
-        dmnObj.objectDict[name] = dtls
-
-    with open(actionInfoJson) as infoFile1:
-        objData1 = json.load(infoFile1)
-
-    for name,  dtls in objData1.iteritems():
         finalSvcName =None 
         if ownerFinalServiceInfo.has_key(dtls['owner']):
             finalSvcName = ownerFinalServiceInfo[dtls['owner']]

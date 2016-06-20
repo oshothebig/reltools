@@ -87,6 +87,6 @@
         }
      ],
 	 "SnapRouteOrg" : "snaproute",
-	 "PublicRepos" : [ "docs", "l2", "l3", "utils", "asicd", "config", "models", "infra", "flexSdk", "apps"],
-	 "PrivateRepos" : [ "docs", "l1", "l2", "l3", "mpls", "utils", "asicd", "config", "models", "infra", "vendors", "test","flexSdk", "apps"]
+	 "PublicRepos" : [ "docs", "l2", "l3", "utils", "asicd", "config", "models", "infra", "flexSdk", "apps", "reltools"],
+	 "PrivateRepos" : [ "asicd", "docs", "l2", "l3", "utils", "asicd", "config", "models", "infra", "flexSdk", "apps", "reltools"]
 }

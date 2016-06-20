@@ -27,7 +27,7 @@ def determineMacAddress ():
         if re.search('HWaddr', line):
            addr = line.partition('HWaddr')[-1].strip(' ')
            port = line.split()[0]
-           if addr not in macAddrCopy and not (port.startswith('SVI') or port.startswith('bcm') or port.startswith('fpPort')):
+           if addr not in macAddrCopy and not (port.startswith('ip6tnl') or port.startswith('SVI') or port.startswith('bcm') or port.startswith('fpPort')):
                macAddrList.append((port, addr))
                macAddrCopy.append(addr)
 

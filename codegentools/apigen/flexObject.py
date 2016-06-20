@@ -121,6 +121,31 @@ class FlexObject(object) :
         lines.append (tabs + "return self.getObjects( \'%s\', %s)\n\n" %(objName, urlPath))
         fileHdl.writelines(lines)
 
+    def createTblPrintAllMethod(self, fileHdl):
+        tabs = self.TAB
+        lines = []
+        lines.append("\n"+ tabs + "def print" + self.name + "s(self, addHeader=True, brief=None):\n")
+        tabs = tabs + self.TAB
+
+        lines.append(tabs + "header = []; rows = []\n")
+        lines.append(tabs + "if addHeader:\n")
+        for (attr, attrInfo) in self.attrList:
+            lines.append(tabs + self.TAB + "header.append(\'%s\')\n" %(attr))
+        lines.append("\n")
+        lines.append(tabs + "objs = self.swtch.getAll%ss()\n" %(self.name))
+        lines.append(tabs + "for obj in objs:\n")
+        lines.append(tabs + self.TAB + "o = obj['Object']\n")
+        lines.append(tabs + self.TAB + "values = []\n")
+        for (attr, attrInfo) in self.attrList:
+            lines.append(tabs + self.TAB + "values.append(\'%%s\' %% o[\'%s\'])\n" %(attr))
+
+        lines.append(tabs + self.TAB + "rows.append(values)\n")
+        lines.append(tabs + "self.tblPrintObject(\'%s\', header, rows)\n\n" %(self.name))
+        fileHdl.writelines(lines)
+
+    def writeAllPrintMethods(self, fileHdl):
+        self.createTblPrintAllMethod(fileHdl)
+
     def writeAllMethods (self, fileHdl):
         self.createGetMethod(fileHdl, 'self.stateUrlBase')
         self.createGetByIdMethod(fileHdl)

@@ -19,6 +19,7 @@ else
 	EXE_DIR=
 endif
 COMPS=$(SR_CODE_BASE)/snaproute/src/asicd\
+		$(SR_CODE_BASE)/snaproute/src/opticd\
 		$(SR_CODE_BASE)/snaproute/src/config\
 		$(SR_CODE_BASE)/snaproute/src/infra\
 		$(SR_CODE_BASE)/snaproute/src/l3\
@@ -27,6 +28,7 @@ COMPS=$(SR_CODE_BASE)/snaproute/src/asicd\
 		$(SR_CODE_BASE)/snaproute/src/apps
 
 COMPS_WITH_IPC=$(SR_CODE_BASE)/snaproute/src/asicd\
+		$(SR_CODE_BASE)/snaproute/src/opticd\
 		$(SR_CODE_BASE)/snaproute/src/infra\
 		$(SR_CODE_BASE)/snaproute/src/l3\
 		$(SR_CODE_BASE)/snaproute/src/l2
@@ -73,8 +75,6 @@ install:installdir copy
 	install $(SR_CODE_BASE)/reltools/pkgInfo.json $(DESTDIR)/$(EXT_INSTALL_PATH)
 	install $(SR_CODE_BASE)/reltools/buildInfo.json $(DESTDIR)/$(EXT_INSTALL_PATH)
 	install $(SRCDIR)/models/events/events.json $(DESTDIR)/$(EXT_INSTALL_PATH)
-	install $(SRCDIR)/models/events/asicdEvents.json $(DESTDIR)/$(EXT_INSTALL_PATH)
-	install $(SRCDIR)/models/events/arpdEvents.json $(DESTDIR)/$(EXT_INSTALL_PATH)
 ifeq (,$(findstring $(PKG_BUILD), FALSE))
 	install $(SRCDIR)/$(BUILD_DIR)/confd $(DESTDIR)/$(EXT_INSTALL_PATH)/bin
 	install $(SRCDIR)/$(BUILD_DIR)/arpd $(DESTDIR)/$(EXT_INSTALL_PATH)/bin
@@ -92,6 +92,7 @@ ifeq (,$(findstring $(PKG_BUILD), FALSE))
 	install $(SRCDIR)/$(BUILD_DIR)/sysd $(DESTDIR)/$(EXT_INSTALL_PATH)/bin
 	install $(SRCDIR)/$(BUILD_DIR)/lldpd $(DESTDIR)/$(EXT_INSTALL_PATH)/bin
 	install $(SRCDIR)/$(BUILD_DIR)/vxland $(DESTDIR)/$(EXT_INSTALL_PATH)/bin
+	install $(SRCDIR)/$(BUILD_DIR)/opticd $(DESTDIR)/$(EXT_INSTALL_PATH)/bin
 endif
 	install $(SR_CODE_BASE)/reltools/codegentools/._genInfo/*.json  $(DESTDIR)/$(EXT_INSTALL_PATH)/models/
 	install $(SRCDIR)/models/objects/genObjectConfig.json  $(DESTDIR)/$(EXT_INSTALL_PATH)/models/

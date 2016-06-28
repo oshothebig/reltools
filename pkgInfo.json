@@ -2,6 +2,6 @@
     "major" : "1",
     "minor" : "0",
     "patch" : "0",
-    "build" : "112",
+    "build" : "113",
     "platforms" : ["cel_redstone", "accton_wedge40", "accton_wedge100", "accton_as5712", "docker"]
 }

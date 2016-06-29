@@ -6,7 +6,7 @@ from fabric.context_managers import settings
 
 env.use_ssh_config = True
 gSrRepos = ['l2', 'l3','utils', 'config', 'infra', 'flexSdk', 'apps', 'reltools', 'models', 'docs']
-gBranches = ['master', 'gh-pages','pre_rel_1.x']
+gBranches = ['pre_rel_1.x']
 def syncRepo( comp = None):
     global gSrRepos
     global gBranches
@@ -18,20 +18,12 @@ def syncRepo( comp = None):
         for branch in gBranches:
             '## Working on Branch %s' %(branch)
             with  lcd(repo):
-                checkoutCmd = 'git checkout ' + branch 
-                with settings(warn_only=True):                                                                                         
-                    ret = local(checkoutCmd, capture=True)                                                                                                                                                                                       
-                    if ret.failed:
-                        cmdList = ['git checkout -b ' + branch]
-                    else:
-                        cmdList = []
-                    
+                cmds = [ 'git checkout master',
+                         'git fetch upstream',
+                         'git merge upstream/pre_rel_1.x',
+                         #'git push origin'
+                         ]
 
-                cmds = cmdList + [ 'git branch %s -u upstream/%s' %(branch, branch),
-                       'git fetch origin',
-                       'git merge origin %s' %(branch),
-                       'git pull origin %s' %(branch),
-                       'git push origin']
                 for cmd in cmds:
                     local(cmd)
 

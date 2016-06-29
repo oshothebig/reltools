@@ -1,12 +1,13 @@
 import os
 import subprocess
 from optparse import OptionParser
+from heapq import merge
 import sys
 import json
 
 SNAP_ROUTE_SRC  = '/snaproute/src/'
-SRC_INFO_FILE   = 'srcInfo.json'
 BUILD_INFO_FILE = 'buildInfo.json'
+SRC_INFO_FILE   = 'setupInfo.json'
 
 def executeCommand (command) :
     out = ''
@@ -48,11 +49,25 @@ if __name__ == '__main__':
     baseDir = os.getenv('SR_CODE_BASE',None)
     if not baseDir:
         print 'Environment variable SR_CODE_BASE is not set'
+
     srcFile = baseDir + '/reltools/' + SRC_INFO_FILE
+    repoPublicList = []
+    repoPrivateList = []
     with open(srcFile) as infoFd:
-        info = json.load(infoFd)
-        for rp in info ['repos'] ['snaproute']:
-            repos.append(repo(baseDir, rp))
+	info = json.load(infoFd)
+	for rp in info['PublicRepos']:
+	    repoPublicList.append(rp)
+
+    with open(srcFile) as infoFd:
+	info = json.load(infoFd)
+	for rp in info['PrivateRepos']:
+	    repoPrivateList.append(rp)
+
+    repoList = list(set(repoPrivateList + repoPublicList))
+    for rp in repoList:
+	if os.path.isdir(baseDir + "/snaproute/src/" + rp):
+		repos.append(repo(baseDir, rp))
+
     reposInfoList = []
     with open(BUILD_INFO_FILE, 'w') as bldFile: 
         for rp in repos:

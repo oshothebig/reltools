@@ -22,21 +22,12 @@ class setupGenie (object) :
 
         with open(self.setupInfo) as dataFile:
             self.info = json.load(dataFile)                                                                                 
-        self.generateSrcInfo()
 
     def getExternalInstalls(self, comp = None) :
         if comp:
             return { comp+'Deps' : self.info['Externals'] [comp+'Deps']}
         else:
             return self.info['Externals']
-
-    def generateSrcInfo (self) :
-        srcInfoFile = 'srcInfo.json'
-        with open(srcInfoFile, 'w') as fd :
-            rpList =  self.getSRRepos()
-            srcInfo = {'repos': { 'snaproute': rpList},
-                       'srcLocation':SNAP_ROUTE_SRC }
-            json.dump(srcInfo,fd, indent=4)
 
     def getGoDeps (self, comp = None) :
         return self.info['GoDeps']

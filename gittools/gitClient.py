@@ -58,3 +58,33 @@ class GitHubClient( object):
         if response.status_code in httpSuccessCodes:
             print 'Successfully created release tag for repo %s on branch %s' %(branch, repo)
         return response
+
+    def getPullRequestsList(self, org, repo):
+        reqUrl = 'https://api.github.com/repos/%s/%s/pulls' %(org, repo)
+        response  = requests.get(reqUrl, headers=headers, auth=(self.usr, self.passwd ))
+        print '%s:%s' %(org, repo)
+        if response.status_code in httpSuccessCodes:
+            data = response.json()
+            for entry in data:
+                print '%s : %s' %(entry['number'], entry['title'])
+                #import ipdb;ipdb.set_trace()
+                self.mergePullRequest(org, repo, entry['number'])
+        else:
+            print 'Failed to get Info'
+
+        return response
+
+    def mergePullRequest(self, org, repo, pullNum):
+        obj = {'commit_title' :  'Test',
+               'commit_message' : 'Test',
+              }
+        reqUrl = 'https://api.github.com/repos/%s/%s/pulls/%s/merge' %(org, repo, pullNum)
+        response  = requests.put(reqUrl, data=json.dumps(obj), headers=headers, auth=(self.usr, self.passwd ))
+        print response
+        if response.status_code in httpSuccessCodes:
+            print 'Merged Pull request %s on %s:%s' %(pullNum, org, repo)
+        else:
+            print 'Failed to get Info'
+
+        return response
+

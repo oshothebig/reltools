@@ -10,8 +10,16 @@ gAnchorDir = ''
 gGitUsrName = ''
 gRole = ''
 
+def _askDetails ():
+    global gAnchorDir, gGitUsrName, gRole
+    gAnchorDir = prompt('Host directory:', default='git')
+    gGitUsrName = prompt('Git username:')
+    gRole = prompt('SnapRoute Employee (y/n):', default='n')
+
 def setupHandler():
     global gAnchorDir, gGitUsrName, gRole
+    if '' in [gAnchorDir, gGitUsrName, gRole]:
+        _askDetails()
     return getSetupHdl('setupInfo.json', gAnchorDir, gGitUsrName, gRole)
 
 def setupExternals (comp=None):
@@ -58,7 +66,14 @@ def setupGoDeps(comp=None, gitProto='http'):
 
 def setupSRRepos( gitProto = 'http' , comp = None):
     print 'Fetching Snaproute repositories dependencies....'
-    srRepos = setupHandler().getSRRepos()
+    global gAnchorDir, gGitUsrName, gRole
+    gAnchorDir = prompt('Host directory:', default='git')
+    gGitUsrName = prompt('Git username:')
+    gRole = prompt('SnapRoute Employee (y/n):', default='n')
+    if comp:
+        srRepos = [comp]
+    else:
+        srRepos = setupHandler().getSRRepos()
     org = setupHandler().getOrg()
     internalUser =  setupHandler().getUsrRole()
     usrName =  setupHandler().getUsrName()
@@ -179,10 +194,7 @@ def printInstruction():
     print "###########################"
 
 def setupDevEnv() :
-    global gAnchorDir, gGitUsrName, gRole
-    gAnchorDir = prompt('Host directory:', default='git')
-    gGitUsrName = prompt('Git username:')
-    gRole = prompt('SnapRoute Employee (y/n):', default='n')
+    _askDetails()
     local('git config --global credential.helper \"cache --timeout=3600\"')
     _createDirectoryStructure()
     setupHandler()

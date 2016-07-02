@@ -69,7 +69,7 @@ if __name__ == '__main__':
 		repos.append(repo(baseDir, rp))
 
     reposInfoList = []
-    with open(BUILD_INFO_FILE, 'w') as bldFile: 
+    with open(baseDir + "/reltools/" + BUILD_INFO_FILE, 'w') as bldFile:
         for rp in repos:
             reposInfoList.append(rp.writeRepoInfo())
         json.dump(reposInfoList, bldFile, indent=4, separators=(',', ': '), sort_keys=False)

@@ -102,3 +102,4 @@ clean: $(COMPS)
 	$(SR_CODE_BASE)/reltools/codegentools/cleangencode.sh
 	$(foreach f,$^, make -C $(f) clean;)
 	$(RMDIRFORCE) $(DESTDIR)
+	$(RMDIRFORCE) $(SR_CODE_BASE)/reltools/buildInfo.json

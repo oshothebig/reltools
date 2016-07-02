@@ -472,7 +472,7 @@ func generateUnmarshalFcn(listingsFd *os.File, fileBase string, dirStore string,
 	}
 	defer marshalFcnFd.Close()
 	for _, obj := range objList {
-		fmt.Println("Object Name for Unmarshal ", obj.ObjName)
+		//fmt.Println("Object Name for Unmarshal ", obj.ObjName)
 		listingsFd.WriteString(marshalFcnFile + "\n")
 		if strings.Contains(obj.Access, "w") || strings.Contains(obj.Access, "r") || strings.Contains(obj.Access, "x") {
 			marshalFcnsLine = append(marshalFcnsLine, "\nfunc (obj "+obj.ObjName+") UnmarshalObject(body []byte) (ConfigObj, error) {\n")

@@ -10,8 +10,16 @@ gAnchorDir = ''
 gGitUsrName = ''
 gRole = ''
 
+def _askDetails ():
+    global gAnchorDir, gGitUsrName, gRole
+    gAnchorDir = prompt('Host directory:', default='git')
+    gGitUsrName = prompt('Git username:')
+    gRole = prompt('SnapRoute Employee (y/n):', default='n')
+
 def setupHandler():
     global gAnchorDir, gGitUsrName, gRole
+    if '' in [gAnchorDir, gGitUsrName, gRole]:
+        _askDetails()
     return getSetupHdl('setupInfo.json', gAnchorDir, gGitUsrName, gRole)
 
 def setupExternals (comp=None):
@@ -37,9 +45,11 @@ def setupGoDeps(comp=None, gitProto='http'):
                 repoUrl = 'https://github.com/%s/%s' %(org , rp['repo'])
             dstDir =  rp['renamedst'] if rp.has_key('renamedst') else ''
             dirToMake = dstDir 
-            if dstDir == '' or (dstDir != '' and not (os.path.exists(extSrcDir+ dstDir + '/' + rp['repo']))):
+            cloned = False
+            if not (os.path.exists(extSrcDir+ dstDir + '/' + rp['repo'])):
                 cmd = 'git clone '+ repoUrl
                 local(cmd)
+                cloned = True
                 if rp.has_key('reltag'):
                     cmd = 'git checkout tags/'+ rp['reltag']
                     with lcd(extSrcDir+rp['repo']):
@@ -50,13 +60,20 @@ def setupGoDeps(comp=None, gitProto='http'):
             if dirToMake:
                 cmd  =  'mkdir -p ' + dirToMake
                 local(cmd)
-            if rp.has_key('renamesrc'):
+            if rp.has_key('renamesrc') and cloned:
                 cmd = 'mv ' + extSrcDir+ rp['renamesrc']+ ' ' + extSrcDir+ rp['renamedst']
                 local(cmd)
 
 def setupSRRepos( gitProto = 'http' , comp = None):
     print 'Fetching Snaproute repositories dependencies....'
-    srRepos = setupHandler().getSRRepos()
+    global gAnchorDir, gGitUsrName, gRole
+    gAnchorDir = prompt('Host directory:', default='git')
+    gGitUsrName = prompt('Git username:')
+    gRole = prompt('SnapRoute Employee (y/n):', default='n')
+    if comp:
+        srRepos = [comp]
+    else:
+        srRepos = setupHandler().getSRRepos()
     org = setupHandler().getOrg()
     internalUser =  setupHandler().getUsrRole()
     usrName =  setupHandler().getUsrName()
@@ -177,10 +194,7 @@ def printInstruction():
     print "###########################"
 
 def setupDevEnv() :
-    global gAnchorDir, gGitUsrName, gRole
-    gAnchorDir = prompt('Host directory:', default='git')
-    gGitUsrName = prompt('Git username:')
-    gRole = prompt('SnapRoute Employee (y/n):', default='n')
+    _askDetails()
     local('git config --global credential.helper \"cache --timeout=3600\"')
     _createDirectoryStructure()
     setupHandler()

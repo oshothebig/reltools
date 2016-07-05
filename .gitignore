@@ -57,3 +57,9 @@ docs/_build/
 target/
 #Code gen intermediate files
 codegentools/._genInfo/
+
+#BuildInfo.json
+buildInfo.json
+
+#Debian Pkg
+*.deb

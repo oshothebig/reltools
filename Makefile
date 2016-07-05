@@ -74,9 +74,11 @@ install:installdir copy
 	install $(SR_CODE_BASE)/reltools/daemon.py $(DESTDIR)/$(EXT_INSTALL_PATH)
 	install $(SR_CODE_BASE)/reltools/pkgInfo.json $(DESTDIR)/$(EXT_INSTALL_PATH)
 	install $(SR_CODE_BASE)/reltools/buildInfo.json $(DESTDIR)/$(EXT_INSTALL_PATH)
+	install $(SRCDIR)/models/events/events.json $(DESTDIR)/$(EXT_INSTALL_PATH)
 ifeq (,$(findstring $(PKG_BUILD), FALSE))
 	install $(SRCDIR)/$(BUILD_DIR)/confd $(DESTDIR)/$(EXT_INSTALL_PATH)/bin
 	install $(SRCDIR)/$(BUILD_DIR)/arpd $(DESTDIR)/$(EXT_INSTALL_PATH)/bin
+	install $(SRCDIR)/$(BUILD_DIR)/fMgrd $(DESTDIR)/$(EXT_INSTALL_PATH)/bin
 	install $(SRCDIR)/$(BUILD_DIR)/dhcpd $(DESTDIR)/$(EXT_INSTALL_PATH)/bin
 	install $(SRCDIR)/$(BUILD_DIR)/bgpd $(DESTDIR)/$(EXT_INSTALL_PATH)/bin
 	install $(SRCDIR)/$(BUILD_DIR)/ospfd $(DESTDIR)/$(EXT_INSTALL_PATH)/bin
@@ -99,3 +101,4 @@ clean: $(COMPS)
 	$(SR_CODE_BASE)/reltools/codegentools/cleangencode.sh
 	$(foreach f,$^, make -C $(f) clean;)
 	$(RMDIRFORCE) $(DESTDIR)
+	$(RMDIRFORCE) $(SR_CODE_BASE)/reltools/buildInfo.json

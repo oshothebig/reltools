@@ -1,5 +1,5 @@
 # Pull base image.
-FROM libero18/ubuntu-14.04:auto
+FROM snapos/flex:auto
 
 ADD libip4tc.so.0 /usr/local/libip4tc.so.0
 ADD asicd.conf /usr/local/asicd.conf

@@ -157,7 +157,6 @@ func main() {
 							}
 							obj.DbFileName = fileBase + "gen_" + typ.Name.Name + "dbif.go"
 							if strings.ContainsAny(obj.Access, "rw") {
-								//fmt.Println("Creating DBIF for", obj.ObjName)
 								listingsFd.WriteString(obj.DbFileName + "\n")
 								obj.WriteDBFunctions(str, membersInfo, objMap)
 							}
@@ -182,9 +181,7 @@ func main() {
 
 func addLinkedObjectToGenObjConfig(parentChild map[string][]string, childParent map[string]string,
 	objMap map[string]ObjectInfoJson, jsonFile string) {
-	//fmt.Println("ParentChild", parentChild)
 	for key, value := range parentChild {
-		//fmt.Println("key is", key, "value is", value)
 		entry, exists := objMap[key]
 		if exists {
 			entry.LinkedObjects = append(entry.LinkedObjects, value...)
@@ -457,9 +454,9 @@ func generateSerializers(listingsFd *os.File, fileBase string, dirStore string, 
 	for owner, objList := range objectsByOwner {
 		if len(objList) > 0 {
 			srcFile := objList[0].SrcFile
-			if owner != "lacpd" { //|| owner != "ospfd" {
-				generateUnmarshalFcn(listingsFd, fileBase, dirStore, owner, srcFile, objList)
-			}
+			//if owner != "lacpd" { //|| owner != "ospfd" {
+			generateUnmarshalFcn(listingsFd, fileBase, dirStore, owner, srcFile, objList)
+			//}
 		}
 	}
 	return nil
@@ -475,6 +472,7 @@ func generateUnmarshalFcn(listingsFd *os.File, fileBase string, dirStore string,
 	}
 	defer marshalFcnFd.Close()
 	for _, obj := range objList {
+		//fmt.Println("Object Name for Unmarshal ", obj.ObjName)
 		listingsFd.WriteString(marshalFcnFile + "\n")
 		if strings.Contains(obj.Access, "w") || strings.Contains(obj.Access, "r") || strings.Contains(obj.Access, "x") {
 			marshalFcnsLine = append(marshalFcnsLine, "\nfunc (obj "+obj.ObjName+") UnmarshalObject(body []byte) (ConfigObj, error) {\n")

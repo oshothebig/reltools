@@ -634,7 +634,6 @@ class DaemonObjectsInfo (object) :
 
     def generateClientLib(self):
         clientLibFd = open(self.clientLibFileName, 'w+')
-        print self.clientLibFileName
         clientLibFd.write("package %sLib\n" %(self.name))
         clientLibFd.write("""import (\n "utils/logging" \n) \n""")
         structLines = []

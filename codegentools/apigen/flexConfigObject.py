@@ -154,6 +154,9 @@ class FlexConfigObject(FlexObject) :
         lines.append(tabs + "return r\n")                                                                                  
         fileHdl.writelines(lines)
 
+    def createTblPrintMethod(self, fileHdl):
+        pass
+
     def writeAllMethods (self, fileHdl):
         self.createCreateMethod(fileHdl)
         self.createUpdateMethod(fileHdl)

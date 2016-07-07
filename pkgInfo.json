@@ -3,5 +3,5 @@
     "minor" : "0",
     "patch" : "0",
     "build" : "113",
-    "platforms" : ["cel_redstone"]
+    "platforms" : ["cel_redstone", "docker"]
 }

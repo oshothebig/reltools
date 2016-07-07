@@ -9,11 +9,13 @@ env.use_ssh_config = True
 gAnchorDir = ''
 gGitUsrName = ''
 gRole = ''
+gProto = ''
 
 def _askDetails ():
-    global gAnchorDir, gGitUsrName, gRole
+    global gAnchorDir, gGitUsrName, gRole, gProto
     gAnchorDir = prompt('Host directory:', default='git')
     gGitUsrName = prompt('Git username:')
+    gProto = prompt('Git Protocol (https/ssh):', default='https')
     gRole = prompt('SnapRoute Employee (y/n):', default='n')
 
 def setupHandler():
@@ -199,10 +201,10 @@ def setupDevEnv() :
     _createDirectoryStructure()
     setupHandler()
     setupExternals()
-    setupGoDeps()
+    setupGoDeps(gitProto=gProto)
     installThrift()
     installNanoMsgLib()
     installIpTables()
-    setupSRRepos()
+    setupSRRepos(gitProto=gProto)
     printInstruction()
      

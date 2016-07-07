@@ -9,11 +9,13 @@ env.use_ssh_config = True
 gAnchorDir = ''
 gGitUsrName = ''
 gRole = ''
+gProto = ''
 
 def _askDetails ():
-    global gAnchorDir, gGitUsrName, gRole
+    global gAnchorDir, gGitUsrName, gRole, gProto
     gAnchorDir = prompt('Host directory:', default='git')
     gGitUsrName = prompt('Git username:')
+    gProto = prompt('Git Protocol (https/ssh):', default='https')
     gRole = prompt('SnapRoute Employee (y/n):', default='n')
 
 def setupHandler():
@@ -159,15 +161,15 @@ def installIpTables():
             cmdList = []
             cmdList.append('./autogen.sh')
             if lib == 'libmnl':
-                cmdList.append('./configure --prefix=\"' + prefixDir + '\"')
+                cmdList.append('./configure')
             elif lib == 'libnftnl':
-                os.environ["LIBMNL_CFLAGS"]= nfLoc + libipDir + "/include/libmnl"
-                os.environ["LIBMNL_LIBS"]= nfLoc + libipDir + "/lib/pkgconfig"
-                cmdList.append('./configure --prefix="' + prefixDir + '" CFLAGS="-I' + cflagsDir + '" LDFLAGS="-L' + ldflagsDir +'"')
+                #os.environ["LIBMNL_CFLAGS"]= nfLoc + libipDir + "/include/libmnl"
+                #os.environ["LIBMNL_LIBS"]= nfLoc + libipDir + "/lib/pkgconfig"
+                cmdList.append('./configure')
             elif lib == 'iptables':
-                cmdList.append('./configure --prefix="' + prefixDir + '" CFLAGS="-I' + cflagsDir + '" LDFLAGS="-L' + ldflagsDir +'" LIBS=\"-lmnl -lnftnl\"')
+                cmdList.append('./configure')
             cmdList.append('make')
-            cmdList.append('make install')
+            cmdList.append('sudo make install')
             for cmd in cmdList:
                 local(cmd)
 
@@ -199,10 +201,10 @@ def setupDevEnv() :
     _createDirectoryStructure()
     setupHandler()
     setupExternals()
-    setupGoDeps()
+    setupGoDeps(gitProto=gProto)
     installThrift()
     installNanoMsgLib()
     installIpTables()
-    setupSRRepos()
+    setupSRRepos(gitProto=gProto)
     printInstruction()
      

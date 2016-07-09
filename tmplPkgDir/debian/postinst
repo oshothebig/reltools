@@ -59,8 +59,6 @@ if [ ! -d /etc/flexswitch ]; then
 fi
 
 mv /opt/flexswitch/events.json /etc/flexswitch/events.json
-mv /opt/flexswitch/asicdEvents.json /etc/flexswitch/asicdEvents.json
-mv /opt/flexswitch/arpdEvents.json /etc/flexswitch/arpdEvents.json
 
 case "$1" in
     configure)

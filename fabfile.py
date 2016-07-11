@@ -205,4 +205,10 @@ def setupDevEnv() :
     installIpTables()
     setupSRRepos()
     printInstruction()
-     
+    
+def pushDocker() :
+    print "Push the latest docker image to docker hub"
+    print "Keep the usermane and password for dockerhub ready."
+    local('docker login')
+    local('docker push snapos/flex:flex1')
+    print "Success..." 

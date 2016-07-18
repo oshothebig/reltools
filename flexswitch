@@ -119,7 +119,7 @@ def getDaemonsInfo (baseDir) :
                     'params': '-params=' + baseDir + '/params'},
                     
                     {'name': 'dhcprelayd',
-                     'runlevel' : 11,
+                     'runlevel' : 15,
                     'params': '-params=' + baseDir + '/params'},
 
                     {'name': 'stpd',
@@ -137,13 +137,17 @@ def getDaemonsInfo (baseDir) :
                     {'name': 'vxland',
                      'runlevel' : 13,
                      'params': '-params=' + baseDir + '/params'},
+                    
+                    {'name': 'ndpd',
+                     'runlevel' : 11,
+                     'params': '-params=' + baseDir + '/params'},
 
                     {'name': 'platformd',
                      'runlevel' : 15,
                      'params': '-params=' + baseDir + '/params'},
 
                     {'name': 'confd',
-                     'runlevel' : 15,
+                     'runlevel' : 16,
                      'params': '-params=' + baseDir + '/params'},
 
                     ]

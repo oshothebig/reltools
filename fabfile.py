@@ -9,9 +9,19 @@ env.use_ssh_config = True
 gAnchorDir = ''
 gGitUsrName = ''
 gRole = ''
+gProto = ''
+
+def _askDetails ():
+    global gAnchorDir, gGitUsrName, gRole, gProto
+    gAnchorDir = prompt('Host directory:', default='git')
+    gGitUsrName = prompt('Git username:')
+    gProto = prompt('Git Protocol (https/ssh):', default='https')
+    gRole = prompt('SnapRoute Employee (y/n):', default='n')
 
 def setupHandler():
     global gAnchorDir, gGitUsrName, gRole
+    if '' in [gAnchorDir, gGitUsrName, gRole]:
+        _askDetails()
     return getSetupHdl('setupInfo.json', gAnchorDir, gGitUsrName, gRole)
 
 def setupExternals (comp=None):
@@ -58,7 +68,14 @@ def setupGoDeps(comp=None, gitProto='http'):
 
 def setupSRRepos( gitProto = 'http' , comp = None):
     print 'Fetching Snaproute repositories dependencies....'
-    srRepos = setupHandler().getSRRepos()
+    global gAnchorDir, gGitUsrName, gRole
+    gAnchorDir = prompt('Host directory:', default='git')
+    gGitUsrName = prompt('Git username:')
+    gRole = prompt('SnapRoute Employee (y/n):', default='n')
+    if comp:
+        srRepos = [comp]
+    else:
+        srRepos = setupHandler().getSRRepos()
     org = setupHandler().getOrg()
     internalUser =  setupHandler().getUsrRole()
     usrName =  setupHandler().getUsrName()
@@ -144,15 +161,15 @@ def installIpTables():
             cmdList = []
             cmdList.append('./autogen.sh')
             if lib == 'libmnl':
-                cmdList.append('./configure --prefix=\"' + prefixDir + '\"')
+                cmdList.append('./configure')
             elif lib == 'libnftnl':
-                os.environ["LIBMNL_CFLAGS"]= nfLoc + libipDir + "/include/libmnl"
-                os.environ["LIBMNL_LIBS"]= nfLoc + libipDir + "/lib/pkgconfig"
-                cmdList.append('./configure --prefix="' + prefixDir + '" CFLAGS="-I' + cflagsDir + '" LDFLAGS="-L' + ldflagsDir +'"')
+                #os.environ["LIBMNL_CFLAGS"]= nfLoc + libipDir + "/include/libmnl"
+                #os.environ["LIBMNL_LIBS"]= nfLoc + libipDir + "/lib/pkgconfig"
+                cmdList.append('./configure')
             elif lib == 'iptables':
-                cmdList.append('./configure --prefix="' + prefixDir + '" CFLAGS="-I' + cflagsDir + '" LDFLAGS="-L' + ldflagsDir +'" LIBS=\"-lmnl -lnftnl\"')
+                cmdList.append('./configure')
             cmdList.append('make')
-            cmdList.append('make install')
+            cmdList.append('sudo make install')
             for cmd in cmdList:
                 local(cmd)
 
@@ -179,18 +196,21 @@ def printInstruction():
     print "###########################"
 
 def setupDevEnv() :
-    global gAnchorDir, gGitUsrName, gRole
-    gAnchorDir = prompt('Host directory:', default='git')
-    gGitUsrName = prompt('Git username:')
-    gRole = prompt('SnapRoute Employee (y/n):', default='n')
+    _askDetails()
     local('git config --global credential.helper \"cache --timeout=3600\"')
     _createDirectoryStructure()
     setupHandler()
     setupExternals()
-    setupGoDeps()
+    setupGoDeps(gitProto=gProto)
     installThrift()
     installNanoMsgLib()
     installIpTables()
-    setupSRRepos()
+    setupSRRepos(gitProto=gProto)
     printInstruction()
-     
+    
+def pushDocker() :
+    print "Push the latest docker image to docker hub"
+    print "Keep the usermane and password for dockerhub ready."
+    local('docker login')
+    local('docker push snapos/flex:flex1')
+    print "Success..." 

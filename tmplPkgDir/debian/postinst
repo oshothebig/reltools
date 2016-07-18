@@ -54,6 +54,13 @@ ln -sf /opt/flexswitch/sharedlib/libsxnet.so.1.0.0 /opt/flexswitch/sharedlib/lib
 ln -sf /opt/flexswitch/sharedlib/libsxutils.so.1.0.0 /opt/flexswitch/sharedlib/libsxutils.so.1
 ln -sf /opt/flexswitch/sharedlib/libsxutils.so.1.0.0 /opt/flexswitch/sharedlib/libsxutils.so
 
+if [ ! -d /etc/flexswitch ]; then
+	mkdir -p /etc/flexswitch
+fi
+
+mv /opt/flexswitch/events.json /etc/flexswitch/events.json
+mv /opt/flexswitch/params/platformd.conf /etc/flexswitch/platformd.conf
+
 case "$1" in
     configure)
         echo "postinst Configure called with unknown argument \`$1'" >&2

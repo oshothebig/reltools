@@ -14,7 +14,7 @@ out_cp, err_cp = ex_p.communicate()
 print "Commmand return code " , ex_p.returncode
 print out_cp.rstrip(), err_cp.rstrip()
 
-cmd = "docker build -t \"libero18/ubuntu-14.04:flex1\" dockerGen/"
+cmd = "docker build -t \"snapos/flex:flex1\" dockerGen/"
 p = Popen(cmd , shell=True, stdout=PIPE, stderr=PIPE)
 out, err = p.communicate()
 print "Return code: ", p.returncode

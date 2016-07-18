@@ -320,6 +320,7 @@ class DaemonObjectsInfo (object) :
                             func (clnt *%sClient) CreateObject(obj objects.ConfigObj, dbHdl *dbutils.DBUtil) (error, bool) {
                             var err error
                             var ok bool
+                            ok = true
                                 switch obj.(type) {\n""" % (self.newDeamonName,))
         for structName, structInfo in objectNames.objectDict.iteritems ():
             structName = str(structName)
@@ -347,7 +348,8 @@ class DaemonObjectsInfo (object) :
         clientIfFd.write("""default:
                                     break
                                 }
-                                return nil, true
+
+                                return err, ok
                             }\n""")
 
     def createClientIfDeleteObject(self, clientIfFd, objectNames):
@@ -355,6 +357,7 @@ class DaemonObjectsInfo (object) :
                             func (clnt *%sClient) DeleteObject(obj objects.ConfigObj, objKey string, dbHdl *dbutils.DBUtil) (error, bool) {
                                 var err error
                                 var ok bool
+                                ok = true
                                 switch obj.(type) {\n""" % (self.newDeamonName,))
         for structName, structInfo in objectNames.objectDict.iteritems ():
             structName = str(structName)
@@ -382,7 +385,8 @@ class DaemonObjectsInfo (object) :
         clientIfFd.write("""default:
                                     break
                                 }
-                                return nil, true
+
+                                return err, ok
                             }\n""")
 
     def createClientIfGetObject(self, clientIfFd, objectNames):
@@ -471,7 +475,7 @@ class DaemonObjectsInfo (object) :
                             func (clnt *%sClient) UpdateObject(dbObj objects.ConfigObj, obj objects.ConfigObj, attrSet []bool, patchOpInfo []objects.PatchOpInfo, objKey string, dbHdl *dbutils.DBUtil) (error, bool) {
             var ok bool
             var err error
-	    ok = false
+	    ok = true
             err = nil
 			
 			var op []*%s.PatchOpInfo = make([]*%s.PatchOpInfo, 0)
@@ -520,7 +524,8 @@ class DaemonObjectsInfo (object) :
         clientIfFd.write("""\ndefault:
                                     break
                                 }
-                    return nil, true
+                    return err, ok
+
                 }\n""")
 
     def createClientIfGetBulkObject(self, clientIfFd, objectNames):
@@ -626,7 +631,6 @@ class DaemonObjectsInfo (object) :
 
     def generateClientLib(self):
         clientLibFd = open(self.clientLibFileName, 'w+')
-        print self.clientLibFileName
         clientLibFd.write("package %sLib\n" %(self.name))
         clientLibFd.write("""import (\n "utils/logging" \n) \n""")
         structLines = []

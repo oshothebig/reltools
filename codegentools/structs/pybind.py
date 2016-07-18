@@ -179,8 +179,7 @@ class BTPyGOClass(plugin.PyangPlugin):
     def emit(self, ctx, modules, fd):
         # When called, call the build_pyangbind function.
         name = fd.name.split('.')[0]
-        fdDict = {"struct" : fd,
-                  "func": open(name + "_serializer.go", 'w+b')}
+        fdDict = {"struct" : fd}
 
         modelFileName  = fd.name.strip('.tmp')
         #serializerName = modelFileName.strip('.go') + '_serializer.go'
@@ -866,7 +865,7 @@ def get_children(ctx, fdDict, i_children, module, parent, path=str(), \
 
         # create NEW and Set methods
         # TODO: create get methods as well
-        structName = createGONewStructMethod(ctx, module, classes, fdDict["func"], parent, path)
+        structName = createGONewStructMethod(ctx, module, classes, None, parent, path)
         #if structName != '' and not structName.endswith('State') and not structName.endswith('Counters'):
             # TODO need to add support for parentChildrenLeaf
         #    createGOStructMethods(elements, fdDict["func"], structName)
@@ -930,11 +929,11 @@ def CreateStructSkeleton(module, nfd, parent, path, write=True):
                         gYangObjInfo = {}
 
         if parent.i_module.i_modulename in gOwnersInfo:
-            nfd.write("type %s struct {\n" % structName)
 
             owner =  gOwnersInfo[parent.i_module.i_modulename]
             srcFile = ''
             if nfd:
+                nfd.write("type %s struct {\n" % structName)
                 parts = nfd.stream.name.split('/')[-1].split('.')
                 srcFile = '.'.join(parts[0:-1])
 

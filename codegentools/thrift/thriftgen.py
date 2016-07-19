@@ -277,6 +277,7 @@ class DaemonObjectsInfo (object) :
                             func (clnt *%sClient) Initialize(name string, address string) {
                                 clnt.Name = name
                                 clnt.Address = address
+                                clnt.ApiHandlerMutex = sync.RWMutex{}
                                 return
                             }\n""" % (self.newDeamonName,))
         clientIfFd.write("""
@@ -313,6 +314,14 @@ class DaemonObjectsInfo (object) :
         clientIfFd.write("""
                             func (clnt *%sClient) GetServerName() string {
                                 return clnt.Name
+                            }\n""" % (self.newDeamonName,))
+        clientIfFd.write("""
+                            func (clnt *%sClient) LockApiHandler() {
+                                clnt.ApiHandlerMutex.Lock()
+                            }\n""" % (self.newDeamonName,))
+        clientIfFd.write("""
+                            func (clnt *%sClient) UnlockApiHandler() {
+                                clnt.ApiHandlerMutex.Unlock()
                             }\n""" % (self.newDeamonName,))
 
     def createClientIfCreateObject(self, clientIfFd, objectNames):
@@ -615,7 +624,7 @@ class DaemonObjectsInfo (object) :
         clientIfFd.write("package clients\n")
         #if (len([ x for x,y in accessDict.iteritems() if x in crudStructsList and 'r' in y]) > 0):
         # BELOW CODE WILL BE FORMATED BY GOFMT
-        clientIfFd.write("""import (\n "%s"\n"fmt"\n"models/objects"\n"utils/ipcutils"\n"utils/dbutils"\n""" % self.servicesName)
+        clientIfFd.write("""import (\n "%s"\n"fmt"\n"models/objects"\n"sync"\n"utils/ipcutils"\n"utils/dbutils"\n""" % self.servicesName)
         #if array_obj == 'True' :
             #clientIfFd.write(""" "reflect"\n""" )		
         clientIfFd.write(""")\n""")

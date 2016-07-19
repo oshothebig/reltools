@@ -22,6 +22,7 @@ type ObjectInfoJson struct {
 	Accelerated   bool     `json:"accelerated"`
 	UsesStateDB   bool     `json:"usesStateDB"`
 	AutoCreate    bool     `json:"autoCreate"`
+	AutoDiscover  bool     `json:"autoDiscover"`
 	LinkedObjects []string `json:"linkedObjects"`
 	Parent        string   `json:"parent"`
 	ObjName       string   `json:"-"`
@@ -46,6 +47,7 @@ type ObjectMembersInfo struct {
 	Len          int    `json:"len"`
 	UsesStateDB  bool   `json:"usesStateDB"`
 	AutoCreate   bool   `json:"autoCreate"`
+	AutoDiscover bool   `json:"autoDiscover"`
 	Parent       string `json:"-"` //`json:"parent"`
 	IsParentSet  bool   `json:"-"` //`json:"isParentSet"`
 }
@@ -144,6 +146,9 @@ func main() {
 								}
 								if val.AutoCreate == true {
 									obj.AutoCreate = true
+								}
+								if val.AutoDiscover == true {
+									obj.AutoDiscover = true
 								}
 								if val.IsParentSet {
 									// Set parent to true when auto create is set
@@ -295,6 +300,8 @@ func getSpecialTagsForAttribute(attrTags string, attrInfo *ObjectMembersInfo) {
 				attrInfo.UsesStateDB = true
 			case "AUTOCREATE":
 				attrInfo.AutoCreate = true
+			case "AUTODISCOVER":
+				attrInfo.AutoDiscover = true
 			case "PARENT":
 				attrInfo.Parent = strings.TrimSpace(keys[idx+1])
 				attrInfo.IsParentSet = true
@@ -422,6 +429,8 @@ func generateHandCodedObjectsInformation(listingsFd *os.File, fileBase string, s
 													obj.UsesStateDB = true
 												case "AUTOCREATE":
 													obj.AutoCreate = true
+												case "AUTODISCOVER":
+													obj.AutoDiscover = true
 												}
 											}
 										}

@@ -59,6 +59,7 @@ if [ ! -d /etc/flexswitch ]; then
 fi
 
 mv /opt/flexswitch/events.json /etc/flexswitch/events.json
+mv /opt/flexswitch/params/platformd.conf /etc/flexswitch/platformd.conf
 
 case "$1" in
     configure)

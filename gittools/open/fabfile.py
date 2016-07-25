@@ -21,7 +21,7 @@ def syncRepo( comp = None):
                 cmds = [ 'git checkout master',
                          'git fetch upstream',
                          'git merge upstream/pre_rel_1.x',
-                         #'git push origin'
+                         'git push origin'
                          ]
 
                 for cmd in cmds:

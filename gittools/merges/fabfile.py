@@ -5,7 +5,7 @@ from fabric.operations import prompt
 from fabric.context_managers import settings
 
 env.use_ssh_config = True
-gSrRepos = ['asicd', 'l2', 'l3','config', 'utils','infra', 'flexSdk', 'apps', 'reltools', 'models', 'docs']
+gSrRepos = ['asicd', 'l2', 'l3','config', 'utils','infra', 'flexSdk', 'apps', 'reltools', 'models', 'docs', 'test']
 def mergeRepos (branch=None, comp=None):
     global gSrRepos
     print 'Fetching Snaproute repositories dependencies....'

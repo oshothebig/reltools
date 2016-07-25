@@ -114,6 +114,15 @@ def setupSRRepos( gitProto = 'http' , comp = None):
                                     'git merge upstream/master']
                     for cmd in commandsToSync:
                         local(cmd)
+            LFSRepos = setupHandler().getLFSEnabledRepos()
+            if repo in LFSRepos:
+                with lcd(srcDir + repo):
+                    commandsToCheckout = [
+                            'git lfs fetch',
+                            'git lfs checkout'
+                            ]
+                    for cmd in commandsToCheckout:
+                        local(cmd)
 def installThrift():
     TMP_DIR = ".tmp"
     thriftVersion = '0.9.3'

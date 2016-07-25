@@ -8,7 +8,7 @@
         "docker"
     ], 
     "major": "1", 
-    "build": "127, 
+    "build": "127", 
     "minor": "0", 
     "patch": "0"
 }

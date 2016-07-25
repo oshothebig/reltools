@@ -137,13 +137,21 @@ def getDaemonsInfo (baseDir) :
                     {'name': 'vxland',
                      'runlevel' : 14,
                      'params': '-params=' + baseDir + '/params'},
-
-                    {'name': 'fMgrd',
+                    
+                    {'name': 'ndpd',
                      'runlevel' : 15,
                      'params': '-params=' + baseDir + '/params'},
 
-                    {'name': 'confd',
+                    {'name': 'platformd',
                      'runlevel' : 16,
+                     'params': '-params=' + baseDir + '/params'},
+
+                    {'name': 'fMgrd',
+                     'runlevel' : 17,
+                     'params': '-params=' + baseDir + '/params'},
+
+                    {'name': 'confd',
+                     'runlevel' : 18,
                      'params': '-params=' + baseDir + '/params'},
                     ]
 

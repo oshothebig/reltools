@@ -277,6 +277,7 @@ class DaemonObjectsInfo (object) :
                             func (clnt *%sClient) Initialize(name string, address string) {
                                 clnt.Name = name
                                 clnt.Address = address
+                                clnt.ApiHandlerMutex = sync.RWMutex{}
                                 return
                             }\n""" % (self.newDeamonName,))
         clientIfFd.write("""
@@ -315,12 +316,21 @@ class DaemonObjectsInfo (object) :
                             func (clnt *%sClient) GetServerName() string {
                                 return clnt.Name
                             }\n""" % (self.newDeamonName,))
+        clientIfFd.write("""
+                            func (clnt *%sClient) LockApiHandler() {
+                                clnt.ApiHandlerMutex.Lock()
+                            }\n""" % (self.newDeamonName,))
+        clientIfFd.write("""
+                            func (clnt *%sClient) UnlockApiHandler() {
+                                clnt.ApiHandlerMutex.Unlock()
+                            }\n""" % (self.newDeamonName,))
 
     def createClientIfCreateObject(self, clientIfFd, objectNames):
         clientIfFd.write("""
                             func (clnt *%sClient) CreateObject(obj objects.ConfigObj, dbHdl *dbutils.DBUtil) (error, bool) {
                             var err error
                             var ok bool
+                            ok = true
                                 switch obj.(type) {\n""" % (self.newDeamonName,))
         for structName, structInfo in objectNames.objectDict.iteritems ():
             structName = str(structName)
@@ -349,7 +359,7 @@ class DaemonObjectsInfo (object) :
                                     break
                                 }
 
-                                return nil, true
+                                return err, ok
                             }\n""")
 
     def createClientIfDeleteObject(self, clientIfFd, objectNames):
@@ -357,6 +367,7 @@ class DaemonObjectsInfo (object) :
                             func (clnt *%sClient) DeleteObject(obj objects.ConfigObj, objKey string, dbHdl *dbutils.DBUtil) (error, bool) {
                                 var err error
                                 var ok bool
+                                ok = true
                                 switch obj.(type) {\n""" % (self.newDeamonName,))
         for structName, structInfo in objectNames.objectDict.iteritems ():
             structName = str(structName)
@@ -385,7 +396,7 @@ class DaemonObjectsInfo (object) :
                                     break
                                 }
 
-                                return nil, true
+                                return err, ok
                             }\n""")
 
     def createClientIfGetObject(self, clientIfFd, objectNames):
@@ -474,7 +485,7 @@ class DaemonObjectsInfo (object) :
                             func (clnt *%sClient) UpdateObject(dbObj objects.ConfigObj, obj objects.ConfigObj, attrSet []bool, patchOpInfo []objects.PatchOpInfo, objKey string, dbHdl *dbutils.DBUtil) (error, bool) {
             var ok bool
             var err error
-	    ok = false
+	    ok = true
             err = nil
 			
 			var op []*%s.PatchOpInfo = make([]*%s.PatchOpInfo, 0)
@@ -524,7 +535,7 @@ class DaemonObjectsInfo (object) :
         clientIfFd.write("""\ndefault:
                                     break
                                 }
-                    return nil, true
+                    return err, ok
 
                 }\n""")
 
@@ -618,7 +629,7 @@ class DaemonObjectsInfo (object) :
         clientIfFd.write("package clients\n")
         #if (len([ x for x,y in accessDict.iteritems() if x in crudStructsList and 'r' in y]) > 0):
         # BELOW CODE WILL BE FORMATED BY GOFMT
-        clientIfFd.write("""import (\n "%s"\n"fmt"\n"models/objects"\n"utils/ipcutils"\n"utils/dbutils"\n""" % self.servicesName)
+        clientIfFd.write("""import (\n "%s"\n"fmt"\n"models/objects"\n"sync"\n"utils/ipcutils"\n"utils/dbutils"\n""" % self.servicesName)
         #if array_obj == 'True' :
             #clientIfFd.write(""" "reflect"\n""" )		
         clientIfFd.write(""")\n""")

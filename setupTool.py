@@ -70,6 +70,9 @@ class setupGenie (object) :
     def getAnchorDir(self ) :
         return self.anchor 
 
+    def getLFSEnabledRepos(self) :
+        return self.info['LFSEnabledRepos']
+
                 
 def getSetupHdl (setupInfo='setupInfo.json', anchorDir='git', gitUsrName='', role='n') :
     global gSetup

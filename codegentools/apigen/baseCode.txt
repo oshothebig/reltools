@@ -30,7 +30,7 @@ class FlexSwitch( object):
     def getObjects(self, objName, urlPath):
         currentMarker = 0                                                                                                  
         nextMarker = 0                                                                                                     
-        count = 10
+        count = 100
         more = True                                                                                                        
         entries = []                                                                                                       
         while more == True:                                                                                                

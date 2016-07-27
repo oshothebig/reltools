@@ -6,7 +6,7 @@ from fabric.context_managers import settings
 
 env.use_ssh_config = True
 gSrRepos = ['l2', 'l3','utils', 'config', 'infra', 'flexSdk', 'apps', 'reltools', 'models', 'docs']
-gBranches = ['pre_rel_1.x']
+gBranches = ['stable']
 def syncRepo( comp = None):
     global gSrRepos
     global gBranches
@@ -20,7 +20,7 @@ def syncRepo( comp = None):
             with  lcd(repo):
                 cmds = [ 'git checkout master',
                          'git fetch upstream',
-                         'git merge upstream/pre_rel_1.x',
+                         'git merge upstream/stable',
                          'git push origin'
                          ]
 

@@ -30,6 +30,30 @@ def mergeRepos (branch=None, comp=None):
                     print 'Executing Command %s' %(cmd)
                     local(cmd)
 
+def mergeIntoMaster(branch=None, comp=None):
+    global gSrRepos
+    print 'Fetching Snaproute repositories dependencies....'
+    srRepos = gSrRepos
+    if comp != None :
+        srRepos = [comp] 
+
+    for repo in srRepos:
+        cmds = ['git checkout %s' %('master'),
+                'git remote add upstream https://github.com/snaproute/%s.git' %(repo),
+                'git pull',
+                'git fetch upstream',
+                'git merge upstream/%s' %(branch),
+                'git push origin'
+                ]
+        local('mkdir -p tmp')
+        with lcd('tmp'):
+            local('git clone '+ 'https://github.com/snaproute/' + repo + '.git')
+            with lcd(repo):
+                print '## Merging repo %s' %(repo)
+                for cmd in cmds:
+                    print 'Executing Command %s' %(cmd)
+                    local(cmd)
+
 def push(comp=None):
     global gSrRepos
     srRepos = gSrRepos
@@ -39,7 +63,7 @@ def push(comp=None):
     for repo in srRepos:
         print 'Pushing repo %s'  %(repo)
         cmds = ['git push origin']
-        with lcd(repo):
+        with lcd('tmp/'+repo):
             for cmd in cmds:
                 print 'Pushing repo %s'  %(repo)
                 local(cmd)

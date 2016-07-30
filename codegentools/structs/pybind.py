@@ -193,8 +193,9 @@ class BTPyGOClass(plugin.PyangPlugin):
         with open(objsData, 'w+') as fp:
             json.dump(gYangObjInfo, fp,  indent=2)
 
-        with open(objsData, 'w+') as fp:
-            json.dump(gYangObjInfo, fp,  indent=2)
+        #actionsData = srBase+ '/snaproute/src/models/actions/'+'genObjectAction.json' 
+        #with open(actionsData, 'w+') as fp:
+        #    json.dump(gYangObjInfo, fp,  indent=2)
 
         #for f in fdDict.values():
         #    f.close()

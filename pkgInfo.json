@@ -1,14 +1,15 @@
 {
     "platforms": [
+        "accton_as5712", 
         "accton_as6712", 
+        "accton_as7712", 
         "cel_redstone", 
         "accton_wedge40", 
         "accton_wedge100", 
-        "accton_as5712", 
         "docker"
     ], 
     "major": "1", 
-    "build": "127", 
+    "build": "130", 
     "minor": "0", 
     "patch": "0"
 }

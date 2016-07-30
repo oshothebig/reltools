@@ -13,16 +13,21 @@ if __name__ == '__main__':
 
     for repo in  repoList:
 	print "path of repo %s is : ~/git/snaproute/src/%s" %(repo, repo)
+        if repo == 'reltools':
+            srcPath = '~/git/'
+        else:
+            srcPath = '~/git/snaproute/src/'
+	with lcd (srcPath + repo):
+            local ('git reset --hard')
+            local ('git checkout master')
+            local ('git fetch upstream')
+            local ('git merge upstream/master')
+
 	if repo == 'asicd' :
-		with lcd ('~/git/snaproute/src/'+repo):
-			local('git lfs install')
-			local('git lfs fetch')
-			local('git lfs checkout')
-	with lcd ('~/git/snaproute/src/'+repo):
-		local ('git reset --hard')
-		local ('git checkout master')
-		local ('git fetch upstream')
-		local ('git merge upstream/master')
+            with lcd ('~/git/snaproute/src/'+repo):
+                local('git lfs install')
+                local('git lfs fetch')
+                local('git lfs checkout')
 
     with open('pkgInfo.json') as pkg_info:
 	pk_info = json.load(pkg_info)

@@ -8,7 +8,7 @@
 	dh $@
 
 override_dh_shlibdeps:
-	dh_shlibdeps -l$(SR_CODE_BASE)/snaproute/src/asicd/bin/sai/mlnx/libs:$(SR_CODE_BASE)/snaproute/src/asicd/pluginManager/sai/mlnx/libs --dpkg-shlibdeps-params=--ignore-missing-info
+	dh_shlibdeps -l$(SR_CODE_BASE)/snaproute/src/asicd/pluginManager/sai/mlnx/sn2700/lib --dpkg-shlibdeps-params=--ignore-missing-info
 
 binary:
 	dh binary --before dh_strip

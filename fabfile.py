@@ -217,9 +217,10 @@ def setupDevEnv() :
     setupSRRepos(gitProto=gProto)
     printInstruction()
     
-def pushDocker() :
+def pushDocker(repo='flex1') :
     print "Push the latest docker image to docker hub"
     print "Keep the usermane and password for dockerhub ready."
     local('docker login')
-    local('docker push snapos/flex:flex1')
+    cmd = "docker push snapos/flex:"+repo
+    local(cmd)
     print "Success..." 

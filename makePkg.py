@@ -35,6 +35,7 @@ if __name__ == '__main__':
 
     buildTargetList = parsedPkgInfo['platforms']
     for buildTarget in buildTargetList:
+        print "Building pkg for ", buildTarget
         cmd = 'python  buildInfoGen.py'
         executeCommand(cmd)
 

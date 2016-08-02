@@ -98,6 +98,7 @@ ifeq (,$(findstring $(PKG_BUILD), FALSE))
 endif
 	install $(SR_CODE_BASE)/reltools/codegentools/._genInfo/*.json  $(DESTDIR)/$(EXT_INSTALL_PATH)/models/
 	install $(SRCDIR)/models/objects/genObjectConfig.json  $(DESTDIR)/$(EXT_INSTALL_PATH)/models/
+	install $(SRCDIR)/models/actions/genObjectAction.json  $(DESTDIR)/$(EXT_INSTALL_PATH)/models/
 	install $(SR_CODE_BASE)/external/src/github.com/nanomsg/nanomsg/.libs/libnanomsg.so.4.0.0 $(DESTDIR)/$(EXT_INSTALL_PATH)/sharedlib
 
 clean: $(COMPS)

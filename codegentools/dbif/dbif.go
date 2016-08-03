@@ -686,7 +686,6 @@ func generateUnmarshalFcn(listingsFd *os.File, objFileBase string, dirStore stri
 
 													import (
 													   "encoding/json"
-
 													   "fmt"
 													)`)
 

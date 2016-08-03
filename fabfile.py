@@ -77,10 +77,12 @@ def setupSRRepos( gitProto = 'http' , comp = None):
     else:
         srRepos = setupHandler().getSRRepos()
     org = setupHandler().getOrg()
+    pkgRepoOrg = setupHandler().getPkgRepoOrg()
     internalUser =  setupHandler().getUsrRole()
     usrName =  setupHandler().getUsrName()
     srcDir = setupHandler().getSRSrcDir()
     anchorDir = setupHandler().getAnchorDir()
+    srPkgRepos = setupHandler().getSRPkgRepos()
 
     if not os.path.isfile(srcDir+'/Makefile' ):
         cmd = 'ln -s ' + anchorDir+  '/reltools/Makefile '+  srcDir + 'Makefile'
@@ -89,6 +91,7 @@ def setupSRRepos( gitProto = 'http' , comp = None):
         if not internalUser:
             userRepoPrefix   = 'git@github.com:%s/' %(org)
             remoteRepoPrefix = None
+            pkgRepoPrefix = 'git@github.com:%s/' % (pkgRepoOrg)
         else:
             userRepoPrefix   = 'git@github.com:%s/' %(usrName)
             remoteRepoPrefix = 'git@github.com:%s/' %(org)
@@ -96,6 +99,7 @@ def setupSRRepos( gitProto = 'http' , comp = None):
         if not internalUser:
             userRepoPrefix   = 'https://github.com/%s/' %(org)
             remoteRepoPrefix = None
+            pkgRepoPrefix = 'https://github.com/%s/' % (pkgRepoOrg)
         else:
             userRepoPrefix   = 'https://github.com/%s/' % (usrName)
             remoteRepoPrefix = 'https://github.com/%s/' % (org)
@@ -103,7 +107,11 @@ def setupSRRepos( gitProto = 'http' , comp = None):
     for repo in srRepos:
         with lcd(srcDir):
             if not (os.path.exists(srcDir + repo)  and os.path.isdir(srcDir+ repo)):
-                cmd = 'git clone '+ userRepoPrefix + repo 
+                if repo in srPkgRepos:
+                    prefix = pkgRepoPrefix
+                else:
+                    prefix = userRepoPrefix
+                cmd = 'git clone '+ prefix + repo
                 local(cmd)
             if remoteRepoPrefix:
                 with lcd(srcDir +repo):

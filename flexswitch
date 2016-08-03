@@ -8,6 +8,7 @@ import datetime
 import re
 import json
 import subprocess
+import socket
 from optparse import OptionParser
 ASICD_CONF_FILE='/opt/flexswitch/params/asicd.conf'
 SYS_PROFILE ='/opt/flexswitch/sysprofile/systemProfile.json'
@@ -58,6 +59,7 @@ def determineMacAddress ():
 	    confData['MgmtIp'] = ip_addr
             confData['SwitchMac'] = resultMacStr
 	    confData['RouterId'] = "0.0.0.0"
+            confData['HostName'] = socket.gethostname()
 	with open(SYS_PROFILE, 'w') as fileHdl:
 	    json.dump(confData, fileHdl, indent=2)
 
@@ -142,9 +144,9 @@ def getDaemonsInfo (baseDir) :
                      'runlevel' : 11,
                      'params': '-params=' + baseDir + '/params'},
 
-                    #{'name': 'platformd',
-                    #'runlevel' : 15,
-                    #'params': '-params=' + baseDir + '/params'},
+                    {'name': 'platformd',
+                    'runlevel' : 15,
+                    'params': '-params=' + baseDir + '/params'},
 
                     {'name': 'confd',
                      'runlevel' : 16,

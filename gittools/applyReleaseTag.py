@@ -18,7 +18,7 @@ if __name__ == '__main__':
         passwd = getpass.getpass('Password: ')
         tagName = raw_input('Name of the tag: ')
         relName = raw_input('Name of the release: ')
-        branch = raw_input('Branch name [pre_rel_1.x]: ') or 'pre_rel_1.x' 
+        branch = raw_input('Branch name [stable]: ') or 'stable' 
         description = raw_input('Description: ') 
         isDraft = raw_input('Draft[y] :') or 'y'
         isPrerel = raw_input('Pre-release[y] :') or 'y'

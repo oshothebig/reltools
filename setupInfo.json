@@ -90,6 +90,9 @@
          "asicd" : 1,
          "bin-AsicdBcm" : 1
      },
+     "SRPkgRepos" : {
+         "bin-AsicdBcm" : 1
+     },
 	 "SnapRouteOrg" : "snaproute",
 	 "PublicRepos" : [ "docs", "l2", "l3", "utils", "asicd", "bin-AsicdBcm", "bin-AsicdMlnx", "config", "models", "infra", "flexSdk", "apps"],
 	 "PrivateRepos" : [ "docs", "l2", "l3", "utils", "asicd", "config", "models", "infra", "flexSdk", "apps", "vendors", "test"]

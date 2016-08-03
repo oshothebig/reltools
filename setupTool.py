@@ -13,6 +13,7 @@ class setupGenie (object) :
         self.homeDir = os.path.expanduser('~')
         self.anchor = self.homeDir + '/' + anchorDir
         self.usrName = gitUsrName
+        self.pkgRepoOrg = 'SnaproutePackages'
         if role in ['y', 'yes', 'Y', 'Yes', 'YES']:
             self.internalUser = True
             self.org = 'SnapRoute'
@@ -61,6 +62,9 @@ class setupGenie (object) :
     def getOrg (self) :
         return self.org
         
+    def getPkgRepoOrg(self) :
+        return self.pkgRepoOrg
+
     def getUsrName(self) :
         return self.usrName
         
@@ -73,6 +77,8 @@ class setupGenie (object) :
     def getLFSEnabledRepos(self) :
         return self.info['LFSEnabledRepos']
 
+    def getSRPkgRepos(self) :
+        return self.info['SRPkgRepos']
                 
 def getSetupHdl (setupInfo='setupInfo.json', anchorDir='git', gitUsrName='', role='n') :
     global gSetup

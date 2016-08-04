@@ -14,4 +14,6 @@ rm $infoFile
 rm $infoFile.tmp
 rm -f $SR_CODE_BASE/reltools/codegentools/._genInfo/*
 rm -f $SR_CODE_BASE/snaproute/src/models/objects/genObj*
-
+rm -f $SR_CODE_BASE/snaproute/src/models/objects/gen_objMap.go
+rm -f $SR_CODE_BASE/snaproute/src/models/actions/genObj*
+rm -f $SR_CODE_BASE/snaproute/src/models/actions/gen_actionMap.go

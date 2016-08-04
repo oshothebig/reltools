@@ -2,8 +2,8 @@ import os
 import json
 import re
 
-OBJECT_MAP_NAME = "genObjMap.go"
-ACTION_MAP_NAME = "genActionMap.go"
+OBJECT_MAP_NAME = "gen_objMap.go"
+ACTION_MAP_NAME = "gen_actionMap.go"
 
 OBJECTS_NAME = 'objects'
 ACTIONS_NAME = 'actions'

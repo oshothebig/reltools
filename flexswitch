@@ -88,9 +88,9 @@ def getDaemonsInfo (baseDir) :
                      'runlevel' : 1,
                      'params': '-params=' + baseDir + '/params'},
 
-                    {'name': 'opticd',
-                     'runlevel' : 2,
-                    'params': '-params=' + baseDir + '/params'},
+#                    {'name': 'opticd',
+#                     'runlevel' : 2,
+#                    'params': '-params=' + baseDir + '/params'},
 
                     {'name': 'lacpd',
                      'runlevel' : 3,

@@ -27,6 +27,9 @@ COMPS=$(SR_CODE_BASE)/snaproute/src/asicd\
 		$(SR_CODE_BASE)/snaproute/src/flexSdk\
 		$(SR_CODE_BASE)/snaproute/src/apps
 
+L3COMPS=$(SR_CODE_BASE)/snaproute/src/config\
+		$(SR_CODE_BASE)/snaproute/src/l3
+
 COMPS_WITH_IPC=$(SR_CODE_BASE)/snaproute/src/asicd\
 		$(SR_CODE_BASE)/snaproute/src/opticd\
 		$(SR_CODE_BASE)/snaproute/src/infra\
@@ -39,6 +42,8 @@ make -C $(1) exe DESTDIR=$(DESTDIR)/$(EXE_DIR) BUILD_TARGET=$(BUILD_TARGET) GOLD
 @echo -n "Done building component $(1) at :`date`\n\n"
 endef
 all: $(ALL_DEPS)
+
+l3: buildinfogen codegen installdir ipc l3exe
 
 installdir:
 	$(MKDIR) $(DESTDIR)
@@ -61,6 +66,9 @@ codegenclean:
 	$(SR_CODE_BASE)/reltools/codegentools/cleangencode.sh
 
 exe: $(COMPS)
+	@$(foreach f,$^, $(call timedMake, $(f)))
+
+l3exe: $(L3COMPS)
 	@$(foreach f,$^, $(call timedMake, $(f)))
 
 ipc: $(COMPS_WITH_IPC)

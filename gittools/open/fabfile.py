@@ -13,22 +13,19 @@ def syncRepo( comp = None):
     srRepos = gSrRepos
     if comp != None :
         srRepos = [comp]
-
-    local('mkdir -p tmp')
     for repo in srRepos:
         print '## Working on Repo %s' %(repo)
         for branch in gBranches:
             '## Working on Branch %s' %(branch)
-            with lcd('tmp'):
-                with  lcd(repo):
-                    cmds = [ 'git checkout master',
-                             'git fetch upstream',
-                             'git merge upstream/stable',
-                             'git push origin'
-                             ]
+            with  lcd(repo):
+                cmds = [ 'git checkout master',
+                         'git fetch upstream',
+                         'git merge upstream/stable',
+                         'git push origin'
+                         ]
 
-                    for cmd in cmds:
-                        local(cmd)
+                for cmd in cmds:
+                    local(cmd)
 
 def fetchRepos (comp=None):
     global gSrRepos
@@ -38,14 +35,24 @@ def fetchRepos (comp=None):
     if comp != None :
         srRepos = [comp]
 
-    local('mkdir -p tmp')
     for repo in srRepos:
-        with lcd('tmp'):
-            local('git clone '+ 'https://github.com/OpenSnaproute/' + repo + '.git')
-            with lcd(repo):
-                local('git remote add upstream https://github.com/SnapRoute/' +  repo + '.git')
-                local('git fetch upstream')
+        local('git clone '+ 'https://github.com/OpenSnaproute/' + repo + '.git')
+        with lcd(repo):
+            local('git remote add upstream https://github.com/SnapRoute/' +  repo + '.git')
+            local('git fetch upstream')
 
+def mergeDocs ():
+    local('git clone '+ 'https://github.com/OpenSnaproute/' + 'docs' + '.git')
+    with lcd('docs'):
+        cmds = [ 'git remote add upstream https://github.com/SnapRoute/docs.git',
+                 'git fetch upstream',
+                 'git checkout -b gh-pages upstream/gh-pages',
+                 'git fetch upstream',
+                 'git merge upstream/gh-pages',
+                 ]
+
+        for cmd in cmds:
+            local(cmd)
 
 def syncAll (comp = None):
     fetchRepos(comp)

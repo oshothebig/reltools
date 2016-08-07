@@ -6,26 +6,29 @@ from fabric.context_managers import settings
 
 env.use_ssh_config = True
 gSrRepos = ['l2', 'l3','utils', 'config', 'infra', 'flexSdk', 'apps', 'reltools', 'models', 'docs']
-gBranches = ['pre_rel_1.x']
+gBranches = ['stable']
 def syncRepo( comp = None):
     global gSrRepos
     global gBranches
     srRepos = gSrRepos
     if comp != None :
         srRepos = [comp]
+
+    local('mkdir -p tmp')
     for repo in srRepos:
         print '## Working on Repo %s' %(repo)
         for branch in gBranches:
             '## Working on Branch %s' %(branch)
-            with  lcd(repo):
-                cmds = [ 'git checkout master',
-                         'git fetch upstream',
-                         'git merge upstream/pre_rel_1.x',
-                         #'git push origin'
-                         ]
+            with lcd('tmp'):
+                with  lcd(repo):
+                    cmds = [ 'git checkout master',
+                             'git fetch upstream',
+                             'git merge upstream/stable',
+                             'git push origin'
+                             ]
 
-                for cmd in cmds:
-                    local(cmd)
+                    for cmd in cmds:
+                        local(cmd)
 
 def fetchRepos (comp=None):
     global gSrRepos
@@ -35,11 +38,13 @@ def fetchRepos (comp=None):
     if comp != None :
         srRepos = [comp]
 
+    local('mkdir -p tmp')
     for repo in srRepos:
-        local('git clone '+ 'https://github.com/OpenSnaproute/' + repo + '.git')
-        with lcd(repo):
-            local('git remote add upstream https://github.com/SnapRoute/' +  repo + '.git')
-            local('git fetch upstream')
+        with lcd('tmp'):
+            local('git clone '+ 'https://github.com/OpenSnaproute/' + repo + '.git')
+            with lcd(repo):
+                local('git remote add upstream https://github.com/SnapRoute/' +  repo + '.git')
+                local('git fetch upstream')
 
 
 def syncAll (comp = None):

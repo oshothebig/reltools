@@ -638,7 +638,12 @@ func generateUnmarshalFcn(listingsFd *os.File, objFileBase string, dirStore stri
 		//fmt.Println("Object Name for Unmarshal ", obj.ObjName)
 		listingsFd.WriteString(marshalFcnFile + "\n")
 		if strings.Contains(obj.Access, "w") || strings.Contains(obj.Access, "r") || strings.Contains(obj.Access, "x") {
-			marshalFcnsLine = append(marshalFcnsLine, "\nfunc (obj "+obj.ObjName+") UnmarshalObject(body []byte) ("+objIf+", error) {\n")
+			if packageName == "actions" {
+				marshalFcnsLine = append(marshalFcnsLine, "\nfunc (obj "+obj.ObjName+") UnmarshalAction(body []byte) ("+objIf+", error) {\n")
+			} else {
+				marshalFcnsLine = append(marshalFcnsLine, "\nfunc (obj "+obj.ObjName+") UnmarshalObject(body []byte) ("+objIf+", error) {\n")
+
+			}
 			marshalFcnsLine = append(marshalFcnsLine, "var err error \n")
 
 			// Check all attributes and write default constructor

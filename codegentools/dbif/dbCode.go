@@ -450,6 +450,10 @@ func (obj *ObjectInfoJson) WriteCompareObjectsAndDiffFcn(str *ast.StructType, fd
 						if uint16(objVal.Uint()) != uint16(dbObjVal.Uint()) {
 							attrIds[idx] = true
 						}
+					} else if objVal.Kind() == reflect.Float64{
+						if objVal.Float() != dbObjVal.Float() {
+							attrIds[idx] = true
+						}
 					} else if objVal.Kind() == reflect.Bool {
 						if bool(objVal.Bool()) != bool(dbObjVal.Bool()) {
 							attrIds[idx] = true
@@ -590,6 +594,8 @@ func (obj *ObjectInfoJson) WriteMergeDbAndConfigObjForPatchUpdateFcn(str *ast.St
 								dbObjField.Kind() == reflect.Uint16 ||
 								dbObjField.Kind() == reflect.Uint32 {
 								mergedObjVal.Elem().Field(i).SetUint(dbObjField.Uint())
+							} else if dbObjField.Kind() == reflect.Float64 {
+								mergedObjVal.Elem().Field(i).SetFloat(dbObjField.Float())
 							} else if dbObjField.Kind() == reflect.Bool {
 								mergedObjVal.Elem().Field(i).SetBool(dbObjField.Bool())
 							} else if dbObjField.Kind() == reflect.Slice {
@@ -703,6 +709,8 @@ func (obj *ObjectInfoJson) WriteMergeDbAndConfigObjFcn(str *ast.StructType, fd *
 									dbObjField.Kind() == reflect.Uint32 ||
 									dbObjField.Kind() == reflect.Uint64 {
 									mergedObjVal.Elem().Field(i).SetUint(objField.Uint())
+							    } else if dbObjField.Kind() == reflect.Float64 {
+								    mergedObjVal.Elem().Field(i).SetFloat(objField.Float())
 								} else if dbObjField.Kind() == reflect.Bool {
 									mergedObjVal.Elem().Field(i).SetBool(objField.Bool())
 								} else if dbObjField.Kind() == reflect.Slice {
@@ -725,6 +733,8 @@ func (obj *ObjectInfoJson) WriteMergeDbAndConfigObjFcn(str *ast.StructType, fd *
 									mergedObjVal.Elem().Field(i).SetUint(dbObjField.Uint())
 								} else if dbObjField.Kind() == reflect.Bool {
 									mergedObjVal.Elem().Field(i).SetBool(dbObjField.Bool())
+							    } else if dbObjField.Kind() == reflect.Float64 {
+								    mergedObjVal.Elem().Field(i).SetFloat(dbObjField.Float())
 								} else if dbObjField.Kind() == reflect.Slice {
                                      obj.CopyRecursive(mergedObjVal.Elem().Field(i), dbObjField)
                                    } else {

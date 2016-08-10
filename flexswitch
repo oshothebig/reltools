@@ -88,70 +88,73 @@ def getDaemonsInfo (baseDir) :
                      'runlevel' : 1,
                      'params': '-params=' + baseDir + '/params'},
 
-                    {'name': 'ribd',
-                     'runlevel' : 6,
-                     'params': '-params=' + baseDir + '/params'},
-
-                    {'name': 'bfdd',
-                     'runlevel' : 7,
-                    'params': '-params=' + baseDir + '/params'},
-
-                    {'name': 'arpd',
-                     'runlevel' : 5,
-                     'params': '-params=' + baseDir + '/params'},
-
-                    {'name': 'fMgrd',
-                     'runlevel' : 14,
-                     'params': '-params=' + baseDir + '/params'},
-
-                    {'name': 'dhcpd',
-                     'runlevel' : 10,
-                     'params': '-params=' + baseDir + '/params'},
-
-                    {'name': 'bgpd',
-                     'runlevel' : 8,
-                     'params': '-params=' + baseDir + '/params'},
-
-                    {'name': 'ospfd',
-                     'runlevel' : 9,
-                     'params': '-params=' + baseDir + '/params'},
+#                    {'name': 'opticd',
+#                     'runlevel' : 2,
+#                    'params': '-params=' + baseDir + '/params'},
 
                     {'name': 'lacpd',
-                     'runlevel' : 2,
-                    'params': '-params=' + baseDir + '/params'},
-                    
-                    {'name': 'dhcprelayd',
-                     'runlevel' : 15,
-                    'params': '-params=' + baseDir + '/params'},
-
-                    {'name': 'stpd',
                      'runlevel' : 3,
                     'params': '-params=' + baseDir + '/params'},
 
-                    {'name': 'vrrpd',
-                     'runlevel' : 12,
-                     'params': '-params=' + baseDir + '/params'},
-                    
-                    {'name': 'lldpd',
+                    {'name': 'stpd',
                      'runlevel' : 4,
+                    'params': '-params=' + baseDir + '/params'},
+
+                    {'name': 'lldpd',
+                     'runlevel' : 5,
                      'params': '-params=' + baseDir + '/params'},
 
-                    {'name': 'vxland',
-                     'runlevel' : 13,
+                    {'name': 'arpd',
+                     'runlevel' : 6,
                      'params': '-params=' + baseDir + '/params'},
-                    
-                    {'name': 'ndpd',
+
+                    {'name': 'ribd',
+                     'runlevel' : 7,
+                     'params': '-params=' + baseDir + '/params'},
+
+                    {'name': 'bfdd',
+                     'runlevel' : 8,
+                    'params': '-params=' + baseDir + '/params'},
+
+                    {'name': 'bgpd',
+                     'runlevel' : 9,
+                     'params': '-params=' + baseDir + '/params'},
+
+                    {'name': 'ospfd',
+                     'runlevel' : 10,
+                     'params': '-params=' + baseDir + '/params'},
+
+                    {'name': 'dhcpd',
                      'runlevel' : 11,
                      'params': '-params=' + baseDir + '/params'},
 
-                    {'name': 'platformd',
+                    {'name': 'dhcprelayd',
+                     'runlevel' : 12,
+                    'params': '-params=' + baseDir + '/params'},
+
+                    {'name': 'vrrpd',
+                     'runlevel' : 13,
+                     'params': '-params=' + baseDir + '/params'},
+
+                    {'name': 'vxland',
+                     'runlevel' : 14,
+                     'params': '-params=' + baseDir + '/params'},
+                    
+                    {'name': 'ndpd',
                      'runlevel' : 15,
                      'params': '-params=' + baseDir + '/params'},
 
-                    {'name': 'confd',
+                    {'name': 'platformd',
                      'runlevel' : 16,
                      'params': '-params=' + baseDir + '/params'},
 
+                    {'name': 'fMgrd',
+                     'runlevel' : 17,
+                     'params': '-params=' + baseDir + '/params'},
+
+                    {'name': 'confd',
+                     'runlevel' : 18,
+                     'params': '-params=' + baseDir + '/params'},
                     ]
 
     disabledDaemons = []

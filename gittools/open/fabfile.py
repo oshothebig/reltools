@@ -41,6 +41,18 @@ def fetchRepos (comp=None):
             local('git remote add upstream https://github.com/SnapRoute/' +  repo + '.git')
             local('git fetch upstream')
 
+def mergeDocs ():
+    local('git clone '+ 'https://github.com/OpenSnaproute/' + 'docs' + '.git')
+    with lcd('docs'):
+        cmds = [ 'git remote add upstream https://github.com/SnapRoute/docs.git',
+                 'git fetch upstream',
+                 'git checkout -b gh-pages upstream/gh-pages',
+                 'git fetch upstream',
+                 'git merge upstream/gh-pages',
+                 ]
+
+        for cmd in cmds:
+            local(cmd)
 
 def syncAll (comp = None):
     fetchRepos(comp)

@@ -288,7 +288,6 @@ func (obj *ObjectInfoJson) WriteGetAllObjFromDbFcn(str *ast.StructType, fd *os.F
 			return nil, err
 		}
 		if keyType != "hash" {
-			fmt.Println("Do not process list object")
 			continue
 		}
 			object, err := obj.GetObjectFromDb(keys[idx], dbHdl)
@@ -451,6 +450,10 @@ func (obj *ObjectInfoJson) WriteCompareObjectsAndDiffFcn(str *ast.StructType, fd
 						if uint16(objVal.Uint()) != uint16(dbObjVal.Uint()) {
 							attrIds[idx] = true
 						}
+					} else if objVal.Kind() == reflect.Float64{
+						if objVal.Float() != dbObjVal.Float() {
+							attrIds[idx] = true
+						}
 					} else if objVal.Kind() == reflect.Bool {
 						if bool(objVal.Bool()) != bool(dbObjVal.Bool()) {
 							attrIds[idx] = true
@@ -461,9 +464,6 @@ func (obj *ObjectInfoJson) WriteCompareObjectsAndDiffFcn(str *ast.StructType, fd
 						if objVal.String() != dbObjVal.String() {
 							attrIds[idx] = true
 						}
-					}
-					if attrIds[idx] {
-						fmt.Println("attribute changed ", fieldTyp.Name)
 					}
 				}
 				idx++
@@ -540,16 +540,13 @@ func (obj *ObjectInfoJson) WriteCopyRecursiveFcn(str *ast.StructType, fd *os.Fil
 	var lines []string
 	lines = append(lines, "\nfunc (obj "+obj.ObjName+")")
 	lines = append(lines, ` CopyRecursive(dest, src reflect.Value) {
-	                       fmt.Println("copyRecursive")
 	                       switch src.Kind() {
 	                           case reflect.Slice:
-		                       fmt.Println("Slice")
 		                       dest.Set(reflect.MakeSlice(src.Type(), src.Len(), src.Cap()))
 		                       for i := 0; i < src.Len(); i++ { 
 	                               obj.CopyRecursive(src.Index(i), dest.Index(i))
 	                           }
 	                           case reflect.Struct:
-		                       fmt.Println("struct")
 		                       for i := 0; i < src.NumField(); i++ {
                                     obj.CopyRecursive(src.Field(i), dest.Field(i))
 	                          }
@@ -597,6 +594,8 @@ func (obj *ObjectInfoJson) WriteMergeDbAndConfigObjForPatchUpdateFcn(str *ast.St
 								dbObjField.Kind() == reflect.Uint16 ||
 								dbObjField.Kind() == reflect.Uint32 {
 								mergedObjVal.Elem().Field(i).SetUint(dbObjField.Uint())
+							} else if dbObjField.Kind() == reflect.Float64 {
+								mergedObjVal.Elem().Field(i).SetFloat(dbObjField.Float())
 							} else if dbObjField.Kind() == reflect.Bool {
 								mergedObjVal.Elem().Field(i).SetBool(dbObjField.Bool())
 							} else if dbObjField.Kind() == reflect.Slice {
@@ -661,9 +660,7 @@ func (obj *ObjectInfoJson) WriteMergeDbAndConfigObjForPatchUpdateFcn(str *ast.St
 		}
 		lines = append(lines, `
 						                      case "replace":
-							                     fmt.Println("replace")
 											default:				   
-					                              fmt.Println("Patch update op not supported for this attr")
 								                 return mergedObject, diff, errors.New("Invalid patch op type ")
 				                           }
 					    `)
@@ -712,6 +709,8 @@ func (obj *ObjectInfoJson) WriteMergeDbAndConfigObjFcn(str *ast.StructType, fd *
 									dbObjField.Kind() == reflect.Uint32 ||
 									dbObjField.Kind() == reflect.Uint64 {
 									mergedObjVal.Elem().Field(i).SetUint(objField.Uint())
+							    } else if dbObjField.Kind() == reflect.Float64 {
+								    mergedObjVal.Elem().Field(i).SetFloat(objField.Float())
 								} else if dbObjField.Kind() == reflect.Bool {
 									mergedObjVal.Elem().Field(i).SetBool(objField.Bool())
 								} else if dbObjField.Kind() == reflect.Slice {
@@ -734,6 +733,8 @@ func (obj *ObjectInfoJson) WriteMergeDbAndConfigObjFcn(str *ast.StructType, fd *
 									mergedObjVal.Elem().Field(i).SetUint(dbObjField.Uint())
 								} else if dbObjField.Kind() == reflect.Bool {
 									mergedObjVal.Elem().Field(i).SetBool(dbObjField.Bool())
+							    } else if dbObjField.Kind() == reflect.Float64 {
+								    mergedObjVal.Elem().Field(i).SetFloat(dbObjField.Float())
 								} else if dbObjField.Kind() == reflect.Slice {
                                      obj.CopyRecursive(mergedObjVal.Elem().Field(i), dbObjField)
                                    } else {

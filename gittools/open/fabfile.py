@@ -46,9 +46,8 @@ def mergeDocs ():
     with lcd('docs'):
         cmds = [ 'git remote add upstream https://github.com/SnapRoute/docs.git',
                  'git fetch upstream',
-                 'git checkout -b gh-pages upstream/gh-pages',
-                 'git fetch upstream',
-                 'git merge upstream/gh-pages',
+                 'git checkout -b gh-pages origin/gh-pages',
+                 'git merge upstream/gh-pages'
                  ]
 
         for cmd in cmds:

@@ -11,7 +11,7 @@ import subprocess
 import socket
 from optparse import OptionParser
 ASICD_CONF_FILE='/opt/flexswitch/params/asicd.conf'
-SYS_PROFILE ='/opt/flexswitch/sysprofile/systemProfile.json'
+SYS_PROFILE ='/opt/flexswitch/params/systemProfile.json'
 
 def determineMacAddress ():
     print 'Getting MAC address and Mgmt Ip address'
@@ -152,8 +152,12 @@ def getDaemonsInfo (baseDir) :
                      'runlevel' : 17,
                      'params': '-params=' + baseDir + '/params'},
 
-                    {'name': 'confd',
+                    {'name': 'notifierd',
                      'runlevel' : 18,
+                     'params': '-params=' + baseDir + '/params'},
+
+                    {'name': 'confd',
+                     'runlevel' : 19,
                      'params': '-params=' + baseDir + '/params'},
                     ]
 

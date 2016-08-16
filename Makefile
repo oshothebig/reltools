@@ -101,6 +101,7 @@ ifeq (,$(findstring $(PKG_BUILD), FALSE))
 	install $(SRCDIR)/$(BUILD_DIR)/lldpd $(DESTDIR)/$(EXT_INSTALL_PATH)/bin
 	install $(SRCDIR)/$(BUILD_DIR)/vxland $(DESTDIR)/$(EXT_INSTALL_PATH)/bin
 	install $(SRCDIR)/$(BUILD_DIR)/platformd $(DESTDIR)/$(EXT_INSTALL_PATH)/bin
+	install $(SRCDIR)/$(BUILD_DIR)/notifierd $(DESTDIR)/$(EXT_INSTALL_PATH)/bin
 	install $(SRCDIR)/$(BUILD_DIR)/ndpd $(DESTDIR)/$(EXT_INSTALL_PATH)/bin
 	install $(SRCDIR)/$(BUILD_DIR)/opticd $(DESTDIR)/$(EXT_INSTALL_PATH)/bin
 endif

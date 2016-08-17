@@ -1,6 +1,7 @@
 {
     "platforms": [
         "accton_as5712", 
+        "accton_as5812", 
         "accton_as6712", 
         "accton_as6812", 
         "accton_as7712", 

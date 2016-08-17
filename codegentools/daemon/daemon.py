@@ -16,7 +16,7 @@ daemonName = ""
 #Create directory structure for the new daemon
 def createDirectoryStructure(dmnName, modName, rName, baseDir):
     global daemonDirectory, rpcDirectory, serverDirectory, repoName, moduleName, daemonName
-    daemonDirectory = baseDir + rName + "/" + dmnName + "/"
+    daemonDirectory = baseDir + rName + "/" + modName + "/"
     rpcDirectory = daemonDirectory + "rpc/"
     serverDirectory = daemonDirectory + "server/"
     repoName = rName
@@ -156,14 +156,14 @@ def writeRpcFile():
                 panic(err)
         }
         handler := newRPCServiceHandler(logger)
-        processor := exampled.New%sServicesProcessor(handler)
+        processor := %s.New%sServicesProcessor(handler)
         transportFactory := thrift.NewTBufferedTransportFactory(8192)
         protocolFactory := thrift.NewTBinaryProtocolFactoryDefault()
         server := thrift.NewTSimpleServer4(processor, transport, transportFactory, protocolFactory)
         return &RPCServer{
                 TSimpleServer: server,
         }
-}\n""" % daemonName.upper())
+}\n""" % (daemonName, daemonName.upper()))
     rpcfd.close()
 
 

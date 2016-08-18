@@ -212,7 +212,6 @@ def writeServerFile():
     writeCopyrightBlock(serverfd)
     serverfd.write("\npackage server\n\n")
     serverfd.write("""import (
-        "time"
         "utils/dbutils"
         "utils/keepalive"
         "utils/logging"
@@ -262,7 +261,7 @@ def writeServerFile():
                 //      srvr.Logger.Info("Server request received - ", *req)
                 //      srvr.handleRPCRequest(req)
                 case daemonStatus := <-daemonStatusListener.DaemonStatusCh:
-                        srvr.logger.Info("Received daemon status: ", daemontatus.Name, daemonStatus.Status)
+                        srvr.Logger.Info("Received daemon status: ", daemonStatus.Name, daemonStatus.Status)
                 }
         }
 }\n""")
@@ -284,20 +283,21 @@ COMP_NAME=%s
 GOLDFLAGS=-r /opt/flexswitch/sharedlib
 all:exe
 all:ipc exe
-ipc: $(IPC_GEN_CMD) -r --gen go -out $(GENERATED_IPC) $(IPC_SRCS)
+ipc:
+\t$(IPC_GEN_CMD) -r --gen go -out $(GENERATED_IPC) $(IPC_SRCS)
 
 exe: $(SRCS)
-        go build -o $(DESTDIR)/$(COMP_NAME) -ldflags="$(GOLDFLAGS)" $(SRCS)
+\tgo build -o $(DESTDIR)/$(COMP_NAME) -ldflags="$(GOLDFLAGS)" $(SRCS)
  
 guard:
 ifndef SR_CODE_BASE 
-        $(error SR_CODE_BASE is not set)
+\t$(error SR_CODE_BASE is not set)
 endif
 
 install: @echo "%s has no files to install"
 clean:guard
-        $(RM) $(DESTDIR)/$(COMP_NAME) 
-        $(RMFORCE) $(GENERATED_IPC)/$(COMP_NAME)\n""" % (daemonName, daemonName, daemonName))
+\t$(RM) $(DESTDIR)/$(COMP_NAME)
+\t$(RMFORCE) $(GENERATED_IPC)/$(COMP_NAME)\n""" % (daemonName, daemonName, daemonName))
 
 
 if __name__ == "__main__":

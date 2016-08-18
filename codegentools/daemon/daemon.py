@@ -12,16 +12,21 @@ serverDirectory = ""
 repoName = ""
 moduleName = ""
 daemonName = ""
+objectFileName = ""
+copyrightFile = ""
 
 #Create directory structure for the new daemon
-def createDirectoryStructure(dmnName, modName, rName, baseDir):
-    global daemonDirectory, rpcDirectory, serverDirectory, repoName, moduleName, daemonName
-    daemonDirectory = baseDir + rName + "/" + modName + "/"
+def createDirectoryStructure(dmnName, modName, rName, objFile):
+    global srBase, srCodeBase, daemonDirectory, rpcDirectory, serverDirectory
+    global repoName, moduleName, daemonName, objectFileName, copyrightFile
+    daemonDirectory = srCodeBase + rName + "/" + modName + "/"
     rpcDirectory = daemonDirectory + "rpc/"
     serverDirectory = daemonDirectory + "server/"
     repoName = rName
     moduleName = modName
     daemonName = dmnName
+    objectFileName = objFile
+    copyrightFile = srBase + "reltools/codegentools/copyright.txt"
 
     if not os.path.exists(daemonDirectory):
         os.makedirs(daemonDirectory)
@@ -39,34 +44,19 @@ def createDirectoryStructure(dmnName, modName, rName, baseDir):
         print(serverDirectory, "exists")
 
 
+def writeCopyrightBlock(fd):
+    global copyrightFile
+    for line in open(copyrightFile, 'r'):
+        fd.write(line)
+
+
+
 def writeMainFile():
     global daemonDirectory, repoName, daemonName, moduleName
     fileName = daemonDirectory + "main.go"
     mainfd = open(fileName, 'w+')
-    mainfd.write("""//
-//Copyright [2016] [SnapRoute Inc]
-//
-//Licensed under the Apache License, Version 2.0 (the "License");
-//you may not use this file except in compliance with the License.
-//You may obtain a copy of the License at
-//
-//    http://www.apache.org/licenses/LICENSE-2.0
-//
-//       Unless required by applicable law or agreed to in writing, software
-//       distributed under the License is distributed on an "AS IS" BASIS,
-//       WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//       See the License for the specific language governing permissions and
-//       limitations under the License.
-//
-//   This is a auto-generated file, please do not edit!
-// _______   __       __________   ___      _______.____    __    ____  __  .___________.  ______  __    __ 
-// |   ____||  |     |   ____\  \ /  /     /       |\   \  /  \  /   / |  | |           | /      ||  |  |  |
-// |  |__   |  |     |  |__   \  V  /     |   (----  \   \/    \/   /  |  |  ---|  |----    ,---- |  |__|  |
-// |   __|  |  |     |   __|   >   <       \   \      \            /   |  |     |  |        |     |   __   |
-// |  |     |  `----.|  |____ /  .  \  .----)   |      \    /\    /    |  |     |  |        `----.|  |  |  |
-// |__|     |_______||_______/__/ \__\ |_______/        \__/  \__/     |__|     |__|      \______||__|  |__|
-//\n""")
-    mainfd.write("package main\n\n")
+    writeCopyrightBlock(mainfd)
+    mainfd.write("\npackage main\n\n")
     if repoName == "":
         rpcImport = moduleName + "/rpc"
         serverImport = moduleName + "/server"
@@ -122,30 +112,8 @@ def writeRpcFile():
     global rpcDirectory, daemonName
     fileName = rpcDirectory + "rpc.go"
     rpcfd = open(fileName, 'w+')
-    rpcfd.write("""//
-//Copyright [2016] [SnapRoute Inc]
-//
-//Licensed under the Apache License, Version 2.0 (the "License");
-//you may not use this file except in compliance with the License.
-//You may obtain a copy of the License at
-//
-//    http://www.apache.org/licenses/LICENSE-2.0
-//
-//       Unless required by applicable law or agreed to in writing, software
-//       distributed under the License is distributed on an "AS IS" BASIS,
-//       WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//       See the License for the specific language governing permissions and
-//       limitations under the License.
-//
-//   This is a auto-generated file, please do not edit!
-// _______   __       __________   ___      _______.____    __    ____  __  .___________.  ______  __    __ 
-// |   ____||  |     |   ____\  \ /  /     /       |\   \  /  \  /   / |  | |           | /      ||  |  |  |
-// |  |__   |  |     |  |__   \  V  /     |   (----  \   \/    \/   /  |  |  ---|  |----    ,---- |  |__|  |
-// |   __|  |  |     |   __|   >   <       \   \      \            /   |  |     |  |        |     |   __   |
-// |  |     |  `----.|  |____ /  .  \  .----)   |      \    /\    /    |  |     |  |        `----.|  |  |  |
-// |__|     |_______||_______/__/ \__\ |_______/        \__/  \__/     |__|     |__|      \______||__|  |__|
-//\n""")
-    rpcfd.write("package rpc\n\n")
+    writeCopyrightBlock(rpcfd)
+    rpcfd.write("\npackage rpc\n\n")
     rpcfd.write("""import (\n    "%s"\n    "git.apache.org/thrift.git/lib/go/thrift"\n    "utils/logging"\n)\n\n""" % daemonName)
     rpcfd.write("type rpcServiceHandler struct {\n    logger logging.LoggerIntf\n}\n\n")
     rpcfd.write("func newRPCServiceHandler(logger logging.LoggerIntf) *rpcServiceHandler {\n    return &rpcServiceHandler{\n        logger: logger,\n    }\n}\n\n")
@@ -167,37 +135,86 @@ def writeRpcFile():
     rpcfd.close()
 
 
+def writeRcpHdlFunc(fd, obj, config, state):
+    global daemonName
+    if obj == "":
+        return
+    if config == True:
+        fd.write("""func (rpcHdl *rpcServiceHandler) Create%s(cfg *%s.%s) (bool, error) {
+        rpcHdl.logger.Info("Calling Create%s", cfg)
+        return true, nil
+}
+
+func (rpcHdl *rpcServiceHandler) Update%s(oldCfg, newCfg *%s.%s, attrset []bool, op []*%s.PatchOpInfo) (bool, error) {
+        rpcHdl.logger.Info("Calling Update%s", oldCfg, newCfg)
+        return true, nil
+}
+
+func (rpcHdl rpcServiceHandler) Delete%s(cfg *%s.%s) (bool, error) {
+        rpcHdl.logger.Info("Calling Delete%s", cfg)
+        return true, nil
+}\n\n""" % (obj, daemonName, obj, obj, obj, daemonName, obj, daemonName, obj, obj, daemonName, obj, obj))
+    if state == True:
+        fd.write("""func (rpcHdl *rpcServiceHandler) Get%s(key int32) (obj *%s.%s, err error) {
+        rpcHdl.logger.Info("Calling Get%s", key)
+        return obj, err
+}
+
+func (rpcHdl *rpcServiceHandler) GetBulk%s(fromIdx, count %s.Int) (*%s.%sGetInfo, error) {
+        var getBulkInfo %s.%sGetInfo
+        var err error
+        //info, err := api.GetBulk%s(int(fromIdx), int(count))
+        //getBulkInfo.StartIdx = fromIdx
+        //getBulkInfo.EndIdx = %s.Int(info.EndIdx)
+        //getBulkInfo.More = info.More
+        //getBulkInfo.Count = %s.Int(len(info.List))
+        // Fill in data, remember to convert back to thrift format
+        return &getBulkInfo, err
+}\n\n""" % (obj, daemonName, obj, obj, obj, daemonName, daemonName, obj, daemonName, obj, obj, daemonName, daemonName))
+
+
+def writeRpcHdlFile():
+    global rpcDirectory, objectFileName, daemonName
+    if objectFileName == "":
+        return
+    objFile = srCodeBase + "models/objects/" + objectFileName
+    fileName = rpcDirectory + "rpcHdl.go"
+    rpcfd = open(fileName, 'w+')
+    writeCopyrightBlock(rpcfd)
+    rpcfd.write("\npackage rpc\n\n")
+    rpcfd.write("""import (
+        "%s"
+)\n\n""" % daemonName)
+    import re
+    objName = ""
+    for line in open(objFile, 'r'):
+        if 'struct' in line:
+            objLine = re.split('\s+', line)
+            objName = objLine[1]
+        configObj = False
+        stateObj = False
+        if 'SNAPROUTE' in line:
+            keyLine = re.split('\s+', line)
+            for word in keyLine:
+                if 'ACCESS' in word:
+                    if 'w' in word:
+                        configObj = True
+                    if 'r' in word:
+                        stateObj = True
+                    writeRcpHdlFunc(rpcfd, objName, configObj, stateObj)
+                    objName = ""
+
+
 def writeServerFile():
     global serverDirectory, daemonName
     fileName = serverDirectory + "server.go"
     serverfd = open(fileName, 'w+')
-    serverfd.write("""//
-//Copyright [2016] [SnapRoute Inc]
-//
-//Licensed under the Apache License, Version 2.0 (the "License");
-//you may not use this file except in compliance with the License.
-//You may obtain a copy of the License at
-//
-//    http://www.apache.org/licenses/LICENSE-2.0
-//
-//       Unless required by applicable law or agreed to in writing, software
-//       distributed under the License is distributed on an "AS IS" BASIS,
-//       WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//       See the License for the specific language governing permissions and
-//       limitations under the License.
-//
-//   This is a auto-generated file, please do not edit!
-// _______   __       __________   ___      _______.____    __    ____  __  .___________.  ______  __    __ 
-// |   ____||  |     |   ____\  \ /  /     /       |\   \  /  \  /   / |  | |           | /      ||  |  |  |
-// |  |__   |  |     |  |__   \  V  /     |   (----  \   \/    \/   /  |  |  ---|  |----    ,---- |  |__|  |
-// |   __|  |  |     |   __|   >   <       \   \      \            /   |  |     |  |        |     |   __   |
-// |  |     |  `----.|  |____ /  .  \  .----)   |      \    /\    /    |  |     |  |        `----.|  |  |  |
-// |__|     |_______||_______/__/ \__\ |_______/        \__/  \__/     |__|     |__|      \______||__|  |__|
-//\n""")
-    serverfd.write("package server\n\n")
+    writeCopyrightBlock(serverfd)
+    serverfd.write("\npackage server\n\n")
     serverfd.write("""import (
         "time"
         "utils/dbutils"
+        "utils/keepalive"
         "utils/logging"
 )\n\n""")
     serverfd.write("""type DmnServer struct {
@@ -223,22 +240,30 @@ def writeServerFile():
 
         return &srvr
 }\n\n""" % daemonName.upper())
+    serverfd.write("""func (srvr *DmnServer) initServer() error {
+        // initize the daemon server here
+        return nil
+}\n\n""")
     serverfd.write("""func (srvr *DmnServer) Serve() {
         srvr.Logger.Info("Server initialization started")
-        //err := srvr.initServer()
-        //if err != nil {
-        //      panic(err)
-        //}
+        err := srvr.initServer()
+        if err != nil {
+              panic(err)
+        }
+        daemonStatusListener := keepalive.InitDaemonStatusListener()
+        if daemonStatusListener != nil {
+                go daemonStatusListener.StartDaemonStatusListner()
+        }
         srvr.InitCompleteCh <- true
         srvr.Logger.Info("Server initialization complete, starting cfg/state listerner")
         for {
-                //select {
+                select {
                 //case req := <-srvr.ReqChan:
                 //      srvr.Logger.Info("Server request received - ", *req)
                 //      srvr.handleRPCRequest(req)
-
-                //}
-                time.Sleep(30 * time.Second)
+                case daemonStatus := <-daemonStatusListener.DaemonStatusCh:
+                        srvr.logger.Info("Received daemon status: ", daemontatus.Name, daemonStatus.Status)
+                }
         }
 }\n""")
     serverfd.close()
@@ -293,6 +318,11 @@ if __name__ == "__main__":
                       action="store",
                       help="Name of the repo this demon belongs to")
 
+    parser.add_option("-o", "--objects",
+                      dest="objects",
+                      action="store",
+                      help="Name of the file containing config objects for this daemon")
+
     if srBase[len(srBase)-1] != '/':
         srBase = srBase + "/"
     srCodeBase = srBase + "snaproute/src/"
@@ -315,8 +345,14 @@ if __name__ == "__main__":
     else:
         rName = ""
 
-    createDirectoryStructure(dmnName, modName, rName, srCodeBase)
+    if opts.objects != None:
+        objFile = opts.objects
+    else:
+        objFile = ""
+
+    createDirectoryStructure(dmnName, modName, rName, objFile)
     writeMainFile()
     writeRpcFile()
+    writeRpcHdlFile()
     writeServerFile()
     writeMakeFile()

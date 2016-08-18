@@ -13,6 +13,34 @@ from optparse import OptionParser
 ASICD_CONF_FILE='/opt/flexswitch/params/asicd.conf'
 SYS_PROFILE ='/opt/flexswitch/params/systemProfile.json'
 
+#Constants specific to ACC_5812, used to reset external XGPHY before SDK is initialized
+ACC_5812_PLT_NAME = 'x86-64-accton-as5812-54t-r0'
+ONL_PLT_FILE_LOC = '/etc/onl/platform'
+
+def execPlatPrereq():
+    cmdList = [
+            'i2cset -y -f 0 0x60 0x5 0x0f b',
+            'i2cset -y -f 0 0x60 0x6 0xff b'
+            ]
+    plt_5812 = False
+    try:
+        fp = open(ONL_PLT_FILE_LOC, 'r')
+        for line in fp:
+            if ACC_5812_PLT_NAME in line:
+                plt_5812 = True
+        if plt_5812:
+            print 'DeAsserting XGPHY reset on AS5812 platform'
+            for cmd in cmdList:
+                process = subprocess.Popen(cmd,
+                                    shell=True,
+                                    stdout=subprocess.PIPE,
+                                    stderr=subprocess.PIPE)
+                out, err = process.communicate()
+                if err:
+                    print "i2cset command failed", cmd, err
+    except:
+        print 'No platform prereq'
+
 def determineMacAddress ():
     print 'Getting MAC address and Mgmt Ip address'
     process = subprocess.Popen('ifconfig -a' ,
@@ -245,6 +273,7 @@ if __name__=="__main__":
         asicdBootMode = '0' #FIXME:Change this to 1, when we start supporting restart on all apps
 
     if opts.op == 'start':
+        execPlatPrereq()
         if ((not os.path.exists(pidFileDir))):
             os.makedirs(pidFileDir)
 

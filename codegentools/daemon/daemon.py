@@ -135,7 +135,7 @@ def writeRpcFile():
     rpcfd.close()
 
 
-def writeRcpHdlFunc(fd, obj, config, state):
+def writeRcpHdlFunc(fd, obj, keyType, config, state):
     global daemonName
     if obj == "":
         return
@@ -155,7 +155,7 @@ func (rpcHdl rpcServiceHandler) Delete%s(cfg *%s.%s) (bool, error) {
         return true, nil
 }\n\n""" % (obj, daemonName, obj, obj, obj, daemonName, obj, daemonName, obj, obj, daemonName, obj, obj))
     if state == True:
-        fd.write("""func (rpcHdl *rpcServiceHandler) Get%s(key int32) (obj *%s.%s, err error) {
+        fd.write("""func (rpcHdl *rpcServiceHandler) Get%s(key %s) (obj *%s.%s, err error) {
         rpcHdl.logger.Info("Calling Get%s", key)
         return obj, err
 }
@@ -170,7 +170,7 @@ func (rpcHdl *rpcServiceHandler) GetBulk%s(fromIdx, count %s.Int) (*%s.%sGetInfo
         //getBulkInfo.Count = %s.Int(len(info.List))
         // Fill in data, remember to convert back to thrift format
         return &getBulkInfo, err
-}\n\n""" % (obj, daemonName, obj, obj, obj, daemonName, daemonName, obj, daemonName, obj, obj, daemonName, daemonName))
+}\n\n""" % (obj, keyType, daemonName, obj, obj, obj, daemonName, daemonName, obj, daemonName, obj, obj, daemonName, daemonName))
 
 
 def writeRpcHdlFile():
@@ -193,15 +193,17 @@ def writeRpcHdlFile():
             objName = objLine[1]
         configObj = False
         stateObj = False
+        keyType = ""
         if 'SNAPROUTE' in line:
             keyLine = re.split('\s+', line)
+            keyType = keyLine[2]
             for word in keyLine:
                 if 'ACCESS' in word:
                     if 'w' in word:
                         configObj = True
                     if 'r' in word:
                         stateObj = True
-                    writeRcpHdlFunc(rpcfd, objName, configObj, stateObj)
+                    writeRcpHdlFunc(rpcfd, objName, keyType, configObj, stateObj)
                     objName = ""
 
 

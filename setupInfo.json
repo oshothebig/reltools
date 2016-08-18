@@ -34,6 +34,10 @@
           "renamesrc"  : "mux",
           "renamedst"  : "github.com/gorilla/"
         },
+        { "repo"       : "websocket",
+          "renamesrc"  : "websocket",
+          "renamedst"  : "github.com/gorilla/"
+        },
         { "repo"       : "context",
           "renamesrc"  : "context",
           "renamedst"  : "github.com/gorilla/"

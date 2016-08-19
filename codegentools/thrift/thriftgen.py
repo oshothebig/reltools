@@ -303,6 +303,7 @@ class DaemonObjectsInfo (object) :
                             func (clnt *%sClient) Initialize(name string, address string) {
                                 clnt.Name = name
                                 clnt.Address = address
+                                clnt.Enabled = true
                                 clnt.ApiHandlerMutex = sync.RWMutex{}
                                 return
                             }\n""" % (self.newDeamonName,))
@@ -336,6 +337,15 @@ class DaemonObjectsInfo (object) :
         clientIfFd.write("""
                             func (clnt *%sClient) IsConnectedToServer() bool {
                                 return clnt.IsConnected
+                            }\n""" % (self.newDeamonName,))
+        clientIfFd.write("""
+                            func (clnt *%sClient) DisableServer() bool {
+                                clnt.Enabled = false
+                                return true
+                            }\n""" % (self.newDeamonName,))
+        clientIfFd.write("""
+                            func (clnt *%sClient) IsServerEnabled() bool {
+                                return clnt.Enabled
                             }\n""" % (self.newDeamonName,))
         clientIfFd.write("""
                             func (clnt *%sClient) GetServerName() string {

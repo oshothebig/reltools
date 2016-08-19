@@ -296,7 +296,8 @@ ifndef SR_CODE_BASE
 \t$(error SR_CODE_BASE is not set)
 endif
 
-install: @echo "%s has no files to install"
+install:
+\t@echo "%s has no files to install"
 clean:guard
 \t$(RM) $(DESTDIR)/$(COMP_NAME)
 \t$(RMFORCE) $(GENERATED_IPC)/$(COMP_NAME)\n""" % (daemonName, daemonName, daemonName))

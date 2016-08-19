@@ -34,6 +34,10 @@
           "renamesrc"  : "mux",
           "renamedst"  : "github.com/gorilla/"
         },
+        { "repo"       : "websocket",
+          "renamesrc"  : "websocket",
+          "renamedst"  : "github.com/gorilla/"
+        },
         { "repo"       : "context",
           "renamesrc"  : "context",
           "renamedst"  : "github.com/gorilla/"
@@ -92,5 +96,5 @@
      },
 	 "SnapRouteOrg" : "snaproute",
 	 "PublicRepos" : [ "docs", "l2", "l3", "utils", "asicd", "bin-AsicdBcm", "bin-AsicdMlnx", "config", "models", "infra", "flexSdk", "apps"],
-	 "PrivateRepos" : [ "docs", "l2", "l3", "utils", "asicd", "config", "models", "infra", "flexSdk", "apps", "vendors", "test"]
+	 "PrivateRepos" : [ "docs", "l2", "l3", "utils", "asicd", "config", "models", "infra", "flexSdk", "apps", "vendors", "test", "opticd"]
 }

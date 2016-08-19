@@ -30,7 +30,7 @@ def setupExternals (comp=None):
     for comp, deps in info.iteritems(): 
         print 'Installing dependencies for %s' %(comp)
         for dep in deps:
-            cmd = 'sudo apt-get install ' + dep
+            cmd = 'sudo apt-get install -y ' + dep
     	    with settings(prompts={'Do you want to continue [Y/n]? ': 'Y'}):
                 local(cmd)
 
@@ -146,7 +146,7 @@ def installThrift():
 def installNanoMsgLib ():
     srcDir = setupHandler().getGoDepDirFor('nanomsg')
     with lcd(srcDir):
-        cmdList = ['sudo apt-get install libtool',
+        cmdList = ['sudo apt-get install -y libtool',
                 'libtoolize',
                 './autogen.sh',
                 './configure',

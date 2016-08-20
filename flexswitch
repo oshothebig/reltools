@@ -105,7 +105,7 @@ def isProcessRunning(pidFile):
         processId = 0
     return (processId != 0)
 
-def getDaemonsInfo (baseDir) :
+def getDaemonsInfo (baseDir, selectedDmns = True) :
 
     daemonsList = [
                     {'name': 'sysd',
@@ -195,9 +195,9 @@ def getDaemonsInfo (baseDir) :
         sysCfg = json.load(fd)
         dmnsInfo = sysCfg['Daemons']
         disabledDaemons = [ dmn['Name'] for dmn in dmnsInfo if not dmn['Enable']]
-
+    
     for dmn in daemonsList:
-        if dmn['name'] not in disabledDaemons:
+        if not selectedDmns or  dmn['name'] not in disabledDaemons:
             daemonsToStart.append(dmn)
             
     return daemonsToStart
@@ -304,7 +304,7 @@ if __name__=="__main__":
         end = datetime.datetime.now()
         print 'Total time taken to start all %s daemons is  %s' %(dmnCount, end -start)
     else:
-        allDmns = getDaemonsInfo(baseDir)
+        allDmns = getDaemonsInfo(baseDir, False)
         sortedDmns = reversed(sorted(allDmns,key= lambda dmn:dmn['runlevel']))
 
         for dmn in sortedDmns:

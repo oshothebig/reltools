@@ -15,11 +15,8 @@ def mergeRepos (branch=None, comp=None):
 
     for repo in srRepos:
         cmds = ['git checkout -b %s origin/%s' %(branch, branch),
-                'git remote add upstream https://github.com/snaproute/%s.git' %(repo),
-                'git pull',
-                'git fetch upstream',
-                'git merge upstream/master',
-                'git push origin'
+                'git merge master',
+                'git push origin %s' %(branch)
                 ]
         local('mkdir -p tmp')
         with lcd('tmp'):

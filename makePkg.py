@@ -43,7 +43,7 @@ if __name__ == '__main__':
     build_dir = "flexswitch-" + pkgVersion
     startTime = time.time()
     for buildTarget in buildTargetList:
-        print "Building pkg for ", buildTarget
+        print "Building pkg for", buildTarget
         pkgName = "flexswitch_" + buildTarget + "-" + pkgVersion + "_amd64.deb"
         if firstBuild:
             preProcess = [
@@ -86,7 +86,6 @@ if __name__ == '__main__':
             cmd = 'python dockerGen/buildDocker.py'
             print "Building Docker image with flex package ", pkgName
             buildDocker(cmd + " " + pkgName)
-    print "TotalTime : ", startTime-time.time()
     command = [
             'rm -rf ' + build_dir,
             'make clean_all'

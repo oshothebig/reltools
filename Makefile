@@ -43,6 +43,9 @@ make -C $(1) exe DESTDIR=$(DESTDIR)/$(EXE_DIR) BUILD_TARGET=$(BUILD_TARGET) GOLD
 endef
 all: $(ALL_DEPS)
 
+asicd:
+	make -C $(SR_CODE_BASE)/snaproute/src/asicd exe DESTDIR=$(DESTDIR)/$(EXE_DIR) BUILD_TARGET=$(BUILD_TARGET) GOLDFLAGS="-r /opt/flexswitch/sharedlib"
+
 l3: buildinfogen codegen installdir ipc l3exe
 
 installdir:
@@ -101,6 +104,7 @@ ifeq (,$(findstring $(PKG_BUILD), FALSE))
 	install $(SRCDIR)/$(BUILD_DIR)/lldpd $(DESTDIR)/$(EXT_INSTALL_PATH)/bin
 	install $(SRCDIR)/$(BUILD_DIR)/vxland $(DESTDIR)/$(EXT_INSTALL_PATH)/bin
 	install $(SRCDIR)/$(BUILD_DIR)/platformd $(DESTDIR)/$(EXT_INSTALL_PATH)/bin
+	install $(SRCDIR)/$(BUILD_DIR)/notifierd $(DESTDIR)/$(EXT_INSTALL_PATH)/bin
 	install $(SRCDIR)/$(BUILD_DIR)/ndpd $(DESTDIR)/$(EXT_INSTALL_PATH)/bin
 	install $(SRCDIR)/$(BUILD_DIR)/opticd $(DESTDIR)/$(EXT_INSTALL_PATH)/bin
 endif
@@ -109,7 +113,7 @@ endif
 	install $(SRCDIR)/models/actions/genObjectAction.json  $(DESTDIR)/$(EXT_INSTALL_PATH)/models/
 	install $(SR_CODE_BASE)/external/src/github.com/nanomsg/nanomsg/.libs/libnanomsg.so.4.0.0 $(DESTDIR)/$(EXT_INSTALL_PATH)/sharedlib
 
-clean: $(COMPS)
+clean_all: $(COMPS)
 	$(SR_CODE_BASE)/reltools/codegentools/cleangencode.sh
 	$(foreach f,$^, make -C $(f) clean;)
 	$(RMDIRFORCE) $(DESTDIR)

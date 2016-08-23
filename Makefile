@@ -19,6 +19,7 @@ else
 	EXE_DIR=
 endif
 COMPS=$(SR_CODE_BASE)/snaproute/src/asicd\
+		$(SR_CODE_BASE)/snaproute/src/opticd\
 		$(SR_CODE_BASE)/snaproute/src/config\
 		$(SR_CODE_BASE)/snaproute/src/infra\
 		$(SR_CODE_BASE)/snaproute/src/l3\
@@ -26,7 +27,11 @@ COMPS=$(SR_CODE_BASE)/snaproute/src/asicd\
 		$(SR_CODE_BASE)/snaproute/src/flexSdk\
 		$(SR_CODE_BASE)/snaproute/src/apps
 
+L3COMPS=$(SR_CODE_BASE)/snaproute/src/config\
+		$(SR_CODE_BASE)/snaproute/src/l3
+
 COMPS_WITH_IPC=$(SR_CODE_BASE)/snaproute/src/asicd\
+		$(SR_CODE_BASE)/snaproute/src/opticd\
 		$(SR_CODE_BASE)/snaproute/src/infra\
 		$(SR_CODE_BASE)/snaproute/src/l3\
 		$(SR_CODE_BASE)/snaproute/src/l2
@@ -37,6 +42,8 @@ make -C $(1) exe DESTDIR=$(DESTDIR)/$(EXE_DIR) BUILD_TARGET=$(BUILD_TARGET) GOLD
 @echo -n "Done building component $(1) at :`date`\n\n"
 endef
 all: $(ALL_DEPS)
+
+l3: buildinfogen codegen installdir ipc l3exe
 
 installdir:
 	$(MKDIR) $(DESTDIR)
@@ -59,6 +66,9 @@ codegenclean:
 	$(SR_CODE_BASE)/reltools/codegentools/cleangencode.sh
 
 exe: $(COMPS)
+	@$(foreach f,$^, $(call timedMake, $(f)))
+
+l3exe: $(L3COMPS)
 	@$(foreach f,$^, $(call timedMake, $(f)))
 
 ipc: $(COMPS_WITH_IPC)
@@ -91,7 +101,9 @@ ifeq (,$(findstring $(PKG_BUILD), FALSE))
 	install $(SRCDIR)/$(BUILD_DIR)/lldpd $(DESTDIR)/$(EXT_INSTALL_PATH)/bin
 	install $(SRCDIR)/$(BUILD_DIR)/vxland $(DESTDIR)/$(EXT_INSTALL_PATH)/bin
 	install $(SRCDIR)/$(BUILD_DIR)/platformd $(DESTDIR)/$(EXT_INSTALL_PATH)/bin
+	install $(SRCDIR)/$(BUILD_DIR)/notifierd $(DESTDIR)/$(EXT_INSTALL_PATH)/bin
 	install $(SRCDIR)/$(BUILD_DIR)/ndpd $(DESTDIR)/$(EXT_INSTALL_PATH)/bin
+	install $(SRCDIR)/$(BUILD_DIR)/opticd $(DESTDIR)/$(EXT_INSTALL_PATH)/bin
 endif
 	install $(SR_CODE_BASE)/reltools/codegentools/._genInfo/*.json  $(DESTDIR)/$(EXT_INSTALL_PATH)/models/
 	install $(SRCDIR)/models/objects/genObjectConfig.json  $(DESTDIR)/$(EXT_INSTALL_PATH)/models/

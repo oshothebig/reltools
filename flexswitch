@@ -11,7 +11,35 @@ import subprocess
 import socket
 from optparse import OptionParser
 ASICD_CONF_FILE='/opt/flexswitch/params/asicd.conf'
-SYS_PROFILE ='/opt/flexswitch/sysprofile/systemProfile.json'
+SYS_PROFILE ='/opt/flexswitch/params/systemProfile.json'
+
+#Constants specific to ACC_5812, used to reset external XGPHY before SDK is initialized
+ACC_5812_PLT_NAME = 'x86-64-accton-as5812-54t-r0'
+ONL_PLT_FILE_LOC = '/etc/onl/platform'
+
+def execPlatPrereq():
+    cmdList = [
+            'i2cset -y -f 0 0x60 0x5 0x0f b',
+            'i2cset -y -f 0 0x60 0x6 0xff b'
+            ]
+    plt_5812 = False
+    try:
+        fp = open(ONL_PLT_FILE_LOC, 'r')
+        for line in fp:
+            if ACC_5812_PLT_NAME in line:
+                plt_5812 = True
+        if plt_5812:
+            print 'DeAsserting XGPHY reset on AS5812 platform'
+            for cmd in cmdList:
+                process = subprocess.Popen(cmd,
+                                    shell=True,
+                                    stdout=subprocess.PIPE,
+                                    stderr=subprocess.PIPE)
+                out, err = process.communicate()
+                if err:
+                    print "i2cset command failed", cmd, err
+    except:
+        print 'No platform prereq'
 
 def determineMacAddress ():
     print 'Getting MAC address and Mgmt Ip address'
@@ -77,7 +105,7 @@ def isProcessRunning(pidFile):
         processId = 0
     return (processId != 0)
 
-def getDaemonsInfo (baseDir) :
+def getDaemonsInfo (baseDir, selectedDmns = True) :
 
     daemonsList = [
                     {'name': 'sysd',
@@ -88,70 +116,77 @@ def getDaemonsInfo (baseDir) :
                      'runlevel' : 1,
                      'params': '-params=' + baseDir + '/params'},
 
-                    {'name': 'ribd',
-                     'runlevel' : 6,
-                     'params': '-params=' + baseDir + '/params'},
-
-                    {'name': 'bfdd',
-                     'runlevel' : 7,
-                    'params': '-params=' + baseDir + '/params'},
-
-                    {'name': 'arpd',
-                     'runlevel' : 5,
-                     'params': '-params=' + baseDir + '/params'},
-
-                    {'name': 'fMgrd',
-                     'runlevel' : 14,
-                     'params': '-params=' + baseDir + '/params'},
-
-                    {'name': 'dhcpd',
-                     'runlevel' : 10,
-                     'params': '-params=' + baseDir + '/params'},
-
-                    {'name': 'bgpd',
-                     'runlevel' : 8,
-                     'params': '-params=' + baseDir + '/params'},
-
-                    {'name': 'ospfd',
-                     'runlevel' : 9,
-                     'params': '-params=' + baseDir + '/params'},
+#                    {'name': 'opticd',
+#                     'runlevel' : 2,
+#                    'params': '-params=' + baseDir + '/params'},
 
                     {'name': 'lacpd',
-                     'runlevel' : 2,
-                    'params': '-params=' + baseDir + '/params'},
-                    
-                    {'name': 'dhcprelayd',
-                     'runlevel' : 15,
-                    'params': '-params=' + baseDir + '/params'},
-
-                    {'name': 'stpd',
                      'runlevel' : 3,
                     'params': '-params=' + baseDir + '/params'},
 
-                    {'name': 'vrrpd',
-                     'runlevel' : 12,
-                     'params': '-params=' + baseDir + '/params'},
-                    
-                    {'name': 'lldpd',
+                    {'name': 'stpd',
                      'runlevel' : 4,
+                    'params': '-params=' + baseDir + '/params'},
+
+                    {'name': 'lldpd',
+                     'runlevel' : 5,
                      'params': '-params=' + baseDir + '/params'},
 
-                    {'name': 'vxland',
-                     'runlevel' : 13,
+                    {'name': 'arpd',
+                     'runlevel' : 6,
                      'params': '-params=' + baseDir + '/params'},
-                    
-                    {'name': 'ndpd',
+
+                    {'name': 'ribd',
+                     'runlevel' : 7,
+                     'params': '-params=' + baseDir + '/params'},
+
+                    {'name': 'bfdd',
+                     'runlevel' : 8,
+                    'params': '-params=' + baseDir + '/params'},
+
+                    {'name': 'bgpd',
+                     'runlevel' : 9,
+                     'params': '-params=' + baseDir + '/params'},
+
+                    {'name': 'ospfd',
+                     'runlevel' : 10,
+                     'params': '-params=' + baseDir + '/params'},
+
+                    {'name': 'dhcpd',
                      'runlevel' : 11,
                      'params': '-params=' + baseDir + '/params'},
 
-                    {'name': 'platformd',
-                    'runlevel' : 15,
+                    {'name': 'dhcprelayd',
+                     'runlevel' : 12,
                     'params': '-params=' + baseDir + '/params'},
 
-                    {'name': 'confd',
-                     'runlevel' : 16,
+                    {'name': 'vrrpd',
+                     'runlevel' : 13,
                      'params': '-params=' + baseDir + '/params'},
 
+                    {'name': 'vxland',
+                     'runlevel' : 14,
+                     'params': '-params=' + baseDir + '/params'},
+                    
+                    {'name': 'ndpd',
+                     'runlevel' : 15,
+                     'params': '-params=' + baseDir + '/params'},
+
+                    {'name': 'platformd',
+                     'runlevel' : 16,
+                    'params': '-params=' + baseDir + '/params'},
+
+                    {'name': 'fMgrd',
+                     'runlevel' : 17,
+                     'params': '-params=' + baseDir + '/params'},
+
+                    {'name': 'notifierd',
+                     'runlevel' : 18,
+                     'params': '-params=' + baseDir + '/params'},
+
+                    {'name': 'confd',
+                     'runlevel' : 19,
+                     'params': '-params=' + baseDir + '/params'},
                     ]
 
     disabledDaemons = []
@@ -160,9 +195,9 @@ def getDaemonsInfo (baseDir) :
         sysCfg = json.load(fd)
         dmnsInfo = sysCfg['Daemons']
         disabledDaemons = [ dmn['Name'] for dmn in dmnsInfo if not dmn['Enable']]
-
+    
     for dmn in daemonsList:
-        if dmn['name'] not in disabledDaemons:
+        if not selectedDmns or  dmn['name'] not in disabledDaemons:
             daemonsToStart.append(dmn)
             
     return daemonsToStart
@@ -238,6 +273,7 @@ if __name__=="__main__":
         asicdBootMode = '0' #FIXME:Change this to 1, when we start supporting restart on all apps
 
     if opts.op == 'start':
+        execPlatPrereq()
         if ((not os.path.exists(pidFileDir))):
             os.makedirs(pidFileDir)
 
@@ -268,7 +304,7 @@ if __name__=="__main__":
         end = datetime.datetime.now()
         print 'Total time taken to start all %s daemons is  %s' %(dmnCount, end -start)
     else:
-        allDmns = getDaemonsInfo(baseDir)
+        allDmns = getDaemonsInfo(baseDir, False)
         sortedDmns = reversed(sorted(allDmns,key= lambda dmn:dmn['runlevel']))
 
         for dmn in sortedDmns:

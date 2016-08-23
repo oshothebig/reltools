@@ -2,8 +2,8 @@ import os
 import json
 import re
 
-OBJECT_MAP_NAME = "genObjMap.go"
-ACTION_MAP_NAME = "genActionMap.go"
+OBJECT_MAP_NAME = "gen_objMap.go"
+ACTION_MAP_NAME = "gen_actionMap.go"
 
 OBJECTS_NAME = 'objects'
 ACTIONS_NAME = 'actions'
@@ -308,7 +308,6 @@ class DaemonObjectsInfo (object) :
                             }\n""" % (self.newDeamonName,))
         clientIfFd.write("""
                             func (clnt *%sClient) ConnectToServer() bool {
-
                                 clnt.TTransport, clnt.PtrProtocolFactory, _ = ipcutils.CreateIPCHandles(clnt.Address)
                                 if clnt.TTransport != nil && clnt.PtrProtocolFactory != nil {
                                     clnt.ClientHdl = %s.New%sServicesClientFactory(clnt.TTransport, clnt.PtrProtocolFactory)
@@ -357,6 +356,8 @@ class DaemonObjectsInfo (object) :
                             var err error
                             var ok bool
                             ok = true
+                            defer clnt.UnlockApiHandler()
+                            clnt.LockApiHandler()
                                 switch obj.(type) {\n""" % (self.newDeamonName,))
         for structName, structInfo in objectNames.objectDict.iteritems ():
             structName = str(structName)
@@ -394,6 +395,8 @@ class DaemonObjectsInfo (object) :
                                 var err error
                                 var ok bool
                                 ok = true
+                                defer clnt.UnlockApiHandler()
+                                clnt.LockApiHandler()
                                 switch obj.(type) {\n""" % (self.newDeamonName,))
         for structName, structInfo in objectNames.objectDict.iteritems ():
             structName = str(structName)
@@ -428,6 +431,8 @@ class DaemonObjectsInfo (object) :
     def createClientIfGetObject(self, clientIfFd, objectNames):
         clientIfFd.write("""
                             func (clnt *%sClient) GetObject(obj objects.ConfigObj, dbHdl *dbutils.DBUtil) (error, objects.ConfigObj) {
+            defer clnt.UnlockApiHandler()
+            clnt.LockApiHandler()
             switch obj.(type) {\n""" % (self.newDeamonName))
         for structName, structInfo in objectNames.objectDict.iteritems ():
             structName = str(structName)
@@ -482,6 +487,8 @@ class DaemonObjectsInfo (object) :
     def createClientIfExecuteAction(self, clientIfFd, objectNames):
         clientIfFd.write("""
                             func (clnt *%sClient) ExecuteAction(obj actions.ActionObj) error {
+            defer clnt.UnlockApiHandler()
+            clnt.LockApiHandler()
             switch obj.(type) {\n""" % (self.newDeamonName))
         for structName, structInfo in objectNames.objectDict.iteritems ():
             structName = str(structName)
@@ -513,6 +520,8 @@ class DaemonObjectsInfo (object) :
             var err error
 	    ok = true
             err = nil
+            defer clnt.UnlockApiHandler()
+            clnt.LockApiHandler()
 			
 			var op []*%s.PatchOpInfo = make([]*%s.PatchOpInfo, 0)
 			var opArr []%s.PatchOpInfo = make([]%s.PatchOpInfo,0)
@@ -522,7 +531,6 @@ class DaemonObjectsInfo (object) :
 	        for opIdx := 0; opIdx < len(opArr); opIdx++ {
 	 	        op = append(op, &opArr[opIdx])
  	        }
-
             switch obj.(type) {
         """ %(self.newDeamonName,self.servicesName,self.servicesName,self.servicesName, self.servicesName, self.servicesName))
         for structName, structInfo in objectNames.objectDict.iteritems ():
@@ -572,7 +580,8 @@ class DaemonObjectsInfo (object) :
                                             nextMarker int64,
                                             more bool,
                                             objs []objects.ConfigObj) {
-
+            defer clnt.UnlockApiHandler()
+            clnt.LockApiHandler()
             switch obj.(type) {
         \n""" %(self.newDeamonName))
         for structName, structInfo in objectNames.objectDict.iteritems ():
@@ -598,7 +607,6 @@ class DaemonObjectsInfo (object) :
                 clientIfFd.write("""\nobjects.ConvertThriftTo%s%sObj(bulkInfo.%sList[i], ret_obj)""" % (d, s, s))
                 clientIfFd.write("""\nobjs = append(objs, ret_obj)
                                         }
-
                             } else {
                             }
                     }
@@ -616,7 +624,6 @@ class DaemonObjectsInfo (object) :
                                     break
                                 }
                     return nil, objCount, nextMarker, more, objs
-
                 }\n""")
 
     def generateClientIf(self, objectNames):

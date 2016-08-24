@@ -19,7 +19,6 @@ else
 	EXE_DIR=
 endif
 COMPS=$(SR_CODE_BASE)/snaproute/src/asicd\
-		$(SR_CODE_BASE)/snaproute/src/opticd\
 		$(SR_CODE_BASE)/snaproute/src/config\
 		$(SR_CODE_BASE)/snaproute/src/infra\
 		$(SR_CODE_BASE)/snaproute/src/l3\
@@ -31,7 +30,6 @@ L3COMPS=$(SR_CODE_BASE)/snaproute/src/config\
 		$(SR_CODE_BASE)/snaproute/src/l3
 
 COMPS_WITH_IPC=$(SR_CODE_BASE)/snaproute/src/asicd\
-		$(SR_CODE_BASE)/snaproute/src/opticd\
 		$(SR_CODE_BASE)/snaproute/src/infra\
 		$(SR_CODE_BASE)/snaproute/src/l3\
 		$(SR_CODE_BASE)/snaproute/src/l2
@@ -103,7 +101,6 @@ ifeq (,$(findstring $(PKG_BUILD), FALSE))
 	install $(SRCDIR)/$(BUILD_DIR)/platformd $(DESTDIR)/$(EXT_INSTALL_PATH)/bin
 	install $(SRCDIR)/$(BUILD_DIR)/notifierd $(DESTDIR)/$(EXT_INSTALL_PATH)/bin
 	install $(SRCDIR)/$(BUILD_DIR)/ndpd $(DESTDIR)/$(EXT_INSTALL_PATH)/bin
-	install $(SRCDIR)/$(BUILD_DIR)/opticd $(DESTDIR)/$(EXT_INSTALL_PATH)/bin
 endif
 	install $(SR_CODE_BASE)/reltools/codegentools/._genInfo/*.json  $(DESTDIR)/$(EXT_INSTALL_PATH)/models/
 	install $(SRCDIR)/models/objects/genObjectConfig.json  $(DESTDIR)/$(EXT_INSTALL_PATH)/models/

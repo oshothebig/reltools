@@ -135,7 +135,7 @@ def writeRpcFile():
     rpcfd.close()
 
 
-def writeRcpHdlFunc(fd, obj, keyType, config, state):
+def writeRcpHdlFunc(fd, obj, keyTypes, config, state):
     global daemonName
     if obj == "":
         return
@@ -154,9 +154,16 @@ func (rpcHdl rpcServiceHandler) Delete%s(cfg *%s.%s) (bool, error) {
         rpcHdl.logger.Info("Calling Delete%s", cfg)
         return true, nil
 }\n\n""" % (obj, daemonName, obj, obj, obj, daemonName, obj, daemonName, obj, obj, daemonName, obj, obj))
+    keyStr = ""
+    i = 0
+    for keyType in keyTypes:
+        i = i+1
+        keyStr = keyStr + "key%s %s" % (i, keyType)
+        if i < len(keyTypes):
+            keyStr = keyStr + ", "
     if state == True:
-        fd.write("""func (rpcHdl *rpcServiceHandler) Get%s(key %s) (obj *%s.%s, err error) {
-        rpcHdl.logger.Info("Calling Get%s", key)
+        fd.write("""func (rpcHdl *rpcServiceHandler) Get%s(%s) (obj *%s.%s, err error) {
+        rpcHdl.logger.Info("Calling Get%s", key1)
         return obj, err
 }
 
@@ -170,7 +177,7 @@ func (rpcHdl *rpcServiceHandler) GetBulk%s(fromIdx, count %s.Int) (*%s.%sGetInfo
         //getBulkInfo.Count = %s.Int(len(info.List))
         // Fill in data, remember to convert back to thrift format
         return &getBulkInfo, err
-}\n\n""" % (obj, keyType, daemonName, obj, obj, obj, daemonName, daemonName, obj, daemonName, obj, obj, daemonName, daemonName))
+}\n\n""" % (obj, keyStr, daemonName, obj, obj, obj, daemonName, daemonName, obj, daemonName, obj, obj, daemonName, daemonName))
 
 
 def writeRpcHdlFile():
@@ -187,24 +194,25 @@ def writeRpcHdlFile():
 )\n\n""" % daemonName)
     import re
     objName = ""
+    keyTypes = []
     for line in open(objFile, 'r'):
         if 'struct' in line:
             objLine = re.split('\s+', line)
             objName = objLine[1]
-        configObj = False
-        stateObj = False
-        keyType = ""
+            configObj = False
+            stateObj = False
+            keyTypes = []
         if 'SNAPROUTE' in line:
             keyLine = re.split('\s+', line)
-            keyType = keyLine[2]
+            keyTypes.append(keyLine[2])
             for word in keyLine:
                 if 'ACCESS' in word:
                     if 'w' in word:
                         configObj = True
                     if 'r' in word:
                         stateObj = True
-                    writeRcpHdlFunc(rpcfd, objName, keyType, configObj, stateObj)
-                    objName = ""
+        if '}' in line:
+            writeRcpHdlFunc(rpcfd, objName, keyTypes, configObj, stateObj)
 
 
 def writeServerFile():

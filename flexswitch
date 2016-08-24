@@ -10,7 +10,7 @@ import json
 import subprocess
 import socket
 from optparse import OptionParser
-ASICD_CONF_FILE='/opt/flexswitch/params/asicd.conf'
+ASICD_CONF_FILE='/opt/flexswitch/params/asicdConf.json'
 SYS_PROFILE ='/opt/flexswitch/params/systemProfile.json'
 
 #Constants specific to ACC_5812, used to reset external XGPHY before SDK is initialized
@@ -338,7 +338,7 @@ if __name__=="__main__":
                     os.kill(pid, signal.SIGHUP)
             except:
                 print '*** Failed to stop process [%s]' %(dmn['name'])
-        time.sleep(1)
+        time.sleep(3)
         for dmn in getDaemonsInfo(baseDir if not localBld else baseDir+'/bin'):
             if opts.name != None and opts.name != dmn['name']:
                 continue

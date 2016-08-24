@@ -338,7 +338,7 @@ if __name__=="__main__":
                     os.kill(pid, signal.SIGHUP)
             except:
                 print '*** Failed to stop process [%s]' %(dmn['name'])
-        time.sleep(1)
+        time.sleep(3)
         for dmn in getDaemonsInfo(baseDir if not localBld else baseDir+'/bin'):
             if opts.name != None and opts.name != dmn['name']:
                 continue

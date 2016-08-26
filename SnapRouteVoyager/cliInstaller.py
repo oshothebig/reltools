@@ -19,13 +19,4 @@ if __name__ == '__main__':
             action="store",
             help="Directory to use for CLI installation")
     (options, args) = parser.parse_args()
-    executeCommands(['tar -xvf ' + PKG_NAME + ' -C ' + options.cliInstallDir])
-    os.chdir(options.cliInstallDir)
-    recipe = [
-            'unzip cmdln-1.1.2.zip',
-            'unzip jsonschema-2.5.1.zip',
-            'tar -xvzf jsonref-ap-0.3-dev.tar.gz',
-            'tar -xvzf requests-2.11.1.tar.gz',
-            'rm cmdln-1.1.2.zip jsonschema-2.5.1.zip jsonref-ap-0.3-dev.tar.gz requests-2.11.1.tar.gz'
-            ]
-    executeCommands(recipe)
+    executeCommands(['tar -xvf ' + PKG_NAME + ' -C ' + options.cliInstallDir + ' --warning=no-timestamp'])

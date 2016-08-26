@@ -19,7 +19,7 @@ if __name__ == '__main__':
             action="store",
             help="Directory to use for CLI installation")
     (options, args) = parser.parse_args()
-    executeCommands(['tar -xvf ' + PKG_NAME + '-C ' + options.cliInstallDir])
+    executeCommands(['tar -xvf ' + PKG_NAME + ' -C ' + options.cliInstallDir])
     os.chdir(options.cliInstallDir)
     recipe = [
             'unzip cmdln-1.1.2.zip',

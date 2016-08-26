@@ -64,7 +64,7 @@ class FlexConfigObject(FlexObject) :
         lines = docLines + lines
         lines = lines + objLines
         lines.append (tabs + "reqUrl =  self.cfgUrlBase+" +"\'%s\'\n" %(self.name))
-        lines.append(tabs + "r = requests.post(reqUrl, data=json.dumps(obj), headers=headers) \n")
+        lines.append(tabs + "r = requests.post(reqUrl, data=json.dumps(obj), headers=headers, timeout=self.timeout) \n")
         lines.append(tabs + "return r\n")
         fileHdl.writelines(lines)
 
@@ -85,7 +85,7 @@ class FlexConfigObject(FlexObject) :
         objLines.append(tabs + tabs+"}\n")
         lines = lines + objLines
         lines.append (tabs + "reqUrl =  self.cfgUrlBase+" +"\'%s\'\n" %(self.name))
-        lines.append(tabs + "r = requests.delete(reqUrl, data=json.dumps(obj), headers=headers) \n")
+        lines.append(tabs + "r = requests.delete(reqUrl, data=json.dumps(obj), headers=headers, timeout=self.timeout) \n")
         lines.append(tabs + "return r\n")
         fileHdl.writelines(lines)
 
@@ -97,7 +97,7 @@ class FlexConfigObject(FlexObject) :
         tabs = tabs + self.TAB
         lines.append (tabs + "reqUrl =  self.cfgUrlBase+" +"\'%s\'" %(self.name))
         lines[-1] = lines[-1] + "+\"/%s\"%(objectId)\n"
-        lines.append(tabs + "r = requests.delete(reqUrl, data=None, headers=headers) \n")
+        lines.append(tabs + "r = requests.delete(reqUrl, data=None, headers=headers,timeout=self.timeout) \n")
         lines.append(tabs + "return r\n")
         fileHdl.writelines(lines)
 
@@ -127,7 +127,7 @@ class FlexConfigObject(FlexObject) :
         lines.append("):\n")
         lines = lines + objLines
         lines.append (tabs + "reqUrl =  self.cfgUrlBase+" +"\'%s\'\n" %(self.name))
-        lines.append(tabs + "r = requests.patch(reqUrl, data=json.dumps(obj), headers=headers) \n")
+        lines.append(tabs + "r = requests.patch(reqUrl, data=json.dumps(obj), headers=headers, timeout=self.timeout) \n")
         lines.append(tabs + "return r\n")
         fileHdl.writelines(lines)
 
@@ -150,7 +150,7 @@ class FlexConfigObject(FlexObject) :
         lines.append("):\n")
         lines = lines + objLines
         lines.append (tabs + "reqUrl =  self.cfgUrlBase+" +"\'%s\'\n" %(self.name))
-        lines.append(tabs + "r = requests.patch(reqUrl, data=json.dumps(obj), headers=headers) \n")
+        lines.append(tabs + "r = requests.patch(reqUrl, data=json.dumps(obj), headers=headers,timeout=self.timeout) \n")
         lines.append(tabs + "return r\n")                                                                                  
         fileHdl.writelines(lines)
 

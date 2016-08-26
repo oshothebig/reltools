@@ -1,5 +1,9 @@
 #!/bin/bash
 
+install_cli_pkg() {
+    python cliInstaller.py --path="${1}"
+}
+
 install_flexswitch_voyager() {
 	fSRPM=$(ls | grep "flexswitch-voyager")
 	if [ ${fSRPM} == "" ]
@@ -45,6 +49,7 @@ if [ "${1}" == "flexswitch-voyager" ]
 then
 	./install_centos_dependency.sh
 	install_flexswitch_voyager
+    install_cli_pkg "${2}"
 elif [ "${1}" == "flexswitch" ]
 then
 	install_flexswitch

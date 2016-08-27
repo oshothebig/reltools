@@ -57,7 +57,11 @@ then
 	./install_centos_dependency.sh
         /etc/init.d/redis start
         /etc/init.d/rsyslog start
-        ./install_python27.sh
+	which python2.7 > /dev/null
+        if [ $? -ne 0 ]
+        then
+            ./install_python27.sh
+        fi
 	install_flexswitch_voyager flexswitch-voyager
         /opt/flexswitch/flexswitch --op=start
     	install_cli_pkg "${2}"

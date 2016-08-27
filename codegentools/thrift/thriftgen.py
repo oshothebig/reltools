@@ -140,7 +140,10 @@ class DaemonObjectsInfo (object) :
                 index = index+1
                 if attrInfo['isArray'] != 'False' :
                     if str(attrInfo['type']) in goToThirftTypeMap:
-                        nativetype = "list<" + goToThirftTypeMap[str(attrInfo['type'])]["native_type"] + ">"
+                        typeval = goToThirftTypeMap[str(attrInfo['type'])]["native_type"]
+                        if str(attrInfo['type']) == 'uint8':
+                            typeval = 'byte'
+                        nativetype = "list<" + typeval + ">"
                         thriftfd.write("\t%s : %s %s\n" % (index,
                                                            nativetype,
                                                            attrName))

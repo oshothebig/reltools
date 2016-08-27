@@ -60,7 +60,16 @@ then
 	which python2.7 > /dev/null
         if [ $? -ne 0 ]
         then
-            ./install_python27.sh
+            ./install_python27.sh > /dev/null 2>&1 &
+            PID=$!
+            echo "Installing Python 2.7 THIS MAY TAKE A WHILE, PLEASE BE PATIENT WHILE ______ IS RUNNING..."
+            printf "["
+                # While process is running...
+                while kill -0 $PID 2> /dev/null; do
+                        printf  "▓"
+                        sleep 5
+                done
+                printf "] done!"
         fi
 	install_flexswitch_voyager flexswitch-voyager
         /opt/flexswitch/flexswitch --op=start

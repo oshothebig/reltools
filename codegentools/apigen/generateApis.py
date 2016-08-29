@@ -50,6 +50,11 @@ class apiGenie (object) :
                 fileHdl.writelines(base.readlines())
             for objName, obj in self.objDict.iteritems():
                 obj.writeAllPrintMethods(fileHdl)
+                #Generate a combined print method once for all objects
+                if objName.endswith('State'):
+                    cfgObjName = objName[:-5]
+                    if self.objDict.has_key(cfgObjName):
+                        obj.createCombinedTblPrintAllMethod(fileHdl, cfgObjName, self.objDict[cfgObjName].attrList)
 
 
 if __name__ == '__main__':

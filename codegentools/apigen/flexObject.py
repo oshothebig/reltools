@@ -195,6 +195,45 @@ class FlexObject(object) :
         lines.append(tabs + self.TAB + "print objs.content\n")
         fileHdl.writelines(lines)
 
+    #This function will print both config and state Obj attrs
+    def createCombinedTblPrintAllMethod(self, fileHdl, cfgObjName, cfgObjAttrs):
+        tabs = self.TAB
+        lines = []
+        lines.append("\n"+ tabs + "def printCombined" + self.name + "s(self, addHeader=True, brief=None):\n")
+        tabs = tabs + self.TAB
+
+        lines.append(tabs + "header = []; rows = []\n")
+        lines.append(tabs + "if addHeader:\n")
+        stateObjAttrs = []
+        for (attr, attrInfo) in self.attrList:
+            #Create list of attrs that have been processed already
+            stateObjAttrs.append(attr)
+            lines.append(tabs + self.TAB + "header.append(\'%s\')\n" %(attr))
+        for (attr, attrInfo) in cfgObjAttrs:
+            if not (attr in stateObjAttrs):
+                lines.append(tabs + self.TAB + "header.append(\'%s\')\n" %(attr))
+        lines.append("\n")
+        lines.append(tabs + "objs = self.swtch.getAll%ss()\n" %(self.name))
+        lines.append(tabs + "for obj in objs:\n")
+        lines.append(tabs + self.TAB + "o = obj['Object']\n")
+        lines.append(tabs + self.TAB + "values = []\n")
+        for (attr, attrInfo) in self.attrList:
+            lines.append(tabs + self.TAB + "values.append(\'%%s\' %% o[\'%s\'])\n" %(attr))
+        lines.append(tabs + self.TAB + "r = self.swtch.get" + cfgObjName + "(")
+        argStr = ''
+        for (attr, attrInfo) in self.attrList:
+            if attrInfo['isKey'] == 'True':
+                argStr = argStr + "o[\'%s\'], " %(attr)
+        argStr = argStr[:-2] + ')'
+        lines.append(argStr)
+        lines.append('\n' + tabs + self.TAB + "if r.status_code in self.httpSuccessCodes:\n")
+        lines.append(tabs + self.TAB + self.TAB + "o = r.json()['Object']\n")
+        for (attr, attrInfo) in cfgObjAttrs:
+            if not (attr in stateObjAttrs):
+                lines.append(tabs + self.TAB + self.TAB + "values.append(\'%%s\' %% o[\'%s\'])\n" %(attr))
+        lines.append(tabs + self.TAB + "rows.append(values)\n")
+        lines.append(tabs + "self.tblPrintObject(\'%s\', header, rows)\n\n" %(self.name))
+        fileHdl.writelines(lines)
 
     def writeAllPrintMethods(self, fileHdl):
         self.createTblPrintAllMethod(fileHdl)

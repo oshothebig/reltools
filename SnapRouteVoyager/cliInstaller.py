@@ -2,7 +2,7 @@ import os
 import subprocess
 from optparse import OptionParser
 
-PKG_NAME = 'cliPkg_v146.tar'
+PKG_NAME = 'cliPkg.tar'
 
 def executeCommands(commands):
     for cmd in commands:

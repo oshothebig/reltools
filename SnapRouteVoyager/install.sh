@@ -55,6 +55,7 @@ then
         /etc/init.d/redis stop
         /etc/init.d/rsyslog stop
 	./install_centos_dependency.sh
+	ln -sf /etc/init.d/redis /etc/rc3.d/S80redis
         /etc/init.d/redis start
         /etc/init.d/rsyslog start
 	which python2.7 > /dev/null
@@ -72,6 +73,7 @@ then
                 printf "] done!"
         fi
 	install_flexswitch_voyager flexswitch-voyager
+	chkconfig --level 345 flexswitch on
         /opt/flexswitch/flexswitch --op=start
     	install_cli_pkg "${2}"
 elif [ "${1}" == "flexswitch" ]

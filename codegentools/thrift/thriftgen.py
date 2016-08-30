@@ -821,7 +821,7 @@ def generateConfigObjectMap():
 
     for name,  dtls in objData.iteritems():
         if "w" in dtls['access'] or "r" in dtls['access']:
-            line  = "\"%s\" :    &%s{}," %(name, name)
+            line  = "\"%s\" :    &%s{}," %(name.lower(), name)
             fd.write(line+"\n")
 
     fd.write("""}\n""")
@@ -841,7 +841,7 @@ def generateActionObjectMap():
 
     for name,  dtls in actionData.iteritems():
         if "x" in dtls['access']:
-            line  = "\"%s\" :    &%s{}," %(name, name)
+            line  = "\"%s\" :    &%s{}," %(name.lower(), name)
             fd.write(line+"\n")
 
     fd.write("""}\n""")

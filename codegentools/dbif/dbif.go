@@ -683,16 +683,62 @@ func generateUnmarshalFcn(listingsFd *os.File, objFileBase string, dirStore stri
 			//fmt.Println(marshalFcnsLine)
 
 		}
+		if strings.Contains(obj.Access, "w") || strings.Contains(obj.Access, "r") {
+			marshalFcnsLine = append(marshalFcnsLine, "\nfunc (obj "+obj.ObjName+") UnmarshalObjectData(queryStr string) (ConfigObj, error) {\n")
+			marshalFcnsLine = append(marshalFcnsLine, "\nretObj := "+obj.ObjName+"{}")
+			marshalFcnsLine = append(marshalFcnsLine, `
+		        objVal := reflect.ValueOf(&retObj)
+		        values, _ := url.ParseQuery(queryStr)
+		        for str, _ := range values {
+		                key := strings.Split(str, ":")[0]
+		                val := strings.Split(str, ":")[1]
+		                field := objVal.Elem().FieldByName(key)
+		                if field.CanSet() {
+		                        switch field.Kind() {
+		                        case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		                                i, _ := strconv.ParseInt(val, 10, 64) 
+		                                field.SetInt(i)
+		                        case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		                                ui, _ := strconv.ParseUint(val, 10, 64) 
+		                                field.SetUint(ui)
+		                        case reflect.Float64:
+		                                f, _ := strconv.ParseFloat(val, 64) 
+		                                field.SetFloat(f)
+		                        case reflect.Bool:
+		                                b, _ := strconv.ParseBool(val)
+                		                field.SetBool(b)
+		                        case reflect.String:
+                		                field.SetString(val)
+		                        }
+		                }
+		        }
+		        return retObj, nil 
+		}
+		`)
+		}
 	}
 	if len(marshalFcnsLine) > 0 {
 		packageLine := "package " + packageName
 		marshalFcnFd.WriteString(packageLine)
-		marshalFcnFd.WriteString(`
+		if packageName == "actions" {
+			marshalFcnFd.WriteString(`
 
-													import (
-													   "encoding/json"
-													   "fmt"
-													)`)
+			import (
+			   "encoding/json"
+			   "fmt"
+			)`)
+		} else {
+			marshalFcnFd.WriteString(`
+
+			import (
+			   "encoding/json"
+			   "fmt"
+			   "net/url"
+ 		           "reflect"
+		           "strconv"
+		           "strings"
+			)`)
+		}
 
 		for _, marshalLine := range marshalFcnsLine {
 			marshalFcnFd.WriteString(string(marshalLine))

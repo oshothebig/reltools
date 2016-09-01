@@ -91,7 +91,7 @@ def determineMacAddress ():
 	with open(SYS_PROFILE, 'w') as fileHdl:
 	    json.dump(confData, fileHdl, indent=2)
 
-def isProcessRunning(pidFile):
+def isPIdFileExisting(pidFile):
     processId = 0
     try:
         fp = file(pidFile, "r")
@@ -104,6 +104,26 @@ def isProcessRunning(pidFile):
     except IOError:
         processId = 0
     return (processId != 0)
+
+def isProcessRunning(pid, pidFile):
+    isRunning = True
+    try :
+        #Check if process matching pid file is running
+        os.kill(pid, 0)
+    except:
+        #Process with pid not running, cleanup pid file
+        if os.path.isfile(pidFile):
+            os.remove(pidFile)
+        isRunning = False
+    return isRunning
+
+def getPidInfo(pidFileDir, dmn):
+    pidFile = pidFileDir + dmn['name']+'.pid'
+    pf = file(pidFile, 'r')
+    pid = int(pf.read().strip())
+    pf.close()
+    return pid, pidFile
+
 
 def getDaemonsInfo (baseDir, selectedDmns = True) :
 
@@ -285,7 +305,7 @@ if __name__=="__main__":
             print "Starting Daemon %s Params: %s" %( dmn['name'], dmn['params'])
             dmnCount += 1
             pidFile = pidFileDir + dmn['name']+'.pid'
-            if isProcessRunning(pidFile):
+            if isPIdFileExisting(pidFile):
                 print "process %s is already running" %(dmn['name'])
             else:
                 cmd = baseDir +'/bin/'+ dmn['name']
@@ -312,16 +332,8 @@ if __name__=="__main__":
                 continue
             try:
                 print "Stopping Daemon %s" %( dmn['name'])
-                pidFile = pidFileDir + dmn['name']+'.pid'
-                pf = file(pidFile, 'r')
-                pid = int(pf.read().strip())
-                pf.close()
-                try :
-                    #Check if process matching pid file is running
-                    os.kill(pid, 0)
-                except:
-                    #Process with pid not running, cleanup pid file
-                    os.remove(pidFile)
+                pid, pidFile = getPidInfo(pidFileDir, dmn)
+                if not isProcessRunning(pid, pidFile):
                     continue
                 #Process matching pid exists, perform cleanup
                 if dmn['name'] == 'asicd':
@@ -338,24 +350,14 @@ if __name__=="__main__":
                     os.kill(pid, signal.SIGHUP)
             except:
                 print '*** Failed to stop process [%s]' %(dmn['name'])
-        time.sleep(3)
         for dmn in getDaemonsInfo(baseDir if not localBld else baseDir+'/bin'):
             if opts.name != None and opts.name != dmn['name']:
                 continue
-            try:
-                pidFile = pidFileDir + dmn['name']+'.pid'
-                pf = file(pidFile, 'r')
-                pid = int(pf.read().strip())
-                pf.close()
-                try :
-                    #Check if cleanup completed
-                    os.kill(pid, 0)
-                except:
-                    #Process with pid successfully cleaned up
-                    os.remove(pidFile)
-                    continue
-                #Force kill by sending SIGTERM
+            pid, pidFile = getPidInfo(pidFileDir, dmn)
+            waitCount = 5
+            while isProcessRunning(pid, pidFile) and waitCount > 0:
+                waitCount -= 1
                 os.kill(pid, signal.SIGTERM)
-                os.remove(pidFile)
-            except:
+                time.sleep(1)
+            if isProcessRunning(pid, pidFile):
                 print '*** Failed to Kill process [%s]' %(dmn['name'])

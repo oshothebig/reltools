@@ -32,24 +32,25 @@ type ObjectInfoJson struct {
 
 // This structure represents the a golang Structure for a config object
 type ObjectMembersInfo struct {
-	VarType      string `json:"type"`
-	IsKey        bool   `json:"isKey"`
-	IsArray      bool   `json:"isArray"`
-	Description  string `json:"description"`
-	DefaultVal   string `json:"default"`
-	IsDefaultSet bool   `json:"isDefaultSet"`
-	Position     int    `json:"position"`
-	Selections   string `json:"selections"`
-	QueryParam   string `json:"queryparam"`
-	Accelerated  bool   `json:"accelerated"`
-	Min          int    `json:"min"`
-	Max          int    `json:"max"`
-	Len          int    `json:"len"`
-	UsesStateDB  bool   `json:"usesStateDB"`
-	AutoCreate   bool   `json:"autoCreate"`
-	AutoDiscover bool   `json:"autoDiscover"`
-	Parent       string `json:"-"` //`json:"parent"`
-	IsParentSet  bool   `json:"-"` //`json:"isParentSet"`
+	VarType      string   `json:"type"`
+	IsKey        bool     `json:"isKey"`
+	IsArray      bool     `json:"isArray"`
+	Description  string   `json:"description"`
+	DefaultVal   string   `json:"default"`
+	IsDefaultSet bool     `json:"isDefaultSet"`
+	Position     int      `json:"position"`
+	Selections   []string `json:"selections"`
+	QueryParam   string   `json:"queryparam"`
+	Accelerated  bool     `json:"accelerated"`
+	Min          int      `json:"min"`
+	Max          int      `json:"max"`
+	Len          int      `json:"len"`
+	UsesStateDB  bool     `json:"usesStateDB"`
+	AutoCreate   bool     `json:"autoCreate"`
+	AutoDiscover bool     `json:"autoDiscover"`
+	Parent       string   `json:"-"` //`json:"parent"`
+	IsParentSet  bool     `json:"-"` //`json:"isParentSet"`
+	Unit         string   `json:"unit"`
 }
 
 type ObjectMemberAndInfo struct {
@@ -371,7 +372,10 @@ func getSpecialTagsForAttribute(attrTags string, attrInfo *ObjectMembersInfo) {
 			case "DESCRIPTION":
 				attrInfo.Description = strings.TrimSpace(keys[idx+1])
 			case "SELECTION":
-				attrInfo.Selections = keys[idx+1]
+				tmpSlice := strings.Split(keys[idx+1], "/")
+				for _, val := range tmpSlice {
+					attrInfo.Selections = append(attrInfo.Selections, strings.TrimSpace(val))
+				}
 			case "DEFAULT":
 				attrInfo.DefaultVal = strings.TrimSpace(keys[idx+1])
 				attrInfo.IsDefaultSet = true
@@ -397,6 +401,8 @@ func getSpecialTagsForAttribute(attrTags string, attrInfo *ObjectMembersInfo) {
 			case "PARENT":
 				attrInfo.Parent = strings.TrimSpace(keys[idx+1])
 				attrInfo.IsParentSet = true
+			case "UNIT":
+				attrInfo.Unit = strings.TrimSpace(keys[idx+1])
 			}
 		}
 	}

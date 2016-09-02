@@ -1,13 +1,13 @@
 {
     "platforms": [
-        "accton_as5712",
+        "bcm_accton_as5712",
         "accton_as5812",
-        "accton_as6712",
+        "bcm_accton_as6712",
         "accton_as6812",
-        "accton_as7712",
-        "accton_wedge40",
-        "accton_wedge100",
-        "cel_redstone",
+        "bcm_accton_as7712",
+        "bcm_accton_wedge40",
+        "bcm_accton_wedge100",
+        "bcm_cel_redstone",
         "docker"
     ], 
     "major": "1", 

@@ -42,6 +42,11 @@ if __name__ == '__main__':
     buildTargetList = parsedPkgInfo['platforms']
     pkgVersion = parsedPkgInfo['major']+ '.' + parsedPkgInfo['minor'] +  '.' + parsedPkgInfo['patch'] + '.' + parsedPkgInfo['build']
     build_dir = "flexswitch-" + pkgVersion
+    command = [
+            'rm -rf ' + build_dir,
+            'make clean_all'
+            ]
+    executeCommand(command)
     startTime = time.time()
     for buildTargetDetail in buildTargetList:
         buildTarget = buildTargetDetail['odm']
@@ -98,4 +103,4 @@ if __name__ == '__main__':
             'rm -rf ' + build_dir,
             'make clean_all'
             ]
-    #executeCommand(command)
+    executeCommand(command)

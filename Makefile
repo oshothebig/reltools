@@ -3,6 +3,7 @@ RMDIRFORCE=rm -rf
 PKG_BUILD=FALSE
 PROD_NAME=flexswitch
 BUILD_TARGET=cel_redstone
+PLATFORM_BUILD_TARGET=dummy
 ifneq (,$(findstring $(PKG_BUILD), FALSE))
 	EXT_INSTALL_PATH=
 	BUILD_DIR=out
@@ -44,7 +45,7 @@ endef
 all: $(ALL_DEPS)
 
 asicd:
-	make -C $(SR_CODE_BASE)/snaproute/src/asicd exe DESTDIR=$(DESTDIR)/$(EXE_DIR) BUILD_TARGET=$(BUILD_TARGET) GOLDFLAGS="-r /opt/flexswitch/sharedlib"
+	make -C $(SR_CODE_BASE)/snaproute/src/asicd exe DESTDIR=$(DESTDIR)/$(EXE_DIR) BUILD_TARGET=$(BUILD_TARGET) PLATFORM_BUILD_TARGET=$(PLATFORM_BUILD_TARGET) GOLDFLAGS="-r /opt/flexswitch/sharedlib"
 
 l3: buildinfogen codegen installdir ipc l3exe
 
@@ -78,7 +79,7 @@ ipc: $(COMPS_WITH_IPC)
 	$(foreach f,$^, make -C $(f) ipc DESTDIR=$(DESTDIR);)
 
 copy: $(COMPS)
-	$(foreach f,$^, make -C $(f) install DESTDIR=$(DESTDIR)/$(EXT_INSTALL_PATH) BUILD_TARGET=$(BUILD_TARGET);)
+	$(foreach f,$^, make -C $(f) install DESTDIR=$(DESTDIR)/$(EXT_INSTALL_PATH) BUILD_TARGET=$(BUILD_TARGET) PLATFORM_BUILD_TARGET=$(PLATFORM_BUILD_TARGET);)
 
 install:installdir copy
 	install $(SR_CODE_BASE)/reltools/flexswitch $(DESTDIR)/$(EXT_INSTALL_PATH)

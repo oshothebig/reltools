@@ -12,6 +12,7 @@ TEMPLATE_BUILD_TYPE="PKG_BUILD=FALSE"
 TEMPLATE_CHANGELOG_VER = "0.0.1"
 TEMPLATE_BUILD_DIR = "flexswitch-0.0.1"
 TEMPLATE_BUILD_TARGET = "cel_redstone"
+TEMPLATE_PLATFORM_BUILD_TARGET = "dummy"
 TEMPLATE_ALL_TARGET = "ALL_DEPS=buildinfogen codegen installdir ipc exe install"
 PKG_ONLY_ALL_TARGET = "ALL_DEPS=installdir install"
 
@@ -42,7 +43,9 @@ if __name__ == '__main__':
     pkgVersion = parsedPkgInfo['major']+ '.' + parsedPkgInfo['minor'] +  '.' + parsedPkgInfo['patch'] + '.' + parsedPkgInfo['build']
     build_dir = "flexswitch-" + pkgVersion
     startTime = time.time()
-    for buildTarget in buildTargetList:
+    for buildTargetDetail in buildTargetList:
+        buildTarget = buildTargetDetail['odm']
+        platform = buildTargetDetail['platform']
         print "Building pkg for", buildTarget
         pkgName = "flexswitch_" + buildTarget + "-" + pkgVersion + "_amd64.deb"
         if firstBuild:
@@ -52,7 +55,8 @@ if __name__ == '__main__':
                     'sed -i s/' + TEMPLATE_BUILD_DIR +'/' + build_dir + '/ ' + build_dir +'/Makefile',
                     'sed -i s/' + TEMPLATE_BUILD_TYPE +'/' + PACKAGE_BUILD + '/ ' + build_dir + '/Makefile',
                     'sed -i s/' + TEMPLATE_CHANGELOG_VER +'/' + pkgVersion+ '/ ' + build_dir + '/debian/changelog',
-                    'sed -i s/' + TEMPLATE_BUILD_TARGET +'/' + buildTarget + '/ ' + build_dir + '/Makefile'
+                    'sed -i s/' + TEMPLATE_BUILD_TARGET +'/' + buildTarget + '/ ' + build_dir + '/Makefile',
+                    'sed -i s/' + TEMPLATE_PLATFORM_BUILD_TARGET +'/' + platform + '/ ' + build_dir + '/Makefile'
                     ]
             executeCommand(preProcess)
             #Build all binaries only once
@@ -66,12 +70,16 @@ if __name__ == '__main__':
                 print line.replace(TEMPLATE_ALL_TARGET, PKG_ONLY_ALL_TARGET).rstrip('\n')
         else :
             #Change build target and all target prereqs
-            for line in fileinput.input(build_dir+'/Makefile', inplace=1):
-                print line.replace(prevBldTgt, buildTarget).rstrip('\n')
+            preProcess = [
+                    'sed -i s/' + TEMPLATE_BUILD_TARGET +'/' + buildTarget + '/ ' + build_dir + '/Makefile',
+                    'sed -i s/' + TEMPLATE_PLATFORM_BUILD_TARGET +'/' + platform + '/ ' + build_dir + '/Makefile'
+                    ]
+            executeCommand(preProcess)
             os.chdir(build_dir)
             executeCommand('make asicd')
             os.chdir("..")
         prevBldTgt = buildTarget
+        prevPlatTgt = platform
         os.chdir(build_dir)
         pkgRecipe = [
                 'fakeroot debian/rules clean',
@@ -90,4 +98,4 @@ if __name__ == '__main__':
             'rm -rf ' + build_dir,
             'make clean_all'
             ]
-    executeCommand(command)
+    #executeCommand(command)

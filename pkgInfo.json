@@ -39,10 +39,6 @@
         {
             "platform": "dummy", 
             "odm": "docker"
-        }, 
-        {
-            "platform": "dummy", 
-            "odm": "mlnx"
         }
     ], 
     "major": "1", 

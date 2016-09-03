@@ -33,7 +33,7 @@
 		"platform":"dummy"
 	},
 	{
-        	"odm":"voyager",
+        	"odm":"bcm_voyager",
 		"platform":"openBMCVoyager"
 	},
 	{

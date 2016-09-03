@@ -76,8 +76,8 @@ if __name__ == '__main__':
         else :
             #Change build target and all target prereqs
             preProcess = [
-                    'sed -i s/' + TEMPLATE_BUILD_TARGET +'/' + buildTarget + '/ ' + build_dir + '/Makefile',
-                    'sed -i s/' + TEMPLATE_PLATFORM_BUILD_TARGET +'/' + platform + '/ ' + build_dir + '/Makefile'
+                    'sed -i s/' + prevBldTgt +'/' + buildTarget + '/ ' + build_dir + '/Makefile',
+                    'sed -i s/' + prevPlatTgt +'/' + platform + '/ ' + build_dir + '/Makefile'
                     ]
             executeCommand(preProcess)
             os.chdir(build_dir)

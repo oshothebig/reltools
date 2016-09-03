@@ -485,12 +485,12 @@ func (obj *ObjectInfoJson) WriteUpdateObjectInDbFcn(str *ast.StructType, fd *os.
 								fieldVal := objVal.Field(i)
 								fieldName := fieldTyp.Name
 								if fieldVal.Kind() == reflect.Slice {
+									_, err := dbHdl.Do("DEL", obj.GetKey()+fieldName)
+									if err != nil {
+										return err
+									}
 									if fieldVal.Len() > 0 {
 										secObjVal := fieldVal.Index(0)
-										_, err := dbHdl.Do("DEL", obj.GetKey()+fieldName)
-										if err != nil {
-											return err
-										}
 										if secObjVal.Kind() == reflect.Struct {
 											bytes, err := json.Marshal(fieldVal.Interface())
 											if err != nil {

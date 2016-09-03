@@ -528,11 +528,11 @@ func (obj *ObjectInfoJson) WriteCopyRecursiveFcn(str *ast.StructType, fd *os.Fil
 	                           case reflect.Slice:
 		                       dest.Set(reflect.MakeSlice(src.Type(), src.Len(), src.Cap()))
 		                       for i := 0; i < src.Len(); i++ { 
-	                               obj.CopyRecursive(src.Index(i), dest.Index(i))
+	                               obj.CopyRecursive(dest.Index(i),src.Index(i))
 	                           }
 	                           case reflect.Struct:
 		                       for i := 0; i < src.NumField(); i++ {
-                                    obj.CopyRecursive(src.Field(i), dest.Field(i))
+                                    obj.CopyRecursive(dest.Field(i),src.Field(i))
 	                          }
 	                           case reflect.String:
 		                       dest.SetString(src.Interface().(string))

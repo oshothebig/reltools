@@ -27,6 +27,7 @@ class FlexSwitch( object):
         self.timeout = timeout
         self.cfgUrlBase = 'http://%s:%s/public/v1/config/'%(ip,str(port))                                                         
         self.stateUrlBase = 'http://%s:%s/public/v1/state/'%(ip,str(port))                                                         
+        self.actionUrlBase = 'http://%s:%s/public/v1/action/'%(ip,str(port))
 
     def getObjects(self, objName, urlPath):
         currentMarker = 0                                                                                                  

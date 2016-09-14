@@ -32,24 +32,25 @@ type ObjectInfoJson struct {
 
 // This structure represents the a golang Structure for a config object
 type ObjectMembersInfo struct {
-	VarType      string `json:"type"`
-	IsKey        bool   `json:"isKey"`
-	IsArray      bool   `json:"isArray"`
-	Description  string `json:"description"`
-	DefaultVal   string `json:"default"`
-	IsDefaultSet bool   `json:"isDefaultSet"`
-	Position     int    `json:"position"`
-	Selections   string `json:"selections"`
-	QueryParam   string `json:"queryparam"`
-	Accelerated  bool   `json:"accelerated"`
-	Min          int    `json:"min"`
-	Max          int    `json:"max"`
-	Len          int    `json:"len"`
-	UsesStateDB  bool   `json:"usesStateDB"`
-	AutoCreate   bool   `json:"autoCreate"`
-	AutoDiscover bool   `json:"autoDiscover"`
-	Parent       string `json:"-"` //`json:"parent"`
-	IsParentSet  bool   `json:"-"` //`json:"isParentSet"`
+	VarType      string   `json:"type"`
+	IsKey        bool     `json:"isKey"`
+	IsArray      bool     `json:"isArray"`
+	Description  string   `json:"description"`
+	DefaultVal   string   `json:"default"`
+	IsDefaultSet bool     `json:"isDefaultSet"`
+	Position     int      `json:"position"`
+	Selections   []string `json:"selections"`
+	QueryParam   string   `json:"queryparam"`
+	Accelerated  bool     `json:"accelerated"`
+	Min          int      `json:"min"`
+	Max          int      `json:"max"`
+	Len          int      `json:"len"`
+	UsesStateDB  bool     `json:"usesStateDB"`
+	AutoCreate   bool     `json:"autoCreate"`
+	AutoDiscover bool     `json:"autoDiscover"`
+	Parent       string   `json:"-"` //`json:"parent"`
+	IsParentSet  bool     `json:"-"` //`json:"isParentSet"`
+	Unit         string   `json:"unit"`
 }
 
 type ObjectMemberAndInfo struct {
@@ -371,7 +372,10 @@ func getSpecialTagsForAttribute(attrTags string, attrInfo *ObjectMembersInfo) {
 			case "DESCRIPTION":
 				attrInfo.Description = strings.TrimSpace(keys[idx+1])
 			case "SELECTION":
-				attrInfo.Selections = keys[idx+1]
+				tmpSlice := strings.Split(keys[idx+1], "/")
+				for _, val := range tmpSlice {
+					attrInfo.Selections = append(attrInfo.Selections, strings.TrimSpace(val))
+				}
 			case "DEFAULT":
 				attrInfo.DefaultVal = strings.TrimSpace(keys[idx+1])
 				attrInfo.IsDefaultSet = true
@@ -397,6 +401,8 @@ func getSpecialTagsForAttribute(attrTags string, attrInfo *ObjectMembersInfo) {
 			case "PARENT":
 				attrInfo.Parent = strings.TrimSpace(keys[idx+1])
 				attrInfo.IsParentSet = true
+			case "UNIT":
+				attrInfo.Unit = strings.TrimSpace(keys[idx+1])
 			}
 		}
 	}
@@ -683,16 +689,57 @@ func generateUnmarshalFcn(listingsFd *os.File, objFileBase string, dirStore stri
 			//fmt.Println(marshalFcnsLine)
 
 		}
+		if strings.Contains(obj.Access, "w") || strings.Contains(obj.Access, "r") {
+			marshalFcnsLine = append(marshalFcnsLine, "\nfunc (obj "+obj.ObjName+") UnmarshalObjectData(queryMap map[string][]string) (ConfigObj, error) {\n")
+			marshalFcnsLine = append(marshalFcnsLine, "\nretObj := "+obj.ObjName+"{}")
+			marshalFcnsLine = append(marshalFcnsLine, `
+		        objVal := reflect.ValueOf(&retObj)
+		        for key, val := range queryMap {
+		                field := objVal.Elem().FieldByName(key)
+		                if field.CanSet() {
+		                        switch field.Kind() {
+		                        case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		                                i, _ := strconv.ParseInt(val[0], 10, 64) 
+		                                field.SetInt(i)
+		                        case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		                                ui, _ := strconv.ParseUint(val[0], 10, 64) 
+		                                field.SetUint(ui)
+		                        case reflect.Float64:
+		                                f, _ := strconv.ParseFloat(val[0], 64) 
+		                                field.SetFloat(f)
+		                        case reflect.Bool:
+		                                b, _ := strconv.ParseBool(val[0])
+                		                field.SetBool(b)
+		                        case reflect.String:
+                		                field.SetString(val[0])
+		                        }
+		                }
+		        }
+		        return retObj, nil 
+		}
+		`)
+		}
 	}
 	if len(marshalFcnsLine) > 0 {
 		packageLine := "package " + packageName
 		marshalFcnFd.WriteString(packageLine)
-		marshalFcnFd.WriteString(`
+		if packageName == "actions" {
+			marshalFcnFd.WriteString(`
 
-													import (
-													   "encoding/json"
-													   "fmt"
-													)`)
+			import (
+			   "encoding/json"
+			   "fmt"
+			)`)
+		} else {
+			marshalFcnFd.WriteString(`
+
+			import (
+			   "encoding/json"
+			   "fmt"
+ 		           "reflect"
+		           "strconv"
+			)`)
+		}
 
 		for _, marshalLine := range marshalFcnsLine {
 			marshalFcnFd.WriteString(string(marshalLine))

@@ -65,7 +65,7 @@ class FlexObject(object) :
             objName = self.name
         lines.append (tabs + "reqUrl =  self.stateUrlBase+" +"\'%s\'" %(objName))
         lines[-1] = lines[-1] + "+\"/%s\"%(objectId)\n"
-        lines.append(tabs + "r = requests.get(reqUrl, data=None, headers=headers) \n")
+        lines.append(tabs + "r = requests.get(reqUrl, data=None, headers=headers, timeout=self.timeout) \n")
         lines.append(tabs + "return r\n")                                                                                  
         fileHdl.writelines(lines)
 
@@ -103,7 +103,7 @@ class FlexObject(object) :
         else:
             objName = self.name
         lines.append (tabs + "reqUrl =  " + urlPath + " + " + "\'%s\'\n" %(objName))
-        lines.append(tabs + "r = requests.get(reqUrl, data=json.dumps(obj), headers=headers) \n")
+        lines.append(tabs + "r = requests.get(reqUrl, data=json.dumps(obj), headers=headers, timeout=self.timeout) \n")
         lines.append(tabs + "return r\n")                                                                                  
         fileHdl.writelines(lines)
 
@@ -143,8 +143,101 @@ class FlexObject(object) :
         lines.append(tabs + "self.tblPrintObject(\'%s\', header, rows)\n\n" %(self.name))
         fileHdl.writelines(lines)
 
+    def createTblPrintMethod(self, fileHdl):
+        tabs = self.TAB
+        lines = []
+        argStr = ''
+        for (attr, attrInfo) in self.attrList:
+            if attrInfo['isKey'] == 'True':
+                argStr += "%s," %(attr)
+
+
+        lines.append("\n"+ tabs + "def print" + self.name + "(self, %s addHeader=True, brief=None):\n" %argStr)
+        tabs = tabs + self.TAB
+
+        lines.append(tabs + "header = []; rows = []\n")
+        lines.append(tabs + "if addHeader:\n")
+        for (attr, attrInfo) in self.attrList:
+            lines.append(tabs + self.TAB + "header.append(\'%s\')\n" %(attr))
+        lines.append("\n")
+        lines.append(tabs + "objs = self.swtch.get%s(" %(self.name))
+        #tabs = tabs + self.TAB
+        spaces = ' ' * (len(lines[-1]))
+        argStr = ''
+        for (attr, attrInfo) in self.attrList:
+            if attrInfo['isKey'] == 'True':
+                argStr = "\n" + spaces + "%s," %(attr)
+                assignmentStr = "%s" %(attr)
+
+                if isNumericAttr(attrInfo):
+                    #argStr = "\n" + spaces + "%s=%d," %(attr,int(attrInfo['default'].lstrip()))
+                    assignmentStr = "int(%s)" %(attr)
+                elif isBoolean(attrInfo['type']):
+                    #argStr = "\n" + spaces + "%s=%s," %(attr, boolFromString(attrInfo['default'].lstrip()))
+                    assignmentStr = "True if %s else False" %(attr)
+
+                lines.append(argStr)
+
+        lines[-1] = lines[-1][0:lines[-1].find(',')]
+        lines.append(")\n")
+        lines.append(tabs + "if objs.status_code in self.httpSuccessCodes:\n")
+
+        lines.append(tabs + self.TAB + "for obj in objs:\n")
+        lines.append(tabs + self.TAB + self.TAB + "o = obj['Object']\n")
+        lines.append(tabs + self.TAB + self.TAB + "values = []\n")
+        for (attr, attrInfo) in self.attrList:
+            lines.append(tabs + self.TAB + self.TAB + "values.append(\'%%s\' %% o[\'%s\'])\n" %(attr))
+
+        lines.append(tabs + self.TAB + self.TAB + "rows.append(values)\n")
+        lines.append(tabs + self.TAB + "self.tblPrintObject(\'%s\', header, rows)\n\n" %(self.name))
+
+        lines.append(tabs + "else:\n")
+        lines.append(tabs + self.TAB + "print objs.content\n")
+        fileHdl.writelines(lines)
+
+    #This function will print both config and state Obj attrs
+    def createCombinedTblPrintAllMethod(self, fileHdl, cfgObjName, cfgObjAttrs):
+        tabs = self.TAB
+        lines = []
+        lines.append("\n"+ tabs + "def printCombined" + self.name + "s(self, addHeader=True, brief=None):\n")
+        tabs = tabs + self.TAB
+
+        lines.append(tabs + "header = []; rows = []\n")
+        lines.append(tabs + "if addHeader:\n")
+        stateObjAttrs = []
+        for (attr, attrInfo) in self.attrList:
+            #Create list of attrs that have been processed already
+            stateObjAttrs.append(attr)
+            lines.append(tabs + self.TAB + "header.append(\'%s\')\n" %(attr))
+        for (attr, attrInfo) in cfgObjAttrs:
+            if not (attr in stateObjAttrs):
+                lines.append(tabs + self.TAB + "header.append(\'%s\')\n" %(attr))
+        lines.append("\n")
+        lines.append(tabs + "objs = self.swtch.getAll%ss()\n" %(self.name))
+        lines.append(tabs + "for obj in objs:\n")
+        lines.append(tabs + self.TAB + "o = obj['Object']\n")
+        lines.append(tabs + self.TAB + "values = []\n")
+        for (attr, attrInfo) in self.attrList:
+            lines.append(tabs + self.TAB + "values.append(\'%%s\' %% o[\'%s\'])\n" %(attr))
+        lines.append(tabs + self.TAB + "r = self.swtch.get" + cfgObjName + "(")
+        argStr = ''
+        for (attr, attrInfo) in self.attrList:
+            if attrInfo['isKey'] == 'True':
+                argStr = argStr + "o[\'%s\'], " %(attr)
+        argStr = argStr[:-2] + ')'
+        lines.append(argStr)
+        lines.append('\n' + tabs + self.TAB + "if r.status_code in self.httpSuccessCodes:\n")
+        lines.append(tabs + self.TAB + self.TAB + "o = r.json()['Object']\n")
+        for (attr, attrInfo) in cfgObjAttrs:
+            if not (attr in stateObjAttrs):
+                lines.append(tabs + self.TAB + self.TAB + "values.append(\'%%s\' %% o[\'%s\'])\n" %(attr))
+        lines.append(tabs + self.TAB + "rows.append(values)\n")
+        lines.append(tabs + "self.tblPrintObject(\'%s\', header, rows)\n\n" %(self.name))
+        fileHdl.writelines(lines)
+
     def writeAllPrintMethods(self, fileHdl):
         self.createTblPrintAllMethod(fileHdl)
+        self.createTblPrintMethod(fileHdl)
 
     def writeAllMethods (self, fileHdl):
         self.createGetMethod(fileHdl, 'self.stateUrlBase')

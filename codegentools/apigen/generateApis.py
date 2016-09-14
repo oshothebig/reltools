@@ -3,6 +3,7 @@ import json
 from flexObject import FlexObject
 from flexConfigObject import FlexConfigObject
 from flexStateObject import FlexStateObject
+from flexActionObject import FlexActionObject
 
 class apiGenie (object) :
     def __init__ (self, outputDir, objDescriptors, attrDescriptionsDir) :
@@ -31,7 +32,12 @@ class apiGenie (object) :
                                                                   objInfo['multiplicity'],
                                                                   self.attrBase + objName + "Members.json"
                                                                   )
-
+                    elif 'x' in str(objInfo['access']):
+                        self.objDict[objName] = FlexActionObject (objName,
+                                                                  objInfo['access'],
+                                                                  objInfo['multiplicity'],
+                                                                  self.attrBase + objName + "Members.json"
+                                                                  )
     def writeApiCode(self) :
         filePath = ''
         basePath= os.getenv('SR_CODE_BASE')
@@ -50,6 +56,11 @@ class apiGenie (object) :
                 fileHdl.writelines(base.readlines())
             for objName, obj in self.objDict.iteritems():
                 obj.writeAllPrintMethods(fileHdl)
+                #Generate a combined print method once for all objects
+                if objName.endswith('State'):
+                    cfgObjName = objName[:-5]
+                    if self.objDict.has_key(cfgObjName):
+                        obj.createCombinedTblPrintAllMethod(fileHdl, cfgObjName, self.objDict[cfgObjName].attrList)
 
 
 if __name__ == '__main__':
@@ -57,7 +68,8 @@ if __name__ == '__main__':
     if not baseDir:
         print 'Environment variable SR_CODE_BASE is not set'
     
-    objDescriptors = [ baseDir + '/snaproute/src/models/objects/' + 'genObjectConfig.json', ]
+    objDescriptors = [ baseDir + '/snaproute/src/models/objects/' + 'genObjectConfig.json',
+                       baseDir + '/snaproute/src/models/actions/' + 'genObjectAction.json']
     attrDescriptorsLocation = baseDir+'/reltools/codegentools/._genInfo/'
     outputDir = baseDir+'/snaproute/src/flexSdk/py/'
     gen = apiGenie( outputDir, objDescriptors, attrDescriptorsLocation)

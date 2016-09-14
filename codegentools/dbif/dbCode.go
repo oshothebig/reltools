@@ -72,8 +72,7 @@ func (obj *ObjectInfoJson) WriteStoreObjectInDBFcn(str *ast.StructType, fd *os.F
 	lines = append(lines,
 		`_, err := dbHdl.Do("HMSET", redis.Args{}.Add(obj.GetKey()).AddFlat(obj)...) 
 		if err != nil {
-			fmt.Println("Failed to store object in DB", obj)
-			return err
+			return errors.New(fmt.Sprintln("Failed to store object in DB", obj, err))
 		}`)
 	// Write Secondary table lines
 	secondaryLines := obj.WriteSecondaryTableInsertIntoDBFcn(str, fd, attrMap, objMap)
@@ -98,13 +97,11 @@ func (obj *ObjectInfoJson) WriteSecondaryTableInsertIntoDBFcn(str *ast.StructTyp
 				lines = append(lines, `
 					bytes, err := json.Marshal(obj.`+attrInfo.MemberName+`)
 					if err != nil {
-						fmt.Println("Failed to marshal struct when storing object in DB", obj)
-						return err
+						return errors.New(fmt.Sprintln("Failed to marshal struct when storing object in DB", obj, err))
 					}
 					_, err = dbHdl.Do("SET", obj.GetKey()+"`+attrInfo.MemberName+`", string(bytes))
 					if err != nil {
-						fmt.Println("Failed to store object in DB", obj)
-						return err
+						return errors.New(fmt.Sprintln("Failed to store object in DB", obj, err))
 					}`)
 			} else {
 				//Member is a slice of native data type elements
@@ -112,8 +109,7 @@ func (obj *ObjectInfoJson) WriteSecondaryTableInsertIntoDBFcn(str *ast.StructTyp
 					for idx := len(obj.`+attrInfo.MemberName+`) - 1; idx >= 0; idx-- {
 						_, err := dbHdl.Do("LPUSH", obj.GetKey()+"`+attrInfo.MemberName+`", obj.`+attrInfo.MemberName+`[idx])
 						if err != nil {
-							fmt.Println("Failed to store slice member in DB", obj)
-							return err
+							return errors.New(fmt.Sprintln("Failed to store slice member in DB", obj, err))
 						}
 					}`)
 			}
@@ -129,8 +125,7 @@ func (obj *ObjectInfoJson) WriteDeleteObjectFromDbFcn(str *ast.StructType, fd *o
 	lines = append(lines,
 		`_, err := dbHdl.Do("DEL", obj.GetKey()) 
 		if err != nil {
-			fmt.Println("Failed to delete obj from DB", obj)
-			return err
+			return errors.New(fmt.Sprintln("Failed to delete obj from DB", obj, err))
 		}`)
 	//Delete key corresponding to secondary entries if any
 	for _, attrInfo := range attrMap {
@@ -138,8 +133,7 @@ func (obj *ObjectInfoJson) WriteDeleteObjectFromDbFcn(str *ast.StructType, fd *o
 			lines = append(lines, `
 				_, err = dbHdl.Do("DEL", obj.GetKey()+"`+attrInfo.MemberName+`")
 				if err != nil {
-					fmt.Println("Failed to delete secondary table from DB", obj)
-					return err
+					return errors.New(fmt.Sprintln("Failed to delete secondary table from DB", obj, err))
 				}`)
 		}
 	}
@@ -160,8 +154,7 @@ func (obj *ObjectInfoJson) WriteGetObjectFromDbFcn(str *ast.StructType, fd *os.F
 	lines = append(lines,
 		`val, err := redis.Values(dbHdl.Do("HGETALL", objKey))
 		if err != nil || len(val) == 0 {
-			fmt.Println("Failed to get obj from DB", obj)
-			return object, errors.New("Failed to get obj from DB")
+			return object, errors.New(fmt.Sprintln("Failed to get obj from DB", obj, err))
 		}
 		_ = redis.ScanStruct(val, &object)
 		`)
@@ -181,13 +174,11 @@ func (obj *ObjectInfoJson) WriteGetObjectFromDbFcn(str *ast.StructType, fd *os.F
 				lines = append(lines, `
 				    strVal, err = redis.String(dbHdl.Do("GET", objKey+"`+attrInfo.MemberName+`"))
 					if err != nil {
-						fmt.Println("Failed to get obj from DB data", obj)
-						return object, err
+						return object, errors.New(fmt.Sprintln("Failed to get obj from DB data", obj, err))
 					}
 					err = json.Unmarshal([]byte(strVal), &object.`+attrInfo.MemberName+`)
 					if err != nil {
-						fmt.Println("Failed to unmarshal db object", obj)
-						return object, err
+						return object, errors.New(fmt.Sprintln("Failed to unmarshal db object", obj, err))
 					}`)
 			} else {
 				if firstList {
@@ -198,14 +189,12 @@ func (obj *ObjectInfoJson) WriteGetObjectFromDbFcn(str *ast.StructType, fd *os.F
 				lines = append(lines, `
 				    listLen, err = redis.Int(dbHdl.Do("LLEN", objKey+"`+attrInfo.MemberName+`"))
 					if err != nil {
-						fmt.Println("Failed to retrieve list len for secondary table", obj)
-						return object, err
+						return object, errors.New(fmt.Sprintln("Failed to retrieve list len for secondary table", obj, err))
 					}
 					for idx = 0; idx < listLen; idx++ {
 						val, err := redis.`+goTypeToRedisTypeMap[attrInfo.VarType]+`(dbHdl.Do("LINDEX", objKey+"`+attrInfo.MemberName+`",idx))
 						if err != nil {
-							fmt.Println("Failed to reconstruct list for secondary table", obj)
-							return object, err
+							return object, errors.New(fmt.Sprintln("Failed to reconstruct list for secondary table", obj, err))
 						}
 						object.`+attrInfo.MemberName+` = append(object.`+attrInfo.MemberName+`, `+attrInfo.VarType+`(val))
 					}`)
@@ -278,22 +267,19 @@ func (obj *ObjectInfoJson) WriteGetAllObjFromDbFcn(str *ast.StructType, fd *os.F
 		`keyStr := "`+obj.ObjName+`#*"
 		keys, err := redis.Strings(dbHdl.Do("KEYS", keyStr))
 		if err != nil {
-			fmt.Println("Failed to get all object keys from db", obj)
-			return nil, err
+			return nil, errors.New(fmt.Sprintln("Failed to get all object keys from db", obj, err))
 		}
 		for idx := 0; idx < len(keys); idx++ {
 		keyType, err := redis.String(dbHdl.Do("Type", keys[idx]))
 		if err != nil {
-			fmt.Println("Error getting keyType")
-			return nil, err
+			return nil, errors.New(fmt.Sprintln("Error getting keyType", err))
 		}
 		if keyType != "hash" {
 			continue
 		}
 			object, err := obj.GetObjectFromDb(keys[idx], dbHdl)
 			if err != nil {
-				fmt.Println("Failed to get object from db", obj)
-				return nil, err
+				return nil, errors.New(fmt.Sprintln("Failed to get object from db", obj, err))
 			}
 			objList = append(objList, object)
 		}
@@ -380,8 +366,7 @@ func (obj *ObjectInfoJson) WriteGetBulkObjFromDbFcn(str *ast.StructType, fd *os.
 	lines = append(lines,
 		`objList, err = obj.GetAllObjFromDb(dbHdl)
 		if err != nil {
-			fmt.Println("Failed to get all object from db", obj)
-			return err, 0, 0, false, nil
+			return errors.New(fmt.Sprintln("Failed to get all object from db", obj, err)), 0, 0, false, nil
 		}
 		return nil, int64(len(objList)), int64(0), false, objList
 		}`)
@@ -485,8 +470,7 @@ func (obj *ObjectInfoJson) WriteUpdateObjectInDbFcn(str *ast.StructType, fd *os.
 	lines = append(lines,
 		`_, err := dbHdl.Do("HMSET", redis.Args{}.Add(obj.GetKey()).AddFlat(obj)...) 
 		if err != nil {
-			fmt.Println("Failed to store object in DB", obj)
-			return err
+			return errors.New(fmt.Sprintln("Failed to store object in DB", obj, err))
 		}`)
 	lines = append(lines, `
 						objTyp := reflect.TypeOf(obj)
@@ -501,12 +485,12 @@ func (obj *ObjectInfoJson) WriteUpdateObjectInDbFcn(str *ast.StructType, fd *os.
 								fieldVal := objVal.Field(i)
 								fieldName := fieldTyp.Name
 								if fieldVal.Kind() == reflect.Slice {
+									_, err := dbHdl.Do("DEL", obj.GetKey()+fieldName)
+									if err != nil {
+										return err
+									}
 									if fieldVal.Len() > 0 {
 										secObjVal := fieldVal.Index(0)
-										_, err := dbHdl.Do("DEL", obj.GetKey()+fieldName)
-										if err != nil {
-											return err
-										}
 										if secObjVal.Kind() == reflect.Struct {
 											bytes, err := json.Marshal(fieldVal.Interface())
 											if err != nil {
@@ -544,11 +528,11 @@ func (obj *ObjectInfoJson) WriteCopyRecursiveFcn(str *ast.StructType, fd *os.Fil
 	                           case reflect.Slice:
 		                       dest.Set(reflect.MakeSlice(src.Type(), src.Len(), src.Cap()))
 		                       for i := 0; i < src.Len(); i++ { 
-	                               obj.CopyRecursive(src.Index(i), dest.Index(i))
+	                               obj.CopyRecursive(dest.Index(i),src.Index(i))
 	                           }
 	                           case reflect.Struct:
 		                       for i := 0; i < src.NumField(); i++ {
-                                    obj.CopyRecursive(src.Field(i), dest.Field(i))
+                                    obj.CopyRecursive(dest.Field(i),src.Field(i))
 	                          }
 	                           case reflect.String:
 		                       dest.SetString(src.Interface().(string))

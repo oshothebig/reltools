@@ -191,12 +191,16 @@ func (obj *ObjectInfoJson) WriteGetObjectFromDbFcn(str *ast.StructType, fd *os.F
 					if err != nil {
 						return object, errors.New(fmt.Sprintln("Failed to retrieve list len for secondary table", obj, err))
 					}
-					for idx = 0; idx < listLen; idx++ {
-						val, err := redis.`+goTypeToRedisTypeMap[attrInfo.VarType]+`(dbHdl.Do("LINDEX", objKey+"`+attrInfo.MemberName+`",idx))
-						if err != nil {
-							return object, errors.New(fmt.Sprintln("Failed to reconstruct list for secondary table", obj, err))
+					if listLen == 0 {
+						object.`+attrInfo.MemberName+` = []`+attrInfo.VarType+`{}
+					} else {
+						for idx = 0; idx < listLen; idx++ {
+							val, err := redis.`+goTypeToRedisTypeMap[attrInfo.VarType]+`(dbHdl.Do("LINDEX", objKey+"`+attrInfo.MemberName+`",idx))
+							if err != nil {
+								return object, errors.New(fmt.Sprintln("Failed to reconstruct list for secondary table", obj, err))
+							}
+							object.`+attrInfo.MemberName+` = append(object.`+attrInfo.MemberName+`, `+attrInfo.VarType+`(val))
 						}
-						object.`+attrInfo.MemberName+` = append(object.`+attrInfo.MemberName+`, `+attrInfo.VarType+`(val))
 					}`)
 			}
 		}

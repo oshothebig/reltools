@@ -1,17 +1,49 @@
 {
     "platforms": [
-        "accton_as5712",
-        "accton_as5812",
-        "accton_as6712",
-        "accton_as6812",
-        "accton_as7712",
-        "accton_wedge40",
-        "accton_wedge100",
-        "cel_redstone",
-        "docker"
+        {
+            "platform": "dummy", 
+            "odm": "accton_as5712"
+        }, 
+        {
+            "platform": "dummy", 
+            "odm": "accton_as5812"
+        }, 
+        {
+            "platform": "dummy", 
+            "odm": "accton_as6712"
+        }, 
+        {
+            "platform": "dummy", 
+            "odm": "accton_as6812"
+        }, 
+        {
+            "platform": "dummy", 
+            "odm": "accton_as7712"
+        }, 
+        {
+            "platform": "dummy", 
+            "odm": "accton_wedge40"
+        }, 
+        {
+            "platform": "dummy", 
+            "odm": "accton_wedge100"
+        }, 
+        {
+            "platform": "dummy", 
+            "odm": "cel_redstone"
+        }, 
+        {
+            "platform": "openBMCVoyager", 
+            "odm": "bcm_voyager"
+        }, 
+        {
+            "platform": "dummy", 
+            "odm": "docker"
+        }
     ], 
     "major": "1", 
-    "build": "153", 
+    "build": "166", 
     "minor": "0", 
-    "patch": "0"
+    "patch": "0",
+    "changeindex": "14"
 }

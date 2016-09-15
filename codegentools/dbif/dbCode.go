@@ -191,12 +191,16 @@ func (obj *ObjectInfoJson) WriteGetObjectFromDbFcn(str *ast.StructType, fd *os.F
 					if err != nil {
 						return object, errors.New(fmt.Sprintln("Failed to retrieve list len for secondary table", obj, err))
 					}
-					for idx = 0; idx < listLen; idx++ {
-						val, err := redis.`+goTypeToRedisTypeMap[attrInfo.VarType]+`(dbHdl.Do("LINDEX", objKey+"`+attrInfo.MemberName+`",idx))
-						if err != nil {
-							return object, errors.New(fmt.Sprintln("Failed to reconstruct list for secondary table", obj, err))
+					if listLen == 0 {
+						object.`+attrInfo.MemberName+` = []`+attrInfo.VarType+`{}
+					} else {
+						for idx = 0; idx < listLen; idx++ {
+							val, err := redis.`+goTypeToRedisTypeMap[attrInfo.VarType]+`(dbHdl.Do("LINDEX", objKey+"`+attrInfo.MemberName+`",idx))
+							if err != nil {
+								return object, errors.New(fmt.Sprintln("Failed to reconstruct list for secondary table", obj, err))
+							}
+							object.`+attrInfo.MemberName+` = append(object.`+attrInfo.MemberName+`, `+attrInfo.VarType+`(val))
 						}
-						object.`+attrInfo.MemberName+` = append(object.`+attrInfo.MemberName+`, `+attrInfo.VarType+`(val))
 					}`)
 			}
 		}
@@ -258,6 +262,41 @@ func (obj *ObjectInfoJson) WriteKeyRelatedFcns(str *ast.StructType, fd *os.File,
 		fd.WriteString(line)
 	}
 	fd.Sync()
+
+}
+
+func (obj *ObjectInfoJson) WriteMergeDbObjKeysFcn(str *ast.StructType, fd *os.File, attrMap []ObjectMemberAndInfo, objMap map[string]ObjectInfoJson) {
+	var lines []string
+	var keyLines []string
+	configObjName := strings.TrimSuffix(obj.ObjName, "State")
+	configObj, exist := objMap[configObjName]
+	if exist && strings.Contains(configObj.Access, "w") {
+		for _, fld := range str.Fields.List {
+			if fld.Names != nil {
+				switch fld.Type.(type) {
+				case *ast.Ident:
+					varName := fld.Names[0].String()
+					if fld.Tag != nil {
+						if strings.Contains(fld.Tag.Value, "SNAPROUTE") {
+							keyLines = append(keyLines, "mergedObject."+varName+" = data."+varName+"\n")
+						}
+					}
+				}
+			}
+		}
+		lines = append(lines, "\nfunc (obj "+obj.ObjName+") MergeDbObjKeys(dbObj ConfigObj) (ConfigObj, error) { \n")
+		lines = append(lines, "var mergedObject "+obj.ObjName+"\n")
+		lines = append(lines, "data := dbObj.("+configObjName+")\n")
+		for _, keyLine := range keyLines {
+			lines = append(lines, keyLine+"\n")
+		}
+		lines = append(lines, "return mergedObject, nil\n")
+		lines = append(lines, "}\n")
+		for _, line := range lines {
+			fd.WriteString(line)
+		}
+		fd.Sync()
+	}
 }
 
 func (obj *ObjectInfoJson) WriteGetAllObjFromDbFcn(str *ast.StructType, fd *os.File, attrMap []ObjectMemberAndInfo, objMap map[string]ObjectInfoJson) {
@@ -485,12 +524,12 @@ func (obj *ObjectInfoJson) WriteUpdateObjectInDbFcn(str *ast.StructType, fd *os.
 								fieldVal := objVal.Field(i)
 								fieldName := fieldTyp.Name
 								if fieldVal.Kind() == reflect.Slice {
+									_, err := dbHdl.Do("DEL", obj.GetKey()+fieldName)
+									if err != nil {
+										return err
+									}
 									if fieldVal.Len() > 0 {
 										secObjVal := fieldVal.Index(0)
-										_, err := dbHdl.Do("DEL", obj.GetKey()+fieldName)
-										if err != nil {
-											return err
-										}
 										if secObjVal.Kind() == reflect.Struct {
 											bytes, err := json.Marshal(fieldVal.Interface())
 											if err != nil {
@@ -528,11 +567,11 @@ func (obj *ObjectInfoJson) WriteCopyRecursiveFcn(str *ast.StructType, fd *os.Fil
 	                           case reflect.Slice:
 		                       dest.Set(reflect.MakeSlice(src.Type(), src.Len(), src.Cap()))
 		                       for i := 0; i < src.Len(); i++ { 
-	                               obj.CopyRecursive(src.Index(i), dest.Index(i))
+	                               obj.CopyRecursive(dest.Index(i),src.Index(i))
 	                           }
 	                           case reflect.Struct:
 		                       for i := 0; i < src.NumField(); i++ {
-                                    obj.CopyRecursive(src.Field(i), dest.Field(i))
+                                    obj.CopyRecursive(dest.Field(i),src.Field(i))
 	                          }
 	                           case reflect.String:
 		                       dest.SetString(src.Interface().(string))
@@ -829,6 +868,7 @@ func (obj *ObjectInfoJson) WriteDBFunctions(str *ast.StructType, attrMap map[str
 		dbFile.WriteString(fileHeaderOptionalForState)
 		dbFile.WriteString(endFileHeaderState)
 		obj.WriteKeyRelatedFcns(str, dbFile, attrMapSlice, objMap)
+		obj.WriteMergeDbObjKeysFcn(str, dbFile, attrMapSlice, objMap)
 		if obj.UsesStateDB {
 			obj.WriteStoreObjectInDBFcn(str, dbFile, attrMapSlice, objMap)
 			obj.WriteDeleteObjectFromDbFcn(str, dbFile, attrMapSlice, objMap)

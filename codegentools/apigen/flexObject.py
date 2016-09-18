@@ -63,7 +63,7 @@ class FlexObject(object) :
             objName = self.name[:-5]
         else:
             objName = self.name
-        lines.append (tabs + "reqUrl =  " + urlPath + " + " + "\'%s\'\n" %(objName))
+        lines.append (tabs + "reqUrl =  " + urlPath + " + " + "\'%s\'" %(objName))
         lines[-1] = lines[-1] + "+\"/%s\"%(objectId)\n"
         lines.append(tabs + "r = requests.get(reqUrl, data=None, headers=headers, timeout=self.timeout) \n")
         lines.append(tabs + "return r\n")                                                                                  

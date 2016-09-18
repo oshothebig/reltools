@@ -21,6 +21,15 @@ ONL_PLT_FILE_LOC = '/etc/onl/platform'
 DMN_CLEANUP_TIME = 3
 DMN_KILL_COUNT = 5
 
+HEADER = '\033[95m'
+OKBLUE = '\033[94m'
+OKGREEN = '\033[92m'
+WARNING = '\033[93m'
+FAIL = '\033[91m'
+ENDC = '\033[0m'
+BOLD = '\033[1m'
+UNDERLINE = '\033[4m'
+
 def execPlatPrereq():
     cmdList = [
             'i2cset -y -f 0 0x60 0x5 0x0f b',
@@ -121,6 +130,13 @@ def isProcessRunning(pid, pidFile):
         isRunning = False
     return isRunning
 
+def getProcessState(pid):
+    try :
+        os.kill(pid, 0)
+        return True
+    except:
+        return False
+
 def getPidInfo(pidFileDir, dmn):
     pid = 0
     pidFile = pidFileDir + dmn['name']+'.pid'
@@ -133,6 +149,14 @@ def getPidInfo(pidFileDir, dmn):
         pid = 0
     return pid, pidFile
 
+def checkAllDaemons (baseDir):
+    pidFileDir = baseDir+'/bin/pids/'
+    allDmns = getDaemonsInfo(baseDir, False)
+    for dmn in allDmns:
+        pid, pidFile = getPidInfo(pidFileDir, dmn)
+        if not getProcessState(pid):
+            return False
+    return True 
 
 def getDaemonsInfo (baseDir, selectedDmns = True) :
 
@@ -274,7 +298,7 @@ if __name__=="__main__":
     else:
         baseDir = "/opt/flexswitch"
 
-    if opts.op != None and opts.op not in ['start', 'stop']:
+    if opts.op != None and opts.op not in ['start', 'stop', 'status']:
         parser.print_usage()
         sys.exit(0)
 
@@ -290,7 +314,7 @@ if __name__=="__main__":
         parser.print_usage()
         sys.exit(0)
  
-    if not localBld:
+    if not localBld and opts.op == 'start':
         determineMacAddress()
     else:
         SYS_PROFILE = baseDir + '/params/systemProfile.json'
@@ -335,7 +359,13 @@ if __name__=="__main__":
                     dmnInst.start(pargs)
         end = datetime.datetime.now()
         print 'Total time taken to start all %s daemons is  %s' %(dmnCount, end -start)
-    else:
+    elif opts.op == 'status':
+        if checkAllDaemons(baseDir):
+            print '[ ' + OKGREEN + 'ok' +  ENDC + ' ] FlexSwitch is running.'
+        else:
+            print '[ ' + FAIL + 'error' +  ENDC + ' ] FlexSwitch is not running.'
+        sys.exit(0)
+    elif opts.op == 'stop':
         allDmns = getDaemonsInfo(baseDir, False)
         sortedDmns = reversed(sorted(allDmns,key= lambda dmn:dmn['runlevel']))
 

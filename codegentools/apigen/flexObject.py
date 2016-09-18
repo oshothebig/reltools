@@ -241,6 +241,6 @@ class FlexObject(object) :
 
     def writeAllMethods (self, fileHdl):
         self.createGetMethod(fileHdl, 'self.stateUrlBase')
-        self.createGetByIdMethod(fileHdl)
+        self.createGetByIdMethod(fileHdl, 'self.stateUrlBase')
         self.createGetAllMethod(fileHdl, 'self.stateUrlBase')
 

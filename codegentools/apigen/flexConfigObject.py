@@ -140,7 +140,7 @@ class FlexConfigObject(FlexObject) :
         tabs = tabs + self.TAB
         spaces = ' ' * (len(lines[-1])  - len("self, "))
         lines.append(spaces+ "objectId,")
-        objLines = [tabs + "obj =  {\'objectId\': objectId }\n"]
+        objLines = [tabs + "obj =  {}\n"]
         for (attr, attrInfo) in self.attrList:
             if attrInfo['isKey'] != 'True':
                 lines.append("\n" + spaces + "%s = None," %(attr))
@@ -165,6 +165,6 @@ class FlexConfigObject(FlexObject) :
         self.createDeleteMethod(fileHdl)
         self.createDeleteByIdMethod(fileHdl)
         self.createGetMethod(fileHdl, 'self.cfgUrlBase')
-        self.createGetByIdMethod(fileHdl)
+        self.createGetByIdMethod(fileHdl, 'self.cfgUrlBase')
         self.createGetAllMethod(fileHdl, 'self.cfgUrlBase')
 

@@ -53,7 +53,7 @@ class FlexObject(object) :
             self.attrList =  keysList + [x for x in attrList if x!= None] + dfltAttrList 
 
                 
-    def createGetByIdMethod (self, fileHdl):
+    def createGetByIdMethod (self, fileHdl, urlPath):
         tabs = self.TAB
         #lines = [ "\n"+ tabs + "@processReturnCode"]
         lines = []
@@ -63,7 +63,7 @@ class FlexObject(object) :
             objName = self.name[:-5]
         else:
             objName = self.name
-        lines.append (tabs + "reqUrl =  self.stateUrlBase+" +"\'%s\'" %(objName))
+        lines.append (tabs + "reqUrl =  " + urlPath + " + " + "\'%s\'" %(objName))
         lines[-1] = lines[-1] + "+\"/%s\"%(objectId)\n"
         lines.append(tabs + "r = requests.get(reqUrl, data=None, headers=headers, timeout=self.timeout) \n")
         lines.append(tabs + "return r\n")                                                                                  
@@ -241,6 +241,6 @@ class FlexObject(object) :
 
     def writeAllMethods (self, fileHdl):
         self.createGetMethod(fileHdl, 'self.stateUrlBase')
-        self.createGetByIdMethod(fileHdl)
+        self.createGetByIdMethod(fileHdl, 'self.stateUrlBase')
         self.createGetAllMethod(fileHdl, 'self.stateUrlBase')
 

@@ -27,6 +27,7 @@ import os
 import sys
 import time
 import signal
+import syslog
 
 
 class Daemon(object):
@@ -58,10 +59,12 @@ class Daemon(object):
             pid = os.fork()
             if pid > 0:
                 # Exit first parent
+                syslog.syslog(syslog.LOG_DEBUG, 'Exit first parent')
                 sys.exit(0)
         except OSError, e:
             sys.stderr.write(
                 "fork #1 failed: %d (%s)\n" % (e.errno, e.strerror))
+            syslog.syslog(syslog.LOG_DEBUG, "fork #1 failed: %d (%s)\n" % (e.errno, e.strerror))
             sys.exit(1)
 
         # Decouple from parent environment
@@ -74,10 +77,12 @@ class Daemon(object):
             pid = os.fork()
             if pid > 0:
                 # Exit from second parent
+                syslog.syslog(syslog.LOG_DEBUG, 'Exist from second parent')
                 sys.exit(0)
         except OSError, e:
             sys.stderr.write(
                 "fork #2 failed: %d (%s)\n" % (e.errno, e.strerror))
+            syslog.syslog(syslog.LOG_DEBUG, "fork #2 failed: %d (%s)\n" % (e.errno, e.strerror))
             sys.exit(1)
 
         if sys.platform != 'darwin':  # This block breaks on OS X

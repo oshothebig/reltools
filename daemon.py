@@ -55,6 +55,7 @@ class Daemon(object):
         Programming in the UNIX Environment" for details (ISBN 0201563177)
         http://www.erlenstar.demon.co.uk/unix/faq_2.html#SEC16
         """
+        syslog.syslog(syslog.LOG_DEBUG, '#### Daemonizing component %s' %(self.pidfile))
         try:
             pid = os.fork()
             if pid > 0:
@@ -77,7 +78,7 @@ class Daemon(object):
             pid = os.fork()
             if pid > 0:
                 # Exit from second parent
-                syslog.syslog(syslog.LOG_DEBUG, 'Exist from second parent')
+                syslog.syslog(syslog.LOG_DEBUG, 'Exit from second parent')
                 sys.exit(0)
         except OSError, e:
             sys.stderr.write(
@@ -100,6 +101,7 @@ class Daemon(object):
             os.dup2(se.fileno(), sys.stderr.fileno())
 
         def sigtermhandler(signum, frame):
+            syslog.syslog(syslog.LOG_DEBUG, "Received signal %s for PID %s\n" % (signum, self.pidfile))
             self.daemon_alive = False
             sys.exit()
 
@@ -114,6 +116,7 @@ class Daemon(object):
 
         if self.verbose >= 1:
             print "Started"
+            syslog.syslog(syslog.LOG_DEBUG, "Started %s\n" % (self.pidfile))
 
         # Write pidfile
         atexit.register(
@@ -122,6 +125,7 @@ class Daemon(object):
         file(self.pidfile, 'w+').write("%s\n" % pid)
 
     def delpid(self):
+        syslog.syslog(syslog.LOG_DEBUG, "Deleting PIDfile exit called %s\n" % (self.pidfile))
         os.remove(self.pidfile)
 
     def start(self, *args, **kwargs):

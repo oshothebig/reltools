@@ -412,3 +412,4 @@ if __name__=="__main__":
             if isProcessRunning(pid, pidFile):
                 print '*** Failed to Kill process [%s]' %(dmn['name'])
                 syslog.syslog(syslog.LOG_DEBUG, '*** Failed to stop process [%s]' %( dmn['name']))
+        time.sleep(3)

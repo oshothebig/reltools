@@ -140,7 +140,7 @@ class FlexConfigObject(FlexObject) :
         tabs = tabs + self.TAB
         spaces = ' ' * (len(lines[-1])  - len("self, "))
         lines.append(spaces+ "objectId,")
-        objLines = [tabs + "obj =  {\'objectId\': objectId }\n"]
+        objLines = [tabs + "obj =  {}\n"]
         for (attr, attrInfo) in self.attrList:
             if attrInfo['isKey'] != 'True':
                 lines.append("\n" + spaces + "%s = None," %(attr))
@@ -149,7 +149,8 @@ class FlexConfigObject(FlexObject) :
         lines[-1] = lines[-1][0:lines[-1].find(',')]
         lines.append("):\n")
         lines = lines + objLines
-        lines.append (tabs + "reqUrl =  self.cfgUrlBase+" +"\'%s\'\n" %(self.name))
+        lines.append (tabs + "reqUrl =  self.cfgUrlBase+" +"\'%s\'" %(self.name))
+        lines[-1] = lines[-1] + "+\"/%s\"%(objectId)\n"
         lines.append(tabs + "r = requests.patch(reqUrl, data=json.dumps(obj), headers=headers,timeout=self.timeout) \n")
         lines.append(tabs + "return r\n")                                                                                  
         fileHdl.writelines(lines)

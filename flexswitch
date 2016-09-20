@@ -333,12 +333,12 @@ if __name__=="__main__":
 
         start = datetime.datetime.now()
         dmnCount = 0
+        children = []
         for dmn in getDaemonsInfo(baseDir):
             if opts.name != None and opts.name != dmn['name']:
                 continue
-            print "Starting Daemon %s Params: %s" %( dmn['name'], dmn['params']) 
-            syslog.syslog(syslog.LOG_DEBUG, 'Starting Daemon %s Params: %s' %( dmn['name'], dmn['params']))
-
+            print "Starting Daemon %s Params: %s" %(dmn['name'], dmn['params']) 
+            syslog.syslog(syslog.LOG_DEBUG, 'Starting Daemon %s Params: %s' %(dmn['name'], dmn['params']))
             dmnCount += 1
             pidFile = pidFileDir + dmn['name']+'.pid'
             if isPIdFileExisting(pidFile):
@@ -357,7 +357,11 @@ if __name__=="__main__":
                                             #stderr= baseDir+'/bin/'+'log.txt',
                                             verbose=2)
                     dmnInst.start(pargs)
-                    syslog.syslog(syslog.LOG_DEBUG, 'process %s is started' %(dmn['name']))
+                    print 'process %s is started' %(dmn['name'])
+                else:
+                    children.append(pid)
+        for child in children:
+            os.waitpid(child, 0)
         end = datetime.datetime.now()
         print 'Total time taken to start all %s daemons is  %s' %(dmnCount, end -start)
     elif opts.op == 'status':
@@ -411,4 +415,7 @@ if __name__=="__main__":
                 time.sleep(1)
             if isProcessRunning(pid, pidFile):
                 print '*** Failed to Kill process [%s]' %(dmn['name'])
-                syslog.syslog(syslog.LOG_DEBUG, '*** Failed to stop process [%s]' %( dmn['name']))
+                syslog.syslog(syslog.LOG_DEBUG, '*** Failed to kill process [%s]' %( dmn['name']))
+        #os.system('ls /opt/flexswitch/bin/pids/')
+        #os.system('cat /opt/flexswitch/bin/pids/*')
+        #os.system('ps fax | grep flex')

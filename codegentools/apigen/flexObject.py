@@ -53,7 +53,7 @@ class FlexObject(object) :
             self.attrList =  keysList + [x for x in attrList if x!= None] + dfltAttrList 
 
                 
-    def createGetByIdMethod (self, fileHdl):
+    def createGetByIdMethod (self, fileHdl, urlPath):
         tabs = self.TAB
         #lines = [ "\n"+ tabs + "@processReturnCode"]
         lines = []
@@ -63,7 +63,7 @@ class FlexObject(object) :
             objName = self.name[:-5]
         else:
             objName = self.name
-        lines.append (tabs + "reqUrl =  self.stateUrlBase+" +"\'%s\'" %(objName))
+        lines.append (tabs + "reqUrl =  " + urlPath + " + " + "\'%s\'" %(objName))
         lines[-1] = lines[-1] + "+\"/%s\"%(objectId)\n"
         lines.append(tabs + "r = requests.get(reqUrl, data=None, headers=headers, timeout=self.timeout) \n")
         lines.append(tabs + "return r\n")                                                                                  
@@ -160,7 +160,7 @@ class FlexObject(object) :
         for (attr, attrInfo) in self.attrList:
             lines.append(tabs + self.TAB + "header.append(\'%s\')\n" %(attr))
         lines.append("\n")
-        lines.append(tabs + "objs = self.swtch.get%s(" %(self.name))
+        lines.append(tabs + "rawobj = self.swtch.get%s(" %(self.name))
         #tabs = tabs + self.TAB
         spaces = ' ' * (len(lines[-1]))
         argStr = ''
@@ -180,19 +180,18 @@ class FlexObject(object) :
 
         lines[-1] = lines[-1][0:lines[-1].find(',')]
         lines.append(")\n")
-        lines.append(tabs + "if objs.status_code in self.httpSuccessCodes:\n")
-
-        lines.append(tabs + self.TAB + "for obj in objs:\n")
-        lines.append(tabs + self.TAB + self.TAB + "o = obj['Object']\n")
-        lines.append(tabs + self.TAB + self.TAB + "values = []\n")
+        lines.append(tabs + "if rawobj.status_code in self.httpSuccessCodes:\n")
+        lines.append(tabs + self.TAB + "obj = rawobj.json()\n")
+        lines.append(tabs + self.TAB + "o = obj['Object']\n")
+        lines.append(tabs + self.TAB + "values = []\n")
         for (attr, attrInfo) in self.attrList:
-            lines.append(tabs + self.TAB + self.TAB + "values.append(\'%%s\' %% o[\'%s\'])\n" %(attr))
+            lines.append(tabs + self.TAB + "values.append(\'%%s\' %% o[\'%s\'])\n" %(attr))
 
-        lines.append(tabs + self.TAB + self.TAB + "rows.append(values)\n")
+        lines.append(tabs + self.TAB + "rows.append(values)\n")
         lines.append(tabs + self.TAB + "self.tblPrintObject(\'%s\', header, rows)\n\n" %(self.name))
 
         lines.append(tabs + "else:\n")
-        lines.append(tabs + self.TAB + "print objs.content\n")
+        lines.append(tabs + self.TAB + "print rawobj.content\n")
         fileHdl.writelines(lines)
 
     #This function will print both config and state Obj attrs
@@ -241,6 +240,6 @@ class FlexObject(object) :
 
     def writeAllMethods (self, fileHdl):
         self.createGetMethod(fileHdl, 'self.stateUrlBase')
-        self.createGetByIdMethod(fileHdl)
+        self.createGetByIdMethod(fileHdl, 'self.stateUrlBase')
         self.createGetAllMethod(fileHdl, 'self.stateUrlBase')
 

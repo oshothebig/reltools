@@ -15,20 +15,15 @@ import (
    "reflect"
    "errors"
    "sort"
-)
-
-//Dummy import
-var _ = redis.Args{}
-var _ = errors.New("")
-
 `
-
 var fileHeaderForState = `package objects
 import (
    "fmt"
    "github.com/garyburd/redigo/redis"
    "errors"
+//  "strings"
 `
+
 var endFileHeaderState = `)
 //Dummy import
 var _ = redis.Args{}
@@ -402,13 +397,53 @@ func (obj *ObjectInfoJson) WriteGetBulkSecondaryTableFromDBFcn(str *ast.StructTy
 func (obj *ObjectInfoJson) WriteGetBulkObjFromDbFcn(str *ast.StructType, fd *os.File, attrMap []ObjectMemberAndInfo, objMap map[string]ObjectInfoJson) {
 	var lines []string
 	lines = append(lines, "\nfunc (obj "+obj.ObjName+") GetBulkObjFromDb(startIndex int64, count int64, dbHdl redis.Conn) (err error, objCount int64, nextMarker int64, moreExist bool, objList []ConfigObj) { \n")
+	/*lines = append(lines,
+	`objList, err = obj.GetAllObjFromDb(dbHdl)
+	if err != nil {
+		return errors.New(fmt.Sprintln("Failed to get all object from db", obj, err)), 0, 0, false, nil
+	}
+	return nil, int64(len(objList)), int64(0), false, objList
+	}`)*/
 	lines = append(lines,
-		`objList, err = obj.GetAllObjFromDb(dbHdl)
-		if err != nil {
-			return errors.New(fmt.Sprintln("Failed to get all object from db", obj, err)), 0, 0, false, nil
-		}
-		return nil, int64(len(objList)), int64(0), false, objList
-		}`)
+		`keyStr := "`+obj.ObjName+`#*"
+	        cursor := startIndex
+	        current_count := 0
+	        moreExist = true
+	        for {
+		        val, err := redis.Values(dbHdl.Do("SCAN", cursor, "MATCH", keyStr, "COUNT", (int(count) - current_count)))
+		        if err != nil || len(val) != 2 {
+			        fmt.Println("err after scan command:", err)
+			        return errors.New(fmt.Sprintln("Failed to get all object keys from db", obj, err)), 0, int64(0), false, nil
+		        }
+		        val0 := string(val[0].([]uint8))
+		        tmpcursor, _ := strconv.Atoi(val0) //the first key returned is the next cursor mark, if it is zero, then no more keys
+		        cursor = int64(tmpcursor)
+		        if cursor == 0 {
+			        moreExist = false
+		        }
+		        keys := val[1].([]interface{})
+		        for idx := 0; idx < len(keys); idx++ {
+			        key := string(keys[idx].([]uint8))
+			        keyType, err := redis.String(dbHdl.Do("Type", key))
+			        if err != nil {
+				        return errors.New(fmt.Sprintln("Error getting keyType", err)), 0, int64(0), false, nil
+			        }
+			        if keyType != "hash" {
+				        continue
+			        }
+			        object, err := obj.GetObjectFromDb(key, dbHdl)
+			        if err != nil {
+				        return errors.New(fmt.Sprintln("Failed to get object from db", obj, err)), 0, int64(0), false, nil
+			        }
+			        objList = append(objList, object)
+			        current_count++
+		        }
+		        if moreExist == false || current_count >= int(count) {
+			        break
+		        }
+	         }
+	         return nil, int64(len(objList)), int64(cursor), moreExist, objList
+    }`)
 	for _, line := range lines {
 		fd.WriteString(line)
 	}
@@ -877,7 +912,13 @@ func (obj *ObjectInfoJson) WriteDBFunctions(str *ast.StructType, attrMap map[str
 	obj.WriteLicenseInfo(dbFile)
 	attrMapSlice := obj.ConvertObjectMembersMapToOrderedSlice(attrMap)
 	if strings.Contains(obj.Access, "w") || strings.Contains(obj.Access, "rw") {
+		fileHeaderOptionalForState = fileHeaderOptionalForState +
+			`       
+							"strconv"
+							`
 		dbFile.WriteString(fileHeader)
+		dbFile.WriteString(fileHeaderOptionalForState)
+		dbFile.WriteString(endFileHeaderState)
 		obj.WriteStoreObjectInDBFcn(str, dbFile, attrMapSlice, objMap)
 		obj.WriteDeleteObjectFromDbFcn(str, dbFile, attrMapSlice, objMap)
 		obj.WriteGetObjectFromDbFcn(str, dbFile, attrMapSlice, objMap)
@@ -892,11 +933,17 @@ func (obj *ObjectInfoJson) WriteDBFunctions(str *ast.StructType, attrMap map[str
 		obj.WriteSortObjListFcn(str, dbFile, attrMapSlice, objMap)
 	} else {
 		if obj.UsesStateDB {
+			fileHeaderOptionalForState = fileHeaderOptionalForState +
+				`
+				"strconv"
+				`
 			for _, attrInfo := range attrMap {
 				if attrInfo.IsArray == true {
 					if _, ok := goBasicTypesMap[attrInfo.VarType]; !ok {
 						fileHeaderOptionalForState = fileHeaderOptionalForState +
-							`       "encoding/json"`
+							`
+							"encoding/json"
+							`
 					}
 				}
 			}

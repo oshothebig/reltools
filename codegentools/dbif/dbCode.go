@@ -14,15 +14,16 @@ import (
    "github.com/garyburd/redigo/redis"
    "reflect"
    "errors"
+   "sort"
 `
-
 var fileHeaderForState = `package objects
 import (
    "fmt"
    "github.com/garyburd/redigo/redis"
    "errors"
-//   "strings"
+//  "strings"
 `
+
 var endFileHeaderState = `)
 //Dummy import
 var _ = redis.Args{}
@@ -809,6 +810,42 @@ func (obj *ObjectInfoJson) WriteMergeDbAndConfigObjFcn(str *ast.StructType, fd *
 	}
 	fd.Sync()
 }
+func (obj *ObjectInfoJson) WriteSortObjListFcn(str *ast.StructType, fd *os.File, attrMap []ObjectMemberAndInfo, objMap map[string]ObjectInfoJson) {
+	var lines []string
+	key := ""
+	for _, fld := range str.Fields.List {
+		if fld.Names != nil {
+			switch fld.Type.(type) {
+			case *ast.Ident:
+				varName := fld.Names[0].String()
+				if fld.Tag != nil {
+					if strings.Contains(fld.Tag.Value, "SNAPROUTE") && key == "" {
+						key = varName
+					}
+				}
+			}
+		}
+	}
+	if key != "" {
+		lines = append(lines, "\n\ntype "+obj.ObjName+"s []"+obj.ObjName+"\n")
+		lines = append(lines, "func (a "+obj.ObjName+"s) Len() int           { return len(a) }\n")
+		lines = append(lines, "func (a "+obj.ObjName+"s) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }\n")
+		lines = append(lines, "func (a "+obj.ObjName+"s) Less(i, j int) bool { return a[i]."+key+" < a[j]."+key+" }\n")
+		lines = append(lines, "\nfunc (obj "+obj.ObjName+") SortObjList(objList []ConfigObj) []ConfigObj {\n")
+		lines = append(lines, "sortedObjList := make([]"+obj.ObjName+", len(objList))\n")
+		lines = append(lines, "for idx, object := range objList {\n")
+		lines = append(lines, "sortedObjList[idx] = object.("+obj.ObjName+")\n}\n")
+		lines = append(lines, "sort.Sort("+obj.ObjName+"s(sortedObjList))\n")
+		lines = append(lines, "retObjList := make([]ConfigObj, len(sortedObjList))\n")
+		lines = append(lines, "for idx, object := range sortedObjList {\n")
+		lines = append(lines, "retObjList[idx] = object\n}\n")
+		lines = append(lines, "return retObjList\n}\n")
+		for _, line := range lines {
+			fd.WriteString(line)
+		}
+		fd.Sync()
+	}
+}
 
 func (obj *ObjectInfoJson) ConvertObjectMembersMapToOrderedSlice(attrMap map[string]ObjectMembersInfo) (attrMapSlice []ObjectMemberAndInfo) {
 
@@ -893,17 +930,18 @@ func (obj *ObjectInfoJson) WriteDBFunctions(str *ast.StructType, attrMap map[str
 		obj.WriteMergeDbAndConfigObjFcn(str, dbFile, attrMapSlice, objMap)
 		obj.WriteMergeDbAndConfigObjForPatchUpdateFcn(str, dbFile, attrMapSlice, objMap)
 		obj.WriteGetBulkObjFromDbFcn(str, dbFile, attrMapSlice, objMap)
+		obj.WriteSortObjListFcn(str, dbFile, attrMapSlice, objMap)
 	} else {
 		if obj.UsesStateDB {
 			fileHeaderOptionalForState = fileHeaderOptionalForState +
-				`       
-							"strconv"
-							`
+				`
+				"strconv"
+				`
 			for _, attrInfo := range attrMap {
 				if attrInfo.IsArray == true {
 					if _, ok := goBasicTypesMap[attrInfo.VarType]; !ok {
 						fileHeaderOptionalForState = fileHeaderOptionalForState +
-							`       
+							`
 							"encoding/json"
 							`
 					}

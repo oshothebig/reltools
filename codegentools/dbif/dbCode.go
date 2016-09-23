@@ -15,12 +15,14 @@ import (
    "reflect"
    "errors"
    "sort"
+   "utils/alphaNumSort"
 `
 var fileHeaderForState = `package objects
 import (
    "fmt"
    "github.com/garyburd/redigo/redis"
    "errors"
+   "utils/alphaNumSort"
 //  "strings"
 `
 
@@ -29,6 +31,7 @@ var endFileHeaderState = `)
 var _ = redis.Args{}
 var _ = errors.New("")
 var _ = fmt.Sprintln("")
+var _ = alphaNumSort.Compare("", "")
 
 `
 var goBasicTypesMap = map[string]bool{
@@ -812,6 +815,7 @@ func (obj *ObjectInfoJson) WriteMergeDbAndConfigObjFcn(str *ast.StructType, fd *
 }
 func (obj *ObjectInfoJson) WriteSortObjListFcn(str *ast.StructType, fd *os.File, attrMap []ObjectMemberAndInfo, objMap map[string]ObjectInfoJson) {
 	var lines []string
+	var keyVarType string
 	key := ""
 	for _, fld := range str.Fields.List {
 		if fld.Names != nil {
@@ -821,6 +825,8 @@ func (obj *ObjectInfoJson) WriteSortObjListFcn(str *ast.StructType, fd *os.File,
 				if fld.Tag != nil {
 					if strings.Contains(fld.Tag.Value, "SNAPROUTE") && key == "" {
 						key = varName
+						idntType := fld.Type.(*ast.Ident)
+						keyVarType = idntType.String()
 					}
 				}
 			}
@@ -830,7 +836,11 @@ func (obj *ObjectInfoJson) WriteSortObjListFcn(str *ast.StructType, fd *os.File,
 		lines = append(lines, "\n\ntype "+obj.ObjName+"s []"+obj.ObjName+"\n")
 		lines = append(lines, "func (a "+obj.ObjName+"s) Len() int           { return len(a) }\n")
 		lines = append(lines, "func (a "+obj.ObjName+"s) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }\n")
-		lines = append(lines, "func (a "+obj.ObjName+"s) Less(i, j int) bool { return a[i]."+key+" < a[j]."+key+" }\n")
+		if obj.IsNumericType(keyVarType) {
+			lines = append(lines, "func (a "+obj.ObjName+"s) Less(i, j int) bool { return (a[i]."+key+" < a[j]."+key+") }\n")
+		} else {
+			lines = append(lines, "func (a "+obj.ObjName+"s) Less(i, j int) bool { return (alphaNumSort.Compare(a[i]."+key+", a[j]."+key+") == -1) }\n")
+		}
 		lines = append(lines, "\nfunc (obj "+obj.ObjName+") SortObjList(objList []ConfigObj) []ConfigObj {\n")
 		lines = append(lines, "sortedObjList := make([]"+obj.ObjName+", len(objList))\n")
 		lines = append(lines, "for idx, object := range objList {\n")

@@ -78,6 +78,20 @@ func (obj *ObjectInfoJson) WriteStoreObjectInDBFcn(str *ast.StructType, fd *os.F
 		lines = append(lines, secondaryLines...)
 	}
 	lines = append(lines, "\nreturn nil\n}")
+	if obj.AutoCreate || obj.AutoDiscover {
+		lines = append(lines, "\nfunc (obj "+obj.ObjName+") StoreObjectDefaultInDb(dbHdl redis.Conn) error {\n")
+		lines = append(lines,
+			`_, err := dbHdl.Do("HMSET", redis.Args{}.Add(obj.GetKey()+"Default").AddFlat(obj)...) 
+		if err != nil {
+			return errors.New(fmt.Sprintln("Failed to store object default in DB", obj, err))
+		}`)
+		// Write Secondary table lines
+		secondaryLines := obj.WriteSecondaryTableInsertIntoDBFcn(str, fd, attrMap, objMap)
+		if len(secondaryLines) > 0 {
+			lines = append(lines, secondaryLines...)
+		}
+		lines = append(lines, "\nreturn nil\n}")
+	}
 	for _, line := range lines {
 		fd.WriteString(line)
 	}
@@ -541,6 +555,94 @@ func (obj *ObjectInfoJson) WriteCompareObjectsAndDiffFcn(str *ast.StructType, fd
 	fd.Sync()
 }
 
+func (obj *ObjectInfoJson) WriteCompareObjectDefaultAndDiffFcn(str *ast.StructType, fd *os.File, attrMap []ObjectMemberAndInfo, objMap map[string]ObjectInfoJson) {
+	var lines []string
+	if !obj.AutoCreate && !obj.AutoDiscover {
+		return
+	}
+	lines = append(lines, "\nfunc (obj "+obj.ObjName+") CompareObjectDefaultAndDiff(inObj ConfigObj) ([]bool, error) {\n")
+	lines = append(lines, "dbObj := inObj.("+obj.ObjName+")")
+	lines = append(lines, `
+			objTyp := reflect.TypeOf(obj)
+			objVal := reflect.ValueOf(obj)
+			dbObjVal := reflect.ValueOf(dbObj)
+			attrIds := make([]bool, objTyp.NumField())
+			idx := 0
+			for i := 0; i < objTyp.NumField(); i++ {
+				fieldTyp := objTyp.Field(i)
+				if fieldTyp.Anonymous {
+					continue
+				}
+
+				objVal := objVal.Field(i)
+				dbObjVal := dbObjVal.Field(i)
+				if objVal.Kind() == reflect.Int {
+					if int(objVal.Int()) != int(dbObjVal.Int()) {
+						attrIds[idx] = true
+					}
+				} else if objVal.Kind() == reflect.Int8 {
+					if int8(objVal.Int()) != int8(dbObjVal.Int()) {
+						attrIds[idx] = true
+					}
+				} else if objVal.Kind() == reflect.Int16 {
+					if int16(objVal.Int()) != int16(dbObjVal.Int()) {
+						attrIds[idx] = true
+					}
+				} else if objVal.Kind() == reflect.Int32 {
+					if int32(objVal.Int()) != int32(dbObjVal.Int()) {
+						attrIds[idx] = true
+					}
+				} else if objVal.Kind() == reflect.Int64 {
+					if int64(objVal.Int()) != int64(dbObjVal.Int()) {
+						attrIds[idx] = true
+					}
+				} else if objVal.Kind() == reflect.Uint {
+					if uint(objVal.Uint()) != uint(dbObjVal.Uint()) {
+						attrIds[idx] = true
+					}
+				} else if objVal.Kind() == reflect.Uint8 {
+					if uint8(objVal.Uint()) != uint8(dbObjVal.Uint()) {
+						attrIds[idx] = true
+					}
+				} else if objVal.Kind() == reflect.Uint16 {
+					if uint16(objVal.Uint()) != uint16(dbObjVal.Uint()) {
+						attrIds[idx] = true
+					}
+				} else if objVal.Kind() == reflect.Uint32 {
+					if uint16(objVal.Uint()) != uint16(dbObjVal.Uint()) {
+						attrIds[idx] = true
+					}
+				} else if objVal.Kind() == reflect.Uint64 {
+					if uint16(objVal.Uint()) != uint16(dbObjVal.Uint()) {
+						attrIds[idx] = true
+					}
+				} else if objVal.Kind() == reflect.Float64{
+					if objVal.Float() != dbObjVal.Float() {
+						attrIds[idx] = true
+					}
+				} else if objVal.Kind() == reflect.Bool {
+					if bool(objVal.Bool()) != bool(dbObjVal.Bool()) {
+						attrIds[idx] = true
+					}
+				} else if objVal.Kind() == reflect.Slice {
+					attrIds[idx] = true
+				} else {
+					if objVal.String() != dbObjVal.String() {
+						attrIds[idx] = true
+					}
+				}
+				idx++
+			}
+			return attrIds[:idx], nil
+		}
+
+		`)
+	for _, line := range lines {
+		fd.WriteString(line)
+	}
+	fd.Sync()
+}
+
 func (obj *ObjectInfoJson) WriteUpdateObjectInDbFcn(str *ast.StructType, fd *os.File, attrMap []ObjectMemberAndInfo, objMap map[string]ObjectInfoJson) {
 	var lines []string
 	lines = append(lines, "\nfunc (obj "+obj.ObjName+") UpdateObjectInDb(inObj ConfigObj, attrSet []bool, dbHdl redis.Conn) error {\n")
@@ -935,6 +1037,7 @@ func (obj *ObjectInfoJson) WriteDBFunctions(str *ast.StructType, attrMap map[str
 		obj.WriteKeyRelatedFcns(str, dbFile, attrMapSlice, objMap)
 		obj.WriteGetAllObjFromDbFcn(str, dbFile, attrMapSlice, objMap)
 		obj.WriteCompareObjectsAndDiffFcn(str, dbFile, attrMapSlice, objMap)
+		obj.WriteCompareObjectDefaultAndDiffFcn(str, dbFile, attrMapSlice, objMap)
 		obj.WriteUpdateObjectInDbFcn(str, dbFile, attrMapSlice, objMap)
 		obj.WriteCopyRecursiveFcn(str, dbFile)
 		obj.WriteMergeDbAndConfigObjFcn(str, dbFile, attrMapSlice, objMap)

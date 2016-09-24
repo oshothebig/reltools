@@ -67,6 +67,7 @@ class GitHubClient( object):
             data = response.json()
             for entry in data:
                 print '%s : %s' %(entry['number'], entry['title'])
+                #entry['body'] contains the info
                 #import ipdb;ipdb.set_trace()
                 self.mergePullRequest(org, repo, entry['number'])
         else:
@@ -78,6 +79,7 @@ class GitHubClient( object):
         obj = {'commit_title' :  'Test',
                'commit_message' : 'Test',
               }
+        print 'Merging pull# %s' %(pullNum)
         reqUrl = 'https://api.github.com/repos/%s/%s/pulls/%s/merge' %(org, repo, pullNum)
         response  = requests.put(reqUrl, data=json.dumps(obj), headers=headers, auth=(self.usr, self.passwd ))
         print response

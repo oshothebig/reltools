@@ -11,7 +11,4 @@ List of bugs fixed
 
 ## Check list
 - [ ] Code Review
-- [ ] Unit Test
-
-## Unit test output
 

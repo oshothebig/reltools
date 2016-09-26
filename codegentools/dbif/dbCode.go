@@ -15,6 +15,7 @@ import (
    "reflect"
    "errors"
    "sort"
+   "strings"
    "utils/alphaNumSort"
 `
 var fileHeaderForState = `package objects
@@ -23,7 +24,7 @@ import (
    "github.com/garyburd/redigo/redis"
    "errors"
    "utils/alphaNumSort"
-//  "strings"
+   "strings"
 `
 
 var endFileHeaderState = `)
@@ -32,6 +33,7 @@ var _ = redis.Args{}
 var _ = errors.New("")
 var _ = fmt.Sprintln("")
 var _ = alphaNumSort.Compare("", "")
+var _ = strings.Compare("", "")
 
 `
 var goBasicTypesMap = map[string]bool{
@@ -321,6 +323,9 @@ func (obj *ObjectInfoJson) WriteGetAllObjFromDbFcn(str *ast.StructType, fd *os.F
 			return nil, errors.New(fmt.Sprintln("Failed to get all object keys from db", obj, err))
 		}
 		for idx := 0; idx < len(keys); idx++ {
+		if strings.HasSuffix(keys[idx], "Default") {
+		    continue
+		}
 		keyType, err := redis.String(dbHdl.Do("Type", keys[idx]))
 		if err != nil {
 			return nil, errors.New(fmt.Sprintln("Error getting keyType", err))

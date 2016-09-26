@@ -453,6 +453,9 @@ func (obj *ObjectInfoJson) WriteGetBulkObjFromDbFcn(str *ast.StructType, fd *os.
 			        if keyType != "hash" {
 				        continue
 			        }
+			        if strings.HasSuffix(key, "Default") {
+				        continue
+			        }
 			        object, err := obj.GetObjectFromDb(key, dbHdl)
 			        if err != nil {
 				        return errors.New(fmt.Sprintln("Failed to get object from db", obj, err)), 0, int64(0), false, nil

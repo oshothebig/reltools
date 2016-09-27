@@ -14,26 +14,24 @@ import (
    "github.com/garyburd/redigo/redis"
    "reflect"
    "errors"
-)
-
-//Dummy import
-var _ = redis.Args{}
-var _ = errors.New("")
-
+   "sort"
+   "utils/alphaNumSort"
 `
-
 var fileHeaderForState = `package objects
 import (
    "fmt"
    "github.com/garyburd/redigo/redis"
    "errors"
-//   "strings"
+   "utils/alphaNumSort"
+//  "strings"
 `
+
 var endFileHeaderState = `)
 //Dummy import
 var _ = redis.Args{}
 var _ = errors.New("")
 var _ = fmt.Sprintln("")
+var _ = alphaNumSort.Compare("", "")
 
 `
 var goBasicTypesMap = map[string]bool{
@@ -80,6 +78,20 @@ func (obj *ObjectInfoJson) WriteStoreObjectInDBFcn(str *ast.StructType, fd *os.F
 		lines = append(lines, secondaryLines...)
 	}
 	lines = append(lines, "\nreturn nil\n}")
+	if obj.AutoCreate || obj.AutoDiscover {
+		lines = append(lines, "\nfunc (obj "+obj.ObjName+") StoreObjectDefaultInDb(dbHdl redis.Conn) error {\n")
+		lines = append(lines,
+			`_, err := dbHdl.Do("HMSET", redis.Args{}.Add(obj.GetKey()+"Default").AddFlat(obj)...) 
+		if err != nil {
+			return errors.New(fmt.Sprintln("Failed to store object default in DB", obj, err))
+		}`)
+		// Write Secondary table lines
+		secondaryLines := obj.WriteSecondaryTableInsertIntoDBFcn(str, fd, attrMap, objMap)
+		if len(secondaryLines) > 0 {
+			lines = append(lines, secondaryLines...)
+		}
+		lines = append(lines, "\nreturn nil\n}")
+	}
 	for _, line := range lines {
 		fd.WriteString(line)
 	}
@@ -402,13 +414,53 @@ func (obj *ObjectInfoJson) WriteGetBulkSecondaryTableFromDBFcn(str *ast.StructTy
 func (obj *ObjectInfoJson) WriteGetBulkObjFromDbFcn(str *ast.StructType, fd *os.File, attrMap []ObjectMemberAndInfo, objMap map[string]ObjectInfoJson) {
 	var lines []string
 	lines = append(lines, "\nfunc (obj "+obj.ObjName+") GetBulkObjFromDb(startIndex int64, count int64, dbHdl redis.Conn) (err error, objCount int64, nextMarker int64, moreExist bool, objList []ConfigObj) { \n")
+	/*lines = append(lines,
+	`objList, err = obj.GetAllObjFromDb(dbHdl)
+	if err != nil {
+		return errors.New(fmt.Sprintln("Failed to get all object from db", obj, err)), 0, 0, false, nil
+	}
+	return nil, int64(len(objList)), int64(0), false, objList
+	}`)*/
 	lines = append(lines,
-		`objList, err = obj.GetAllObjFromDb(dbHdl)
-		if err != nil {
-			return errors.New(fmt.Sprintln("Failed to get all object from db", obj, err)), 0, 0, false, nil
-		}
-		return nil, int64(len(objList)), int64(0), false, objList
-		}`)
+		`keyStr := "`+obj.ObjName+`#*"
+	        cursor := startIndex
+	        current_count := 0
+	        moreExist = true
+	        for {
+		        val, err := redis.Values(dbHdl.Do("SCAN", cursor, "MATCH", keyStr, "COUNT", (int(count) - current_count)))
+		        if err != nil || len(val) != 2 {
+			        fmt.Println("err after scan command:", err)
+			        return errors.New(fmt.Sprintln("Failed to get all object keys from db", obj, err)), 0, int64(0), false, nil
+		        }
+		        val0 := string(val[0].([]uint8))
+		        tmpcursor, _ := strconv.Atoi(val0) //the first key returned is the next cursor mark, if it is zero, then no more keys
+		        cursor = int64(tmpcursor)
+		        if cursor == 0 {
+			        moreExist = false
+		        }
+		        keys := val[1].([]interface{})
+		        for idx := 0; idx < len(keys); idx++ {
+			        key := string(keys[idx].([]uint8))
+			        keyType, err := redis.String(dbHdl.Do("Type", key))
+			        if err != nil {
+				        return errors.New(fmt.Sprintln("Error getting keyType", err)), 0, int64(0), false, nil
+			        }
+			        if keyType != "hash" {
+				        continue
+			        }
+			        object, err := obj.GetObjectFromDb(key, dbHdl)
+			        if err != nil {
+				        return errors.New(fmt.Sprintln("Failed to get object from db", obj, err)), 0, int64(0), false, nil
+			        }
+			        objList = append(objList, object)
+			        current_count++
+		        }
+		        if moreExist == false || current_count >= int(count) {
+			        break
+		        }
+	         }
+	         return nil, int64(len(objList)), int64(cursor), moreExist, objList
+    }`)
 	for _, line := range lines {
 		fd.WriteString(line)
 	}
@@ -492,6 +544,94 @@ func (obj *ObjectInfoJson) WriteCompareObjectsAndDiffFcn(str *ast.StructType, fd
 				}
 				idx++
 
+			}
+			return attrIds[:idx], nil
+		}
+
+		`)
+	for _, line := range lines {
+		fd.WriteString(line)
+	}
+	fd.Sync()
+}
+
+func (obj *ObjectInfoJson) WriteCompareObjectDefaultAndDiffFcn(str *ast.StructType, fd *os.File, attrMap []ObjectMemberAndInfo, objMap map[string]ObjectInfoJson) {
+	var lines []string
+	if !obj.AutoCreate && !obj.AutoDiscover {
+		return
+	}
+	lines = append(lines, "\nfunc (obj "+obj.ObjName+") CompareObjectDefaultAndDiff(inObj ConfigObj) ([]bool, error) {\n")
+	lines = append(lines, "dbObj := inObj.("+obj.ObjName+")")
+	lines = append(lines, `
+			objTyp := reflect.TypeOf(obj)
+			objVal := reflect.ValueOf(obj)
+			dbObjVal := reflect.ValueOf(dbObj)
+			attrIds := make([]bool, objTyp.NumField())
+			idx := 0
+			for i := 0; i < objTyp.NumField(); i++ {
+				fieldTyp := objTyp.Field(i)
+				if fieldTyp.Anonymous {
+					continue
+				}
+
+				objVal := objVal.Field(i)
+				dbObjVal := dbObjVal.Field(i)
+				if objVal.Kind() == reflect.Int {
+					if int(objVal.Int()) != int(dbObjVal.Int()) {
+						attrIds[idx] = true
+					}
+				} else if objVal.Kind() == reflect.Int8 {
+					if int8(objVal.Int()) != int8(dbObjVal.Int()) {
+						attrIds[idx] = true
+					}
+				} else if objVal.Kind() == reflect.Int16 {
+					if int16(objVal.Int()) != int16(dbObjVal.Int()) {
+						attrIds[idx] = true
+					}
+				} else if objVal.Kind() == reflect.Int32 {
+					if int32(objVal.Int()) != int32(dbObjVal.Int()) {
+						attrIds[idx] = true
+					}
+				} else if objVal.Kind() == reflect.Int64 {
+					if int64(objVal.Int()) != int64(dbObjVal.Int()) {
+						attrIds[idx] = true
+					}
+				} else if objVal.Kind() == reflect.Uint {
+					if uint(objVal.Uint()) != uint(dbObjVal.Uint()) {
+						attrIds[idx] = true
+					}
+				} else if objVal.Kind() == reflect.Uint8 {
+					if uint8(objVal.Uint()) != uint8(dbObjVal.Uint()) {
+						attrIds[idx] = true
+					}
+				} else if objVal.Kind() == reflect.Uint16 {
+					if uint16(objVal.Uint()) != uint16(dbObjVal.Uint()) {
+						attrIds[idx] = true
+					}
+				} else if objVal.Kind() == reflect.Uint32 {
+					if uint16(objVal.Uint()) != uint16(dbObjVal.Uint()) {
+						attrIds[idx] = true
+					}
+				} else if objVal.Kind() == reflect.Uint64 {
+					if uint16(objVal.Uint()) != uint16(dbObjVal.Uint()) {
+						attrIds[idx] = true
+					}
+				} else if objVal.Kind() == reflect.Float64{
+					if objVal.Float() != dbObjVal.Float() {
+						attrIds[idx] = true
+					}
+				} else if objVal.Kind() == reflect.Bool {
+					if bool(objVal.Bool()) != bool(dbObjVal.Bool()) {
+						attrIds[idx] = true
+					}
+				} else if objVal.Kind() == reflect.Slice {
+					attrIds[idx] = true
+				} else {
+					if objVal.String() != dbObjVal.String() {
+						attrIds[idx] = true
+					}
+				}
+				idx++
 			}
 			return attrIds[:idx], nil
 		}
@@ -775,6 +915,49 @@ func (obj *ObjectInfoJson) WriteMergeDbAndConfigObjFcn(str *ast.StructType, fd *
 	}
 	fd.Sync()
 }
+func (obj *ObjectInfoJson) WriteSortObjListFcn(str *ast.StructType, fd *os.File, attrMap []ObjectMemberAndInfo, objMap map[string]ObjectInfoJson) {
+	var lines []string
+	var keyVarType string
+	key := ""
+	for _, fld := range str.Fields.List {
+		if fld.Names != nil {
+			switch fld.Type.(type) {
+			case *ast.Ident:
+				varName := fld.Names[0].String()
+				if fld.Tag != nil {
+					if strings.Contains(fld.Tag.Value, "SNAPROUTE") && key == "" {
+						key = varName
+						idntType := fld.Type.(*ast.Ident)
+						keyVarType = idntType.String()
+					}
+				}
+			}
+		}
+	}
+	if key != "" {
+		lines = append(lines, "\n\ntype "+obj.ObjName+"s []"+obj.ObjName+"\n")
+		lines = append(lines, "func (a "+obj.ObjName+"s) Len() int           { return len(a) }\n")
+		lines = append(lines, "func (a "+obj.ObjName+"s) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }\n")
+		if obj.IsNumericType(keyVarType) {
+			lines = append(lines, "func (a "+obj.ObjName+"s) Less(i, j int) bool { return (a[i]."+key+" < a[j]."+key+") }\n")
+		} else {
+			lines = append(lines, "func (a "+obj.ObjName+"s) Less(i, j int) bool { return (alphaNumSort.Compare(a[i]."+key+", a[j]."+key+") == -1) }\n")
+		}
+		lines = append(lines, "\nfunc (obj "+obj.ObjName+") SortObjList(objList []ConfigObj) []ConfigObj {\n")
+		lines = append(lines, "sortedObjList := make([]"+obj.ObjName+", len(objList))\n")
+		lines = append(lines, "for idx, object := range objList {\n")
+		lines = append(lines, "sortedObjList[idx] = object.("+obj.ObjName+")\n}\n")
+		lines = append(lines, "sort.Sort("+obj.ObjName+"s(sortedObjList))\n")
+		lines = append(lines, "retObjList := make([]ConfigObj, len(sortedObjList))\n")
+		lines = append(lines, "for idx, object := range sortedObjList {\n")
+		lines = append(lines, "retObjList[idx] = object\n}\n")
+		lines = append(lines, "return retObjList\n}\n")
+		for _, line := range lines {
+			fd.WriteString(line)
+		}
+		fd.Sync()
+	}
+}
 
 func (obj *ObjectInfoJson) ConvertObjectMembersMapToOrderedSlice(attrMap map[string]ObjectMembersInfo) (attrMapSlice []ObjectMemberAndInfo) {
 
@@ -841,25 +1024,39 @@ func (obj *ObjectInfoJson) WriteDBFunctions(str *ast.StructType, attrMap map[str
 	obj.WriteLicenseInfo(dbFile)
 	attrMapSlice := obj.ConvertObjectMembersMapToOrderedSlice(attrMap)
 	if strings.Contains(obj.Access, "w") || strings.Contains(obj.Access, "rw") {
+		fileHeaderOptionalForState = fileHeaderOptionalForState +
+			`       
+							"strconv"
+							`
 		dbFile.WriteString(fileHeader)
+		dbFile.WriteString(fileHeaderOptionalForState)
+		dbFile.WriteString(endFileHeaderState)
 		obj.WriteStoreObjectInDBFcn(str, dbFile, attrMapSlice, objMap)
 		obj.WriteDeleteObjectFromDbFcn(str, dbFile, attrMapSlice, objMap)
 		obj.WriteGetObjectFromDbFcn(str, dbFile, attrMapSlice, objMap)
 		obj.WriteKeyRelatedFcns(str, dbFile, attrMapSlice, objMap)
 		obj.WriteGetAllObjFromDbFcn(str, dbFile, attrMapSlice, objMap)
 		obj.WriteCompareObjectsAndDiffFcn(str, dbFile, attrMapSlice, objMap)
+		obj.WriteCompareObjectDefaultAndDiffFcn(str, dbFile, attrMapSlice, objMap)
 		obj.WriteUpdateObjectInDbFcn(str, dbFile, attrMapSlice, objMap)
 		obj.WriteCopyRecursiveFcn(str, dbFile)
 		obj.WriteMergeDbAndConfigObjFcn(str, dbFile, attrMapSlice, objMap)
 		obj.WriteMergeDbAndConfigObjForPatchUpdateFcn(str, dbFile, attrMapSlice, objMap)
 		obj.WriteGetBulkObjFromDbFcn(str, dbFile, attrMapSlice, objMap)
+		obj.WriteSortObjListFcn(str, dbFile, attrMapSlice, objMap)
 	} else {
 		if obj.UsesStateDB {
+			fileHeaderOptionalForState = fileHeaderOptionalForState +
+				`
+				"strconv"
+				`
 			for _, attrInfo := range attrMap {
 				if attrInfo.IsArray == true {
 					if _, ok := goBasicTypesMap[attrInfo.VarType]; !ok {
 						fileHeaderOptionalForState = fileHeaderOptionalForState +
-							`       "encoding/json"`
+							`
+							"encoding/json"
+							`
 					}
 				}
 			}

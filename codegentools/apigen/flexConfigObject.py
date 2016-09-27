@@ -131,6 +131,30 @@ class FlexConfigObject(FlexObject) :
         lines.append(tabs + "return r\n")
         fileHdl.writelines(lines)
 
+    def createPatchUpdateMethod (self, fileHdl):
+        tabs = self.TAB
+        #lines = [ "\n"+ tabs + "@processReturnCode"]
+        lines = []
+        lines.append("\n"+ tabs + "def patchUpdate" + self.name + "(self,")
+        tabs = tabs + self.TAB
+        spaces = ' ' * (len(lines[-1])  - len("self, "))
+        objLines = [tabs + "obj =  {}\n"]
+        for (attr, attrInfo) in self.attrList:
+            if attrInfo['isKey'] == 'True':
+                lines.append("\n" + spaces + "%s," %(attr))
+                assignmentStr = "%s" %(attr)
+                objLines.append(tabs +  "obj[\'%s\'] = %s\n" %(attr, assignmentStr))
+        lines.append("\n" + spaces +"op,")
+        lines.append("\n" + spaces +"path,")
+        lines.append("\n" + spaces +"value,")
+        lines.append("):\n")
+        lines = lines + objLines
+        lines.append(tabs +"obj['patch']=[{'op':op,'path':path,'value':value}]\n")
+        lines.append (tabs + "reqUrl =  self.cfgUrlBase+" +"\'%s\'\n" %(self.name))
+        lines.append(tabs + "r = requests.patch(reqUrl, data=json.dumps(obj), headers=patchheaders, timeout=self.timeout) \n")
+        lines.append(tabs + "return r\n")
+        fileHdl.writelines(lines)
+
 
     def createUpdateByIdMethod (self, fileHdl):
         tabs = self.TAB
@@ -162,6 +186,7 @@ class FlexConfigObject(FlexObject) :
         self.createCreateMethod(fileHdl)
         self.createUpdateMethod(fileHdl)
         self.createUpdateByIdMethod(fileHdl)
+        self.createPatchUpdateMethod(fileHdl)
         self.createDeleteMethod(fileHdl)
         self.createDeleteByIdMethod(fileHdl)
         self.createGetMethod(fileHdl, 'self.cfgUrlBase')

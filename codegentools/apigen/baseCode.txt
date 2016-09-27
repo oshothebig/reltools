@@ -4,6 +4,7 @@ import json
 import urllib2                                                                                                          
                                                                                                                         
 headers = {'Accept' : 'application/json', 'Content-Type' : 'application/json'}                                          
+patchheaders = {'Conent-Type':'application/json-patch+json'}                                        
 #def processReturnCode (method) :
 #    def returnDetails (self, *args, **kwargs) :
 #        r = method(self, *args, **kwargs)

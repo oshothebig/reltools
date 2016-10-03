@@ -22,7 +22,7 @@ patchheaders = {'Conent-Type':'application/json-patch+json'}
 #    return returnDetails
 class FlexSwitch( object):                                                                                              
     httpSuccessCodes = [200, 201, 202, 204]
-    def  __init__ (self, ip, port, timeout=5):                                                                                     
+    def  __init__ (self, ip, port, timeout=15):
         self.ip    = ip                                                                                                 
         self.port  = port                                                                                               
         self.timeout = timeout

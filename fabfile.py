@@ -274,7 +274,7 @@ def setupDevEnv() :
     _createDirectoryStructure()
     setupHandler()
     setupExternals()
-    setupCliDeps(gitProto=gProto):
+    setupCliDeps(gitProto=gProto)
     setupGoDeps(gitProto=gProto)
     installThrift()
     installNanoMsgLib()

@@ -33,6 +33,10 @@
             "odm": "cel_redstone"
         }, 
         {
+            "platform": "dummy",
+            "odm": "cel_seastone"
+        },
+        {
             "platform": "openBMCVoyager", 
             "odm": "bcm_voyager"
         }, 
@@ -45,5 +49,5 @@
     "build": "169", 
     "minor": "0", 
     "patch": "0",
-    "changeindex": "1"
+    "changeindex": "2   "
 }

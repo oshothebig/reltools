@@ -176,19 +176,20 @@ class FlexConfigObject(FlexObject) :
         lines.append (tabs + "reqUrl =  self.cfgUrlBase+" +"\'%s\'" %(self.name))
         lines[-1] = lines[-1] + "+\"/%s\"%(objectId)\n"
         lines.append(tabs + "r = requests.patch(reqUrl, data=json.dumps(obj), headers=headers,timeout=self.timeout) \n")
-        lines.append(tabs + "return r\n")                                                                                  
+        lines.append(tabs + "return r\n")
         fileHdl.writelines(lines)
 
     def createTblPrintMethod(self, fileHdl):
         pass
 
     def writeAllMethods (self, fileHdl):
-        self.createCreateMethod(fileHdl)
+        if self.canCreate == True:
+            self.createCreateMethod(fileHdl)
+            self.createDeleteMethod(fileHdl)
+            self.createDeleteByIdMethod(fileHdl)
         self.createUpdateMethod(fileHdl)
         self.createUpdateByIdMethod(fileHdl)
         self.createPatchUpdateMethod(fileHdl)
-        self.createDeleteMethod(fileHdl)
-        self.createDeleteByIdMethod(fileHdl)
         self.createGetMethod(fileHdl, 'self.cfgUrlBase')
         self.createGetByIdMethod(fileHdl, 'self.cfgUrlBase')
         self.createGetAllMethod(fileHdl, 'self.cfgUrlBase')

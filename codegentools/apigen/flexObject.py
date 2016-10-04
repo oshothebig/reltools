@@ -24,11 +24,13 @@ class FlexObject(object) :
                   name,     # Object Name 
                   access,   # Access r/w
                   multiplicity, # UML notation *=many 1=1
+                  canCreate, # this object can be created or not
                   attrFile): # Location of the attributes description
         self.name = str(name)
         self.access = access
         self.attrFile = attrFile
         self.multiplicity = multiplicity
+        self.canCreate = canCreate
         self.attrDict = {}
         self.attrList = None
         
@@ -66,7 +68,7 @@ class FlexObject(object) :
         lines.append (tabs + "reqUrl =  " + urlPath + " + " + "\'%s\'" %(objName))
         lines[-1] = lines[-1] + "+\"/%s\"%(objectId)\n"
         lines.append(tabs + "r = requests.get(reqUrl, data=None, headers=headers, timeout=self.timeout) \n")
-        lines.append(tabs + "return r\n")                                                                                  
+        lines.append(tabs + "return r\n")
         fileHdl.writelines(lines)
 
     def createGetMethod (self, fileHdl, urlPath):
@@ -104,7 +106,7 @@ class FlexObject(object) :
             objName = self.name
         lines.append (tabs + "reqUrl =  " + urlPath + " + " + "\'%s\'\n" %(objName))
         lines.append(tabs + "r = requests.get(reqUrl, data=json.dumps(obj), headers=headers, timeout=self.timeout) \n")
-        lines.append(tabs + "return r\n")                                                                                  
+        lines.append(tabs + "return r\n")
         fileHdl.writelines(lines)
 
     def createGetAllMethod (self, fileHdl, urlPath):
@@ -118,7 +120,7 @@ class FlexObject(object) :
                 objName = self.name
         else:
             objName = self.name
-        lines.append (tabs + "return self.getObjects( \'%s\', %s)\n\n" %(objName, urlPath))
+        lines.append (tabs + "return self.getObjects(\'%s\', %s)\n\n" %(objName, urlPath))
         fileHdl.writelines(lines)
 
     def createTblPrintAllMethod(self, fileHdl):
@@ -242,4 +244,3 @@ class FlexObject(object) :
         self.createGetMethod(fileHdl, 'self.stateUrlBase')
         self.createGetByIdMethod(fileHdl, 'self.stateUrlBase')
         self.createGetAllMethod(fileHdl, 'self.stateUrlBase')
-

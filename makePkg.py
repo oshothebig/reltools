@@ -134,7 +134,7 @@ if __name__ == '__main__':
             platfomHdlr.performBuildTimeCustomization(build_dir)
         executeCommand('fakeroot debian/rules binary')
         os.chdir("..")
-        cmd = 'mv flexswitch_' + parsedPkgInfo['major'] + "*" + parsedPkgInfo['build'] + '*_amd64.deb ' + pkgName
+        cmd = 'mv flexswitch_' + pkgVersionNum + '*_amd64.deb ' + pkgName
         local(cmd)
 	if buildTarget == "docker":
             cmd = 'python dockerGen/buildDocker.py'

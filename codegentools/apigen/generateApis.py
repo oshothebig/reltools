@@ -16,26 +16,30 @@ class apiGenie (object) :
     def buildObjects (self) :
         for desc  in self.objDescriptors:
             with open(desc) as fileHdl:
-                objMembersData = json.load(fileHdl)                                                                        
+                objMembersData = json.load(fileHdl)
                 for objName, objInfo in objMembersData.iteritems():
-                    #if objName != 'BGPNeighbor':
-                    #    continue
+                    canCreate = True
+                    if objInfo['autoCreate'] == True or objInfo['autoDiscover'] == True:
+                        canCreate = False
                     if 'w' in str(objInfo['access']):
                         self.objDict[objName] = FlexConfigObject (objName, 
                                                                   objInfo['access'],
                                                                   objInfo['multiplicity'],
+                                                                  canCreate,
                                                                   self.attrBase + objName + "Members.json"
                                                                   )
                     elif 'r' in str(objInfo['access']):
                         self.objDict[objName] = FlexStateObject  (objName,
                                                                   objInfo['access'],
                                                                   objInfo['multiplicity'],
+                                                                  canCreate,
                                                                   self.attrBase + objName + "Members.json"
                                                                   )
                     elif 'x' in str(objInfo['access']):
                         self.objDict[objName] = FlexActionObject (objName,
                                                                   objInfo['access'],
                                                                   objInfo['multiplicity'],
+                                                                  canCreate,
                                                                   self.attrBase + objName + "Members.json"
                                                                   )
     def writeApiCode(self) :

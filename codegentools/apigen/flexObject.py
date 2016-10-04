@@ -67,7 +67,10 @@ class FlexObject(object) :
             objName = self.name
         lines.append (tabs + "reqUrl =  " + urlPath + " + " + "\'%s\'" %(objName))
         lines[-1] = lines[-1] + "+\"/%s\"%(objectId)\n"
-        lines.append(tabs + "r = requests.get(reqUrl, data=None, headers=headers, timeout=self.timeout) \n")
+        lines.append(tabs + "if self.authenticate == True:\n")
+        lines.append(tabs + tabs + "r = requests.get(reqUrl, data=None, headers=headers, timeout=self.timeout, auth=(self.user, self.passwd), verify=False) \n")
+        lines.append(tabs + "else:\n")
+        lines.append(tabs + tabs + "r = requests.get(reqUrl, data=None, headers=headers, timeout=self.timeout) \n")
         lines.append(tabs + "return r\n")
         fileHdl.writelines(lines)
 
@@ -105,7 +108,10 @@ class FlexObject(object) :
         else:
             objName = self.name
         lines.append (tabs + "reqUrl =  " + urlPath + " + " + "\'%s\'\n" %(objName))
-        lines.append(tabs + "r = requests.get(reqUrl, data=json.dumps(obj), headers=headers, timeout=self.timeout) \n")
+        lines.append(tabs + "if self.authenticate == True:\n")
+        lines.append(tabs + tabs + "r = requests.get(reqUrl, data=json.dumps(obj), headers=headers, timeout=self.timeout, auth=(self.user, self.passwd), verify=False) \n")
+        lines.append(tabs + "else:\n")
+        lines.append(tabs + tabs + "r = requests.get(reqUrl, data=json.dumps(obj), headers=headers, timeout=self.timeout) \n")
         lines.append(tabs + "return r\n")
         fileHdl.writelines(lines)
 

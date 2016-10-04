@@ -33,6 +33,10 @@
             "odm": "cel_redstone"
         }, 
         {
+            "platform": "dummy",
+            "odm": "cel_seastone"
+        },
+        {
             "platform": "openBMCVoyager", 
             "odm": "bcm_voyager"
         }, 

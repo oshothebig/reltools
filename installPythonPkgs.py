@@ -21,7 +21,8 @@ if __name__=="__main__":
     (opts, args) = parser.parse_args()
     baseDir = opts.directory if opts.directory.endswith('/') else opts.directory+'/'
     op = opts.op
-    pkgDirs = [x for x in os.listdir(baseDir) if os.path.isdir(baseDir +x)]
+    bases = ['setuptools-28.2.0', 'urllib3-1.16']
+    pkgDirs = bases + [x for x in os.listdir(baseDir) if os.path.isdir(baseDir +x) if x not in bases]
     for pkg in pkgDirs:
         if os.path.exists(baseDir + pkg + '/setup.py'):
             os.chdir(baseDir + pkg)

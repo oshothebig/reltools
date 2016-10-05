@@ -2,6 +2,7 @@
 import requests
 import json
 import urllib2
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
 headers = {'Accept' : 'application/json', 'Content-Type' : 'application/json'}
 patchheaders = {'Conent-Type':'application/json-patch+json'}
@@ -28,6 +29,7 @@ class FlexSwitch( object):
         self.timeout = timeout
         self.authenticate = False
         if user is not None:
+            requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
             self.authenticate = True
             self.user = user
             self.passwd = passwd

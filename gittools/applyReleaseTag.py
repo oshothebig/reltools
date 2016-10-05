@@ -12,7 +12,7 @@ if __name__ == '__main__':
         repos = []
         with open(baseDir + repoInfoFile) as dataFile:
             srcInfo = json.load(dataFile)
-            repos = srcInfo['PrivateRepos']
+            repos = srcInfo['PrivateRepos'] + ['reltools']
         
         usrName = raw_input('Enter github user name: ')
         passwd = getpass.getpass('Password: ')

@@ -2,7 +2,7 @@
     "platforms": [
         {
             "platform": "dummy", 
-            "odm": "accton_as5712"
+            "odm": "bcm_accton_as5712"
         }, 
         {
             "platform": "dummy", 
@@ -10,7 +10,7 @@
         }, 
         {
             "platform": "dummy", 
-            "odm": "accton_as6712"
+            "odm": "bcm_accton_as6712"
         }, 
         {
             "platform": "dummy", 
@@ -49,5 +49,5 @@
     "build": "169", 
     "minor": "0", 
     "patch": "0",
-    "changeindex": "6"
+    "changeindex": "7"
 }

@@ -1,7 +1,6 @@
 import json
 import re
 from flexObject import FlexObject, isNumericAttr, isBoolean, boolFromString, isListAttr
-
 class FlexActionObject(FlexObject) :
     def createActionMethod(self, fileHdl):
         tabs = self.TAB

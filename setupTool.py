@@ -7,12 +7,13 @@ EXTERNAL_SRC = '/external/src/'
 GENERATED_SRC = '/generated/src/'
 
 class setupGenie (object) :
-    def __init__ (self, setupInfo, anchorDir , gitUsrName, role) :
+    def __init__ (self, setupInfo, anchorDir , gitUsrName, role, gitProto='http') :
         self.setupInfo = setupInfo
         self.info = None 
         self.homeDir = os.path.expanduser('~')
         self.anchor = self.homeDir + '/' + anchorDir
         self.usrName = gitUsrName
+        self.gitProto = gitProto
         self.pkgRepoOrg = 'SnaproutePackages'
         if role in ['y', 'yes', 'Y', 'Yes', 'YES']:
             self.internalUser = True
@@ -64,6 +65,9 @@ class setupGenie (object) :
         
     def getPkgRepoOrg(self) :
         return self.pkgRepoOrg
+
+    def getGitProto(self ) :
+        return self.gitProto
 
     def getUsrName(self) :
         return self.usrName

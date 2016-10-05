@@ -25,7 +25,8 @@ COMPS=$(SR_CODE_BASE)/snaproute/src/asicd\
 		$(SR_CODE_BASE)/snaproute/src/l3\
 		$(SR_CODE_BASE)/snaproute/src/l2\
 		$(SR_CODE_BASE)/snaproute/src/flexSdk\
-		$(SR_CODE_BASE)/snaproute/src/apps
+		$(SR_CODE_BASE)/snaproute/src/apps\
+		$(SR_CODE_BASE)/external/src/extPkgs
 
 L3COMPS=$(SR_CODE_BASE)/snaproute/src/config\
 		$(SR_CODE_BASE)/snaproute/src/l3
@@ -81,6 +82,7 @@ copy: $(COMPS)
 
 install:installdir copy
 	install $(SR_CODE_BASE)/reltools/flexswitch $(DESTDIR)/$(EXT_INSTALL_PATH)
+	install $(SR_CODE_BASE)/reltools/installPythonPkgs.py $(DESTDIR)/$(EXT_INSTALL_PATH)
 	install $(SR_CODE_BASE)/reltools/daemon.py $(DESTDIR)/$(EXT_INSTALL_PATH)
 	install $(SR_CODE_BASE)/reltools/pkgInfo.json $(DESTDIR)/$(EXT_INSTALL_PATH)
 	install $(SR_CODE_BASE)/reltools/buildInfo.json $(DESTDIR)/$(EXT_INSTALL_PATH)

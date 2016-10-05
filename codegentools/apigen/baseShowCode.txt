@@ -4,8 +4,8 @@ import json
 import urllib2
 from flexswitchV2 import FlexSwitch
 from tablePrint import *
-                                                                                                                        
-headers = {'Accept' : 'application/json', 'Content-Type' : 'application/json'}                                          
+
+headers = {'Accept' : 'application/json', 'Content-Type' : 'application/json'}
 class FlexSwitchShow( object):
     httpSuccessCodes = [200, 201, 202, 204]
     def  __init__ (self, ip, port):
@@ -43,4 +43,3 @@ class FlexSwitchShow( object):
                  wrapfunc=lambda x: wrap_onspace_strict(x,width))
         else:
             print 'No Data To Display for %s' %(objName)
-

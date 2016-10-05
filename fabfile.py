@@ -34,6 +34,70 @@ def setupExternals (comp=None):
     	    with settings(prompts={'Do you want to continue [Y/n]? ': 'Y'}):
                 local(cmd)
 
+def setupCliDeps(gitProto='http'):
+    print 'Fetching Python dependencies for CLI....'
+    repo = 'extPkgs'
+    usrName =  setupHandler().getUsrName()
+    if gitProto == 'ssh':
+        userRepoPrefix   = 'git@github.com:%s/' %(usrName)
+        remoteRepoPrefix = 'git@github.com:%s/' %('OpenSnaproute')
+    else:
+        userRepoPrefix = 'https://github.com/%s/' %(usrName)
+        remoteRepoPrefix = 'https://github.com/%s/' % ('OpenSnaproute')
+    extSrcDir = setupHandler().getExtSrcDir()
+    _setupGitRepo ( repo,
+                    setupHandler().getExtSrcDir(),
+                    userRepoPrefix, 
+                    remoteRepoPrefix)
+
+def _setupGitRepo (repo, srcDir, userRepoPrefix, remoteRepoPrefix): 
+    with lcd(srcDir):
+        if not (os.path.exists(srcDir + repo)  and os.path.isdir(srcDir+ repo)):
+            cmd = 'git clone '+ userRepoPrefix + repo 
+            local(cmd)
+        if remoteRepoPrefix:
+            with lcd(srcDir +repo):
+                cmd = 'git remote add upstream ' + remoteRepoPrefix + repo + '.git'
+                local(cmd)
+                commandsToSync = ['git fetch upstream',
+                                'git checkout master',
+                                'git merge upstream/master']
+                for cmd in commandsToSync:
+                    local(cmd)
+
+def _getRepoUrlPrefix(proto='http'):
+    internalUser =  setupHandler().getUsrRole()
+    usrName =  setupHandler().getUsrName()
+    org = setupHandler().getOrg()
+    gitProto =  setupHandler().getGitProto()
+
+    if gitProto == 'ssh':
+        if not internalUser:
+            userRepoPrefix   = 'git@github.com:%s/' %(org)
+        else:
+            userRepoPrefix   = 'git@github.com:%s/' %(usrName)
+    else:
+        if not internalUser:
+            userRepoPrefix   = 'https://github.com/%s/' %(org)
+        else:
+            userRepoPrefix   = 'https://github.com/%s/' % (usrName)
+    return userRepoPrefix
+
+def _getRepoRemoteUrlPrefix(proto='http'):
+    internalUser =  setupHandler().getUsrRole()
+    org = setupHandler().getOrg()
+    gitProto =  setupHandler().getGitProto()
+
+    remoteRepoPrefix =  None
+    if gitProto == 'ssh':
+        if internalUser:
+            remoteRepoPrefix = 'git@github.com:%s/' %(org)
+    else:
+        if internalUser:
+            remoteRepoPrefix = 'https://github.com/%s/' % (org)
+
+    return remoteRepoPrefix 
+
 def setupGoDeps(comp=None, gitProto='http'):
     print 'Fetching external  Golang repos ....'
     info = setupHandler().getGoDeps(comp)
@@ -218,6 +282,7 @@ def setupDevEnv() :
     _createDirectoryStructure()
     setupHandler()
     setupExternals()
+    setupCliDeps(gitProto=gProto)
     setupGoDeps(gitProto=gProto)
     installThrift()
     installNanoMsgLib()
@@ -225,9 +290,10 @@ def setupDevEnv() :
     setupSRRepos(gitProto=gProto)
     printInstruction()
     
-def pushDocker() :
+def pushDocker(repo='flex1') :
     print "Push the latest docker image to docker hub"
     print "Keep the usermane and password for dockerhub ready."
     local('docker login')
-    local('docker push snapos/flex:flex1')
+    cmd = "docker push snapos/flex:"+repo
+    local(cmd)
     print "Success..." 

@@ -63,6 +63,7 @@ mv /opt/flexswitch/events.json /etc/flexswitch/events.json
 case "$1" in
     configure)
         echo "postinst Configure called with unknown argument \`$1'" >&2
+	python /opt/flexswitch/installPythonPkgs.py -o 'install' -d '/opt/flexswitch/'
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)

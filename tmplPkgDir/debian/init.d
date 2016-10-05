@@ -93,6 +93,16 @@ do_stop()
 }
 
 #
+# Function that checks daemon/service
+#
+do_check()
+{
+
+	$DAEMON --op=status
+	RETVAL="$?"
+	return "$RETVAL"
+}
+#
 # Function that sends a SIGHUP to the daemon/service
 #
 do_reload() {
@@ -124,17 +134,8 @@ case "$1" in
 	esac
 	;;
   status)
-	status_of_proc "$DAEMON" "$NAME" && exit 0 || exit $?
+	do_check
 	;;
-  #reload|force-reload)
-	#
-	# If do_reload() is not implemented then leave this commented out
-	# and leave 'force-reload' as an alias for 'restart'.
-	#
-	#log_daemon_msg "Reloading $DESC" "$NAME"
-	#do_reload
-	#log_end_msg $?
-	#;;
   restart|force-reload)
 	#
 	# If the "reload" option is implemented then remove the

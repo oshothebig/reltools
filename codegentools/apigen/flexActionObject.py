@@ -62,7 +62,10 @@ class FlexActionObject(FlexObject) :
         lines = docLines + lines
         lines = lines + objLines
         lines.append (tabs + "reqUrl =  self.actionUrlBase+" +"\'%s\'\n" %(self.name))
-        lines.append(tabs + "r = requests.post(reqUrl, data=json.dumps(obj), headers=headers) \n")
+        lines.append(tabs + "if self.authenticate == True:\n")
+        lines.append(tabs + tabs + "r = requests.post(reqUrl, data=json.dumps(obj), headers=headers, auth=(self.user, self.passwd), verify=False) \n")
+        lines.append(tabs + "else:\n")
+        lines.append(tabs + tabs + "r = requests.post(reqUrl, data=json.dumps(obj), headers=headers) \n")
         lines.append(tabs + "return r\n")
         fileHdl.writelines(lines)
 

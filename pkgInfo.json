@@ -1,53 +1,53 @@
 {
+    "build": "169", 
+    "changeindex": "15", 
+    "major": "1", 
+    "minor": "0", 
+    "patch": "0", 
     "platforms": [
         {
-            "platform": "dummy", 
-            "odm": "bcm_accton_as5712"
+            "odm": "bcm_accton_as5712", 
+            "platform": "dummy"
         }, 
         {
-            "platform": "dummy", 
-            "odm": "accton_as5812"
+            "odm": "accton_as5812", 
+            "platform": "dummy"
         }, 
         {
-            "platform": "dummy", 
-            "odm": "bcm_accton_as6712"
+            "odm": "bcm_accton_as6712", 
+            "platform": "dummy"
         }, 
         {
-            "platform": "dummy", 
-            "odm": "accton_as6812"
+            "odm": "accton_as6812", 
+            "platform": "dummy"
         }, 
         {
-            "platform": "dummy", 
-            "odm": "accton_as7712"
+            "odm": "accton_as7712", 
+            "platform": "dummy"
         }, 
         {
-            "platform": "dummy", 
-            "odm": "accton_wedge40"
+            "odm": "accton_wedge40", 
+            "platform": "dummy"
         }, 
         {
-            "platform": "dummy", 
-            "odm": "accton_wedge100"
+            "odm": "accton_wedge100", 
+            "platform": "dummy"
         }, 
         {
-            "platform": "dummy", 
-            "odm": "cel_redstone"
+            "odm": "cel_redstone", 
+            "platform": "dummy"
         }, 
         {
-            "platform": "dummy",
-            "odm": "cel_seastone"
-        },
-        {
-            "platform": "openBMCVoyager", 
-            "odm": "bcm_voyager"
+            "odm": "cel_seastone", 
+            "platform": "dummy"
         }, 
         {
-            "platform": "dummy", 
-            "odm": "docker"
+            "odm": "bcm_voyager", 
+            "platform": "openBMCVoyager"
+        }, 
+        {
+            "odm": "docker", 
+            "platform": "dummy"
         }
-    ], 
-    "major": "1", 
-    "build": "169", 
-    "minor": "0", 
-    "patch": "0",
-    "changeindex": "13"
+    ]
 }

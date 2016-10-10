@@ -17,7 +17,7 @@ if __name__ == '__main__':
     for repo in  repoList:
 	print "path of repo %s is : %s/snaproute/src/%s" %(baseDir, repo, repo)
         if repo == 'reltools':
-            srcPath = baseDir 
+            srcPath = baseDir + '/'
         else:
             srcPath = baseDir + '/snaproute/src/'
 	with lcd (srcPath + repo):

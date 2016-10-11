@@ -3,12 +3,23 @@ import json
 from fabric.api import run, env, local
 from fabric.context_managers import lcd
 from json import dumps, load
+from optparse import OptionParser
 
 SETUPFILE = 'setupInfo.json'
 PKGFILE = 'pkgInfo.json'
 
 if __name__ == '__main__':
 
+    parser = OptionParser()
+
+    parser.add_option("-e", "--edit", 
+                      dest="edit",
+                      action='store',
+                      default=False,
+                      help="Edit revision")
+
+    (options, args) = parser.parse_args()
+           
     with open(SETUPFILE) as fd:
         info = json.load(fd)
     repoList = info['PrivateRepos'] + ['reltools']
@@ -34,13 +45,16 @@ if __name__ == '__main__':
 
     with open(PKGFILE) as pkg_info:
 	pk_info = json.load(pkg_info)
-    pk_info["changeindex"] = str(int(pk_info["changeindex"]) + 1)
+
+    if options.edit != False:
+        pk_info["changeindex"] = str(int(pk_info["changeindex"]) + 1)
     
     with open(PKGFILE, "w+") as fd_pkg:
         json.dump(pk_info, fd_pkg, indent=4,  sort_keys=True)
 
-    with lcd(baseDir + '/reltools/'):
-        local('git add %s ' %(PKGFILE))
-        local('git commit -m \"Bumping up the release number\"') 
-        local('git push') 
+    if options.edit != False:
+        with lcd(baseDir + '/reltools/'):
+            local('git add %s ' %(PKGFILE))
+            local('git commit -m \"Bumping up the release number\"') 
+            local('git push') 
 

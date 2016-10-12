@@ -695,6 +695,12 @@ func (obj *ObjectInfoJson) WriteUpdateObjectInDbFcn(str *ast.StructType, fd *os.
 												}
 											}
 										}
+									} else {
+										bytes, _ := json.Marshal(fieldVal.Interface())
+										_, err = dbHdl.Do("SET", obj.GetKey()+fieldName, string(bytes))
+										if err != nil {
+											return err
+										}
 									}
 								}
 							}

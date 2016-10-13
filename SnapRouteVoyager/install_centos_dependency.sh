@@ -42,11 +42,11 @@ install_rpm libxml2-python-2.7.6-21.el6_8.1.x86_64 libxml2-python
 install_rpm logrotate-3.7.8-26.el6_7.x86_64 logrotate
 install_rpm rsyslog-5.8.10-10.el6_6.x86_64 rsyslog
 install_rpm iproute-2.6.32-45.el6.x86_64 iproute
-install_rpm redis-2.4.10-1.el6.x86_64 redis
+install_rpm redis-2.8.13-2.3.1.x86_64 redis
 install_rpm zlib-1.2.8-9.fc23.x86_64 zlib
 install_rpm zlib-devel-1.2.8-9.fc23.x86_64 zlib-devel
 install_rpm ncurses-devel-5.7-4.20090207.el6.x86_64 ncurses-devel
 install_rpm readline-6.3-6.fc23.x86_64 readline
 install_rpm readline-devel-6.3-6.fc23.x86_64 readline-devel
-
+install_rpm libpcap-1.4.0-4.20130826git2dbcaa1.el6.x86_64 libpcap
 

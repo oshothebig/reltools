@@ -56,6 +56,8 @@ installdir:
 	$(MKDIR) $(DESTDIR)/$(EXT_INSTALL_PATH)/models
 	$(MKDIR) $(DESTDIR)/$(EXT_INSTALL_PATH)/params
 	$(MKDIR) $(DESTDIR)/$(EXT_INSTALL_PATH)/sharedlib
+	$(MKDIR) $(DESTDIR)/$(EXT_INSTALL_PATH)/nginx
+	$(MKDIR) $(DESTDIR)/$(EXT_INSTALL_PATH)/nginx/samples
 
 .PHONY:buildinfogen
 buildinfogen:
@@ -112,6 +114,8 @@ endif
 	install $(SRCDIR)/models/objects/genObjectConfig.json  $(DESTDIR)/$(EXT_INSTALL_PATH)/models/
 	install $(SRCDIR)/models/actions/genObjectAction.json  $(DESTDIR)/$(EXT_INSTALL_PATH)/models/
 	install $(SR_CODE_BASE)/external/src/github.com/nanomsg/nanomsg/.libs/libnanomsg.so.4.0.0 $(DESTDIR)/$(EXT_INSTALL_PATH)/sharedlib
+	install $(SR_CODE_BASE)/reltools/nginxSetup/nginxSetup.py $(DESTDIR)/$(EXT_INSTALL_PATH)/nginx/
+	install $(SR_CODE_BASE)/reltools/nginxSetup/samples/*.txt $(DESTDIR)/$(EXT_INSTALL_PATH)/nginx/samples/
 
 clean_all: $(COMPS)
 	$(SR_CODE_BASE)/reltools/codegentools/cleangencode.sh

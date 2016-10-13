@@ -4,6 +4,7 @@ from shutil import copyfile
 PROLOGUE_FILE = 'samples/nginx_conf_prologue.txt'
 EPILOGUE_FILE = 'samples/nginx_conf_epilogue.txt'
 NGINX_SA_DEFAULT_TXT_FILE = 'samples/sitesAvailableDefault.txt'
+NGINX_LDAP_CONF_FILE = 'samples/pamNginxLdapConf.txt'
 
 # output files
 NGINX_CONF_FILE_SRC = 'samples/nginx/nginx.conf'
@@ -38,14 +39,20 @@ def populateConfig():
     global configDict
     apiPort = raw_input('Enter API port : ')
     configDict['proxy_pass'] = apiPort
+    authProto = raw_input('Authentication type : (local/ldap) ')
+    configDict['auth_proto'] = authProto
 
 def createPamNginxConfFile():
     pamdNginxConfDir = 'samples/pam.d/'
     if not os.path.exists(pamdNginxConfDir):
         os.makedirs(pamdNginxConfDir)
     with open(PAMD_NGINX_CONF_FILE_SRC, 'w') as pamdNginxFile:
-        line = '@include common-auth'
-        pamdNginxFile.writelines(line)
+        if configDict['auth_proto'] is 'local':
+            line = '@include common-auth'
+            pamdNginxFile.writelines(line)
+        elif configDict['auth_proto'] is 'ldap':
+            with open(NGINX_LDAP_CONF_FILE, 'r') as ldapConfFile:
+                pamdNginxFile.writelines(ldapConfFile.readlines())
     copyfile(PAMD_NGINX_CONF_FILE_SRC, PAMD_NGINX_CONF_FILE_DST)
 
 def createSslKeys():

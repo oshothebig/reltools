@@ -149,8 +149,8 @@ if __name__ == '__main__':
             os.chdir("..")
             cmd = 'mv flexswitch_' + pkgVersionNum + '*_amd64.deb ' + pkgName
             local(cmd)
-	        if buildTarget == "docker":
-                cmd = 'python dockerGen/buildDocker.py'
+            if buildTarget == "docker":
+                 cmd = 'python dockerGen/buildDocker.py'
                  print "Building Docker image with flex package ", pkgName
                 buildDocker(cmd + " " + pkgName)
         command = [

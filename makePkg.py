@@ -60,12 +60,25 @@ if __name__ == '__main__':
                         nargs='?',
                         default=False,
                         help='Is Release')
+    parser.add_argument('--platform',
+                        type = str,
+                        dest = 'platform',
+                        action = 'store',
+                        nargs = '?',
+                        default = "",
+                        help = 'device platform')
+
 
     args = parser.parse_args()
     if args.release == True:
         usrName = 'release'
     else:
         usrName = getpass.getuser()
+
+    if args.platform != '':
+        buildPlatform = args.platform
+    else:
+        buildPlatform = ''
 
     with open("pkgInfo.json", "r") as cfgFile:
         pkgInfo = cfgFile.read().replace('\n', '')
@@ -88,60 +101,61 @@ if __name__ == '__main__':
     startTime = time.time()
     for buildTargetDetail in buildTargetList:
         buildTarget = buildTargetDetail['odm']
-        platform = buildTargetDetail['platform']
-        print "Building pkg for Tgt:%s Platform %s" %(buildTarget, platform)
-        platfomHdlr = platformHandlers.get(buildTarget, None)
-        pkgName = "flexswitch_" + buildTarget + "-" + pkgVersion + "_amd64.deb"
-        if firstBuild:
-            preProcess = [
-                    'cp -a tmplPkgDir ' + build_dir,
-                    'cp Makefile ' + build_dir,
-                    'sed -i s/' + TEMPLATE_BUILD_DIR +'/' + build_dir + '/ ' + build_dir +'/Makefile',
-                    'sed -i s/' + TEMPLATE_BUILD_TYPE +'/' + PACKAGE_BUILD + '/ ' + build_dir + '/Makefile',
-                    'sed -i s/' + TEMPLATE_CHANGELOG_VER +'/' + pkgVersionNum+ '/ ' + build_dir + '/debian/changelog',
-                    'sed -i s/' + TEMPLATE_BUILD_TARGET +'/' + buildTarget + '/ ' + build_dir + '/Makefile',
-                    'sed -i s/' + TEMPLATE_PLATFORM_BUILD_TARGET +'/' + platform + '/ ' + build_dir + '/Makefile'
-                    ]
-            executeCommand(preProcess)
-            #Build all binaries only once
+        if buildTarget == buildPlatform or buildPlatform == '':
+            platform = buildTargetDetail['platform']
+            print "Building pkg for Tgt:%s Platform %s" %(buildTarget, platform)
+            platfomHdlr = platformHandlers.get(buildTarget, None)
+            pkgName = "flexswitch_" + buildTarget + "-" + pkgVersion + "_amd64.deb"
+            if firstBuild:
+                preProcess = [
+                        'cp -a tmplPkgDir ' + build_dir,
+                        'cp Makefile ' + build_dir,
+                        'sed -i s/' + TEMPLATE_BUILD_DIR +'/' + build_dir + '/ ' + build_dir +'/Makefile',
+                        'sed -i s/' + TEMPLATE_BUILD_TYPE +'/' + PACKAGE_BUILD + '/ ' + build_dir + '/Makefile',
+                        'sed -i s/' + TEMPLATE_CHANGELOG_VER +'/' + pkgVersionNum+ '/ ' + build_dir + '/debian/changelog',
+                        'sed -i s/' + TEMPLATE_BUILD_TARGET +'/' + buildTarget + '/ ' + build_dir + '/Makefile',
+                        'sed -i s/' + TEMPLATE_PLATFORM_BUILD_TARGET +'/' + platform + '/ ' + build_dir + '/Makefile'
+                        ]
+                executeCommand(preProcess)
+                #Build all binaries only once
+                os.chdir(build_dir)
+                executeCommand('make all')
+                os.chdir("..")
+                executeCommand('python buildInfoGen.py')
+                firstBuild = False
+                #Change all target prereqs
+                for line in fileinput.input(build_dir+'/Makefile', inplace=1):
+                    print line.replace(TEMPLATE_ALL_TARGET, PKG_ONLY_ALL_TARGET).rstrip('\n')
+            else :
+                #Change build target and all target prereqs
+                preProcess = [
+                        'sed -i s/' + prevBldTgt +'/' + buildTarget + '/ ' + build_dir + '/Makefile',
+                        'sed -i s/' + prevPlatTgt +'/' + platform + '/ ' + build_dir + '/Makefile'
+                        ]
+                executeCommand(preProcess)
+                os.chdir(build_dir)
+                executeCommand('make asicd')
+                os.chdir("..")
+            prevBldTgt = buildTarget
+            prevPlatTgt = platform
             os.chdir(build_dir)
-            executeCommand('make all')
-            os.chdir("..")
-            executeCommand('python buildInfoGen.py')
-            firstBuild = False
-            #Change all target prereqs
-            for line in fileinput.input(build_dir+'/Makefile', inplace=1):
-                print line.replace(TEMPLATE_ALL_TARGET, PKG_ONLY_ALL_TARGET).rstrip('\n')
-        else :
-            #Change build target and all target prereqs
-            preProcess = [
-                    'sed -i s/' + prevBldTgt +'/' + buildTarget + '/ ' + build_dir + '/Makefile',
-                    'sed -i s/' + prevPlatTgt +'/' + platform + '/ ' + build_dir + '/Makefile'
+            pkgRecipe = [
+                    'fakeroot debian/rules clean',
+                    'fakeroot debian/rules build',
                     ]
-            executeCommand(preProcess)
-            os.chdir(build_dir)
-            executeCommand('make asicd')
+            executeCommand(pkgRecipe)
+            if platfomHdlr:
+                platfomHdlr.performBuildTimeCustomization(build_dir)
+            executeCommand('fakeroot debian/rules binary')
             os.chdir("..")
-        prevBldTgt = buildTarget
-        prevPlatTgt = platform
-        os.chdir(build_dir)
-        pkgRecipe = [
-                'fakeroot debian/rules clean',
-                'fakeroot debian/rules build',
-                ]
-        executeCommand(pkgRecipe)
-        if platfomHdlr:
-            platfomHdlr.performBuildTimeCustomization(build_dir)
-        executeCommand('fakeroot debian/rules binary')
-        os.chdir("..")
-        cmd = 'mv flexswitch_' + pkgVersionNum + '*_amd64.deb ' + pkgName
-        local(cmd)
-	if buildTarget == "docker":
-            cmd = 'python dockerGen/buildDocker.py'
-            print "Building Docker image with flex package ", pkgName
-            buildDocker(cmd + " " + pkgName)
+            cmd = 'mv flexswitch_' + pkgVersionNum + '*_amd64.deb ' + pkgName
+            local(cmd)
+            if buildTarget == "docker":
+                 cmd = 'python dockerGen/buildDocker.py'
+                 print "Building Docker image with flex package ", pkgName
+                 buildDocker(cmd + " " + pkgName)
     command = [
             'rm -rf ' + build_dir,
             'make clean_all'
-            ]
+                ]
     executeCommand(command)

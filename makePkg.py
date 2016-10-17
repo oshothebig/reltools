@@ -77,13 +77,14 @@ if __name__ == '__main__':
 
     if args.platform != '':
         buildPlatform = args.platform
+    else:
+        buildPlatform = ''
 
     with open("pkgInfo.json", "r") as cfgFile:
         pkgInfo = cfgFile.read().replace('\n', '')
         parsedPkgInfo = json.loads(pkgInfo)
     cfgFile.close()
     firstBuild = True
-    buildPlatform = ''
     buildTargetList = parsedPkgInfo['platforms']
     pkgVersion =  usrName + '_' + parsedPkgInfo['major']+ '.'\
                   + parsedPkgInfo['minor'] +  '.' + parsedPkgInfo['patch'] + \
@@ -152,9 +153,9 @@ if __name__ == '__main__':
             if buildTarget == "docker":
                  cmd = 'python dockerGen/buildDocker.py'
                  print "Building Docker image with flex package ", pkgName
-                buildDocker(cmd + " " + pkgName)
-        command = [
-                'rm -rf ' + build_dir,
-                'make clean_all'
+                 buildDocker(cmd + " " + pkgName)
+    command = [
+            'rm -rf ' + build_dir,
+            'make clean_all'
                 ]
-        executeCommand(command)
+    executeCommand(command)

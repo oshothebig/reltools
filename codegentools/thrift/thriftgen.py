@@ -402,6 +402,20 @@ func CheckIfV6RouteKeyExists(thriftobj *ribd.IPv6Route, dbHdl *dbutils.DBUtil) (
 				return cfg, true, errors.New(fmt.Sprintln("Duplicate Entry with key:", key))
 			}
 		}
+	} else {
+		cidrAddr,err := netutils.GetCIDR(cfg.DestinationNw,cfg.NetworkMask)
+		if err != nil {
+			return cfg, false, errors.New(fmt.Sprintln("Invalid Desitnation IP address", cfg.DestinationNw))
+		}
+		if dbHdl != nil {
+			key := "IPv6Route#" + cidrAddr+"#"
+			var dbObjCfg objects.IPv6Route
+			dbObjCfg.DestinationNw = cidrAddr
+			_, err := dbHdl.GetObjectFromDb(dbObjCfg, key)
+			if err == nil {
+				return cfg, true, errors.New(fmt.Sprintln("Duplicate Entry with key:", key))
+			}
+		}
 	}
 	return cfg, false, nil
 }
@@ -437,6 +451,20 @@ func CheckIfV4RouteKeyExists(thriftobj *ribd.IPv4Route, dbHdl *dbutils.DBUtil) (
 			dbObjCfg.DestinationNw = cfg.DestinationNw
 			dbObjCfg.NetworkMask = cfg.NetworkMask
 			key := "IPv4Route#" + cfg.DestinationNw + "#" + cfg.NetworkMask
+			_, err := dbHdl.GetObjectFromDb(dbObjCfg, key)
+			if err == nil {
+				return cfg, true, errors.New(fmt.Sprintln("Duplicate Entry with key:", key))
+			}
+		}
+	} else {
+		cidrAddr,err := netutils.GetCIDR(cfg.DestinationNw,cfg.NetworkMask)
+		if err != nil {
+			return cfg, false, errors.New(fmt.Sprintln("Invalid Desitnation IP address", cfg.DestinationNw))
+		}
+		if dbHdl != nil {
+			key := "IPv4Route#" + cidrAddr+"#"
+			var dbObjCfg objects.IPv4Route
+			dbObjCfg.DestinationNw = cidrAddr
 			_, err := dbHdl.GetObjectFromDb(dbObjCfg, key)
 			if err == nil {
 				return cfg, true, errors.New(fmt.Sprintln("Duplicate Entry with key:", key))

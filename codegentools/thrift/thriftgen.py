@@ -363,6 +363,90 @@ class DaemonObjectsInfo (object) :
                                 clnt.ApiHandlerMutex.Unlock()
                             }\n""" % (self.newDeamonName,))
 
+    def createClientIfCheckIfRouteExistFuncs(self,clientIfFd,objectNames) :
+	    clientIfFd.write("""
+func CheckIfV6RouteKeyExists(thriftobj *ribd.IPv6Route, dbHdl *dbutils.DBUtil) (*ribd.IPv6Route, bool, error) {
+	cfg := &ribd.IPv6Route{}
+	cfg = thriftobj
+	isCidr := strings.Contains(cfg.DestinationNw, "/")
+	if isCidr {
+		/*
+		   the given address is in CIDR format
+		*/
+		ip, ipNet, err := net.ParseCIDR(cfg.DestinationNw)
+		if err != nil {
+			return cfg, false, errors.New(fmt.Sprintln("Invalid Desitnation IP address", cfg.DestinationNw))
+		}
+		_, err = netutils.GetNetworkPrefixFromCIDR(cfg.DestinationNw)
+		if err != nil {
+			return cfg, false, errors.New(fmt.Sprintln("RouteConfigValidationCheck for route:", cfg, " Invalid destination ip/network Mask"))
+		}
+		/*
+		   Convert the CIDR format address to IP and mask strings
+		*/
+		cfg.DestinationNw = ip.String()
+		ipMask := make(net.IP, 16)
+		copy(ipMask, ipNet.Mask)
+		ipMaskStr := net.IP(ipMask).String()
+		cfg.NetworkMask = ipMaskStr
+		/*
+			In case where user provides CIDR address, we need to check if there is a duplicate route with destinationNw/networkMask format
+		*/
+		if dbHdl != nil {
+			key := "IPv6Route#" + cfg.DestinationNw + "#" + cfg.NetworkMask
+			var dbObjCfg objects.IPv6Route
+			dbObjCfg.DestinationNw = cfg.DestinationNw
+			dbObjCfg.NetworkMask = cfg.NetworkMask
+			_, err := dbHdl.GetObjectFromDb(dbObjCfg, key)
+			if err == nil {
+				return cfg, true, errors.New(fmt.Sprintln("Duplicate Entry with key:", key))
+			}
+		}
+	}
+	return cfg, false, nil
+}
+func CheckIfV4RouteKeyExists(thriftobj *ribd.IPv4Route, dbHdl *dbutils.DBUtil) (*ribd.IPv4Route, bool, error) {
+	cfg := &ribd.IPv4Route{}
+	cfg = thriftobj
+	isCidr := strings.Contains(cfg.DestinationNw, "/")
+	if isCidr {
+		/*
+		   the given address is in CIDR format
+		*/
+		ip, ipNet, err := net.ParseCIDR(cfg.DestinationNw)
+		if err != nil {
+			return cfg, false, errors.New(fmt.Sprintln("Invalid Desitnation IP address", cfg.DestinationNw))
+		}
+		_, err = netutils.GetNetworkPrefixFromCIDR(cfg.DestinationNw)
+		if err != nil {
+			return cfg, false, errors.New(fmt.Sprintln("RouteConfigValidationCheck for route:", cfg, " Invalid destination ip/network Mask"))
+		}
+		/*
+		   Convert the CIDR format address to IP and mask strings
+		*/
+		cfg.DestinationNw = ip.String()
+		ipMask := make(net.IP, 4)
+		copy(ipMask, ipNet.Mask)
+		ipMaskStr := net.IP(ipMask).String()
+		cfg.NetworkMask = ipMaskStr
+		/*
+			In case where user provides CIDR address, we need to check if there is a duplicate route with destinationNw/networkMask format
+		*/
+		if dbHdl != nil {
+			var dbObjCfg objects.IPv4Route
+			dbObjCfg.DestinationNw = cfg.DestinationNw
+			dbObjCfg.NetworkMask = cfg.NetworkMask
+			key := "IPv4Route#" + cfg.DestinationNw + "#" + cfg.NetworkMask
+			_, err := dbHdl.GetObjectFromDb(dbObjCfg, key)
+			if err == nil {
+				return cfg, true, errors.New(fmt.Sprintln("Duplicate Entry with key:", key))
+			}
+		}
+	}
+	return cfg, false, nil
+}
+		""")
+
     def createClientIfCreateObject(self, clientIfFd, objectNames):
         clientIfFd.write("""
                             func (clnt *%sClient) CreateObject(obj objects.ConfigObj, dbHdl *dbutils.DBUtil) (error, bool) {
@@ -382,8 +466,33 @@ class DaemonObjectsInfo (object) :
                                     data := obj.(objects.%s)
                                     conf := %s.New%s()\n""" % (s, s, self.servicesName, s))
                 clientIfFd.write("""objects.Convert%s%sObjToThrift(&data, conf)""" %(d, s))
-                clientIfFd.write("""
+                if s == "IPv6Route":
+                    clientIfFd.write(""" 
+							cfg, exist, err := CheckIfV6RouteKeyExists(conf, dbHdl)
+       		                 if err != nil {
+			                     return err, false
+		                     }
+		                     if exist {
+			                     return err, false
+		                     }
+		                     ok, err = clnt.ClientHdl.CreateIPv6Route(cfg)
+					""")
+                elif s == "IPv4Route":
+                    clientIfFd.write(""" 
+							cfg, exist, err := CheckIfV4RouteKeyExists(conf, dbHdl)
+       		                 if err != nil {
+			                     return err, false
+		                     }
+		                     if exist {
+			                     return err, false
+		                     }
+		                     ok, err = clnt.ClientHdl.CreateIPv4Route(cfg)
+                      """)
+                else :
+                    clientIfFd.write("""
                                     ok, err = clnt.ClientHdl.Create%s(conf)
+                                    """ % (s))
+                clientIfFd.write("""
                                     if err == nil && ok == true {
                                         err = dbHdl.StoreObjectInDb(data)
                                         if err != nil {
@@ -394,7 +503,7 @@ class DaemonObjectsInfo (object) :
 				        fmt.Println("Create failed:", err)
                                         return err, false
                                     }
-                                    break\n""" % (s,))
+                                    break\n""")
         clientIfFd.write("""default:
                                     break
                                 }
@@ -423,6 +532,8 @@ class DaemonObjectsInfo (object) :
                 clientIfFd.write("""objects.Convert%s%sObjToThrift(&data, conf)""" %(d, s))
                 clientIfFd.write("""
                                     ok, err = clnt.ClientHdl.Delete%s(conf)
+                                    """% (s))
+                clientIfFd.write("""
                                     if err == nil && ok == true {
                                         err = dbHdl.DeleteObjectFromDb(data)
                                         if err != nil {
@@ -433,7 +544,7 @@ class DaemonObjectsInfo (object) :
 				        fmt.Println("Delete failed:", err)
                                         return err, false
                                     }
-                                    break\n""" % (s,))
+                                    break\n""")
         clientIfFd.write("""default:
                                     break
                                 }
@@ -676,12 +787,17 @@ class DaemonObjectsInfo (object) :
         #if (len([ x for x,y in accessDict.iteritems() if x in crudStructsList and 'r' in y]) > 0):
         # BELOW CODE WILL BE FORMATED BY GOFMT
         clientIfFd.write("""import (\n "%s"\n"fmt"\n"models/objects"\n"models/actions"\n"sync"\n"utils/ipcutils"\n"utils/dbutils"\n""" % self.servicesName)
+        if "ribd" in self.clientIfFileName :
+		    clientIfFd.write(""" "errors" \n"strings" \n"net" \nnetutils "utils/netUtils" \n""")
         #if array_obj == 'True' :
             #clientIfFd.write(""" "reflect"\n""" )		
         clientIfFd.write(""")\n""")
         clientIfFd.write("""//Dummy import\n""")
         clientIfFd.write("""var _ actions.ActionObj\n""")
         self.clientIfBasicHelper(clientIfFd)
+        if "ribd" in self.clientIfFileName :
+		    print 'ribd client:generate checkifv4/v6 exists routines'
+		    self.createClientIfCheckIfRouteExistFuncs(clientIfFd,objectNames)
         self.createClientIfCreateObject(clientIfFd, objectNames)
         self.createClientIfDeleteObject(clientIfFd, objectNames)
         self.createClientIfUpdateObject(clientIfFd, objectNames)

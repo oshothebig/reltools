@@ -54,10 +54,8 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='FlexSwitch Package builder')
     parser.add_argument('-r', '--release',
-                        type=bool, 
                         dest='release',
                         action='store_true',
-                        nargs='?',
                         default=False,
                         help='Is Release')
     parser.add_argument('--platform',

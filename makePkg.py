@@ -53,10 +53,10 @@ def executeCommand (command) :
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='FlexSwitch Package builder')
-    parser.add_argument('--release',
+    parser.add_argument('-r', '--release',
                         type=bool, 
                         dest='release',
-                        action='store',
+                        action='store_true',
                         nargs='?',
                         default=False,
                         help='Is Release')

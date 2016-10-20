@@ -176,16 +176,16 @@ func generateModelObjectRstFile(listOfDaemon *map[string]bool) {
 
 	for key, objList := range GoObjectMap {
 		rstFile := key + "Objects.rst"
-		f.WriteString("   " + key + " Model Objects  <" + rstFile + ">\n")
+		f.WriteString("   " + key + " Objects  <" + rstFile + ">\n")
 		fp, err := os.Create("rstFiles/" + key + "Objects.rst")
 		check(err)
-		fp.WriteString("FlexSwitch " + key + " Model Objects\n")
+		fp.WriteString("FlexSwitch " + key + " Objects\n")
 		fp.WriteString("================================================================\n\n\n")
 		fp.WriteString(".. toctree::\n")
 		fp.WriteString("   :maxdepth: 1\n\n")
 		for _, structName := range objList {
 			structRstFile := structName + "Objects.rst"
-			fp.WriteString("   " + structName + " Model Objects  <" + structRstFile + ">\n")
+			fp.WriteString("   " + structName + " Objects  <" + structRstFile + ">\n")
 		}
 		fp.Sync()
 		fp.Close()
@@ -458,7 +458,7 @@ func constructRstFile() {
 		for structName, structDetails := range modelObjEnt {
 			f, err := os.Create("rstFiles/" + structName + "Objects.rst")
 			check(err)
-			f.WriteString(structName + " Model Objects\n")
+			f.WriteString(structName + " Object\n")
 			f.WriteString("=============================================================\n\n")
 			if strings.Contains(structName, "State") {
 				str := strings.TrimSuffix(structName, "State")

@@ -65,5 +65,5 @@ if __name__ == '__main__':
         with lcd(baseDir + '/reltools/'):
             local('git add %s ' %(PKGFILE))
             local('git commit -m \"Bumping up the release number\"') 
-            local('git push') 
+            local('git push origin %s' % (options.branch)) 
 

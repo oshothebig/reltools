@@ -33,9 +33,12 @@ if __name__ == '__main__':
             srcPath = baseDir + '/snaproute/src/'
 	with lcd (srcPath + repo):
             local ('git reset --hard')
-            local ('git checkout master')
-            local ('git fetch upstream')
-            local ('git merge upstream/master')
+            try:
+                local ('git checkout %s' %(options.branch))
+            except:
+                local ('git checkout -b %s remotes/upstream/%s' %(options.branch, options.branch))
+            local ('git fetch upstream %s' %(options.branch))
+            local ('git merge upstream/%s' %(options.branch))
 
 	if repo == 'asicd' :
             with lcd (baseDir + '/snaproute/src/'+repo):

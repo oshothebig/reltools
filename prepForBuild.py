@@ -14,7 +14,7 @@ if __name__ == '__main__':
 
     parser.add_option("-e", "--edit", 
                       dest="edit",
-                      action='store',
+                      action='store_true',
                       default=False,
                       help="Edit revision")
     

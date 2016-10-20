@@ -17,14 +17,20 @@ if __name__ == '__main__':
                       action='store',
                       default=False,
                       help="Edit revision")
+    
+    parser.add_option("-b", "--branch", 
+                      dest="branch",
+                      action='store',
+                      default="rel_1.x_ga",
+                      help="Branch Version for which you want to do the build")
 
     (options, args) = parser.parse_args()
-           
+    
     with open(SETUPFILE) as fd:
         info = json.load(fd)
     repoList = info['PrivateRepos'] + ['reltools']
     baseDir = os.getenv('SR_CODE_BASE','~/git/')
-
+    
     for repo in  repoList:
 	print "path of repo %s is : %s/snaproute/src/%s" %(baseDir, repo, repo)
         if repo == 'reltools':

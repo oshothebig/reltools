@@ -38,7 +38,7 @@
             "platform": "dummy"
         }, 
         {
-            "odm": "cel_seastone", 
+            "odm": "bcm_cel_seastone", 
             "platform": "dummy"
         }, 
         {

@@ -1,6 +1,6 @@
 {
     "build": "171", 
-    "changeindex": "14", 
+    "changeindex": "44", 
     "major": "1", 
     "minor": "0", 
     "patch": "0", 
@@ -38,7 +38,7 @@
             "platform": "dummy"
         }, 
         {
-            "odm": "cel_seastone", 
+            "odm": "bcm_cel_seastone", 
             "platform": "dummy"
         }, 
         {

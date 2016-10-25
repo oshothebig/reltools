@@ -19,7 +19,7 @@ class apiGenie (object) :
                 objMembersData = json.load(fileHdl)
                 for objName, objInfo in objMembersData.iteritems():
                     canCreate = True
-                    if objInfo['autoCreate'] == True or objInfo['autoDiscover'] == True:
+                    if objInfo['autoCreate'] == True:
                         canCreate = False
                     if 'w' in str(objInfo['access']):
                         self.objDict[objName] = FlexConfigObject (objName, 

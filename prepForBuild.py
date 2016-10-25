@@ -14,17 +14,23 @@ if __name__ == '__main__':
 
     parser.add_option("-e", "--edit", 
                       dest="edit",
-                      action='store',
+                      action='store_true',
                       default=False,
                       help="Edit revision")
+    
+    parser.add_option("-b", "--branch", 
+                      dest="branch",
+                      action='store',
+                      default="rel_1.x_ga",
+                      help="Branch Version for which you want to do the build")
 
     (options, args) = parser.parse_args()
-           
+    
     with open(SETUPFILE) as fd:
         info = json.load(fd)
     repoList = info['PrivateRepos'] + ['reltools']
     baseDir = os.getenv('SR_CODE_BASE','~/git/')
-
+    
     for repo in  repoList:
 	print "path of repo %s is : %s/snaproute/src/%s" %(baseDir, repo, repo)
         if repo == 'reltools':
@@ -33,9 +39,12 @@ if __name__ == '__main__':
             srcPath = baseDir + '/snaproute/src/'
 	with lcd (srcPath + repo):
             local ('git reset --hard')
-            local ('git checkout master')
-            local ('git fetch upstream')
-            local ('git merge upstream/master')
+            try:
+                local ('git checkout %s' %(options.branch))
+            except:
+                local ('git checkout -b %s remotes/upstream/%s' %(options.branch, options.branch))
+            local ('git fetch upstream %s' %(options.branch))
+            local ('git merge upstream/%s' %(options.branch))
 
 	if repo == 'asicd' :
             with lcd (baseDir + '/snaproute/src/'+repo):
@@ -56,5 +65,5 @@ if __name__ == '__main__':
         with lcd(baseDir + '/reltools/'):
             local('git add %s ' %(PKGFILE))
             local('git commit -m \"Bumping up the release number\"') 
-            local('git push') 
+            local('git push origin %s' % (options.branch)) 
 

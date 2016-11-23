@@ -209,9 +209,9 @@ def installThrift():
     with lcd(TMP_DIR):
         local('tar -xvf ' + thrift_tar)
         with lcd(thriftPkgName):
-            local ('./configure --with-java=false')
-            local ('make')
-            local ('sudo make install')
+            local('./configure --with-java=false')
+            local('make')
+            local('sudo make install')
 
 
 def installNanoMsgLib():

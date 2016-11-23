@@ -197,17 +197,17 @@ def setupSRRepos(gitProto='http', comp=None):
 def installThrift():
     TMP_DIR = ".tmp"
     thriftVersion = '0.9.3'
-    thriftPkgName = 'thrift-'+thriftVersion
+    thriftPkgName = 'thrift-' + thriftVersion
     if _verifyThriftInstallation(thriftVersion):
         print 'Thrift Already installed. Skipping installation'
         return
 
     thrift_tar = thriftPkgName +'.tar.gz'
-    local('mkdir -p '+TMP_DIR)
-    local('wget -O '+ TMP_DIR + '/' +thrift_tar+ ' '+ 'http://www-us.apache.org/dist/thrift/0.9.3/thrift-0.9.3.tar.gz')
+    local('mkdir -p ' + TMP_DIR)
+    local('wget -O ' + TMP_DIR + '/' + thrift_tar + ' ' + 'http://www-us.apache.org/dist/thrift/0.9.3/thrift-0.9.3.tar.gz')
 
     with lcd(TMP_DIR):
-        local('tar -xvf '+ thrift_tar)
+        local('tar -xvf ' + thrift_tar)
         with lcd(thriftPkgName):
             local ('./configure --with-java=false')
             local ('make')

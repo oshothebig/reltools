@@ -28,7 +28,7 @@ def setupExternals (comp=None):
     print 'Installing all External dependencies....'
     info = setupHandler().getExternalInstalls(comp)
     for comp, deps in info.iteritems():
-        print 'Installing dependencies for %s' %(comp)
+        print 'Installing dependencies for %s' % (comp)
         for dep in deps:
             cmd = 'sudo apt-get install -y ' + dep
     	    with settings(prompts={'Do you want to continue [Y/n]? ': 'Y'}):
@@ -39,10 +39,10 @@ def setupCliDeps(gitProto='http'):
     repo = 'extPkgs'
     usrName =  setupHandler().getUsrName()
     if gitProto == 'ssh':
-        userRepoPrefix   = 'git@github.com:%s/' %(usrName)
-        remoteRepoPrefix = 'git@github.com:%s/' %('OpenSnaproute')
+        userRepoPrefix   = 'git@github.com:%s/' % (usrName)
+        remoteRepoPrefix = 'git@github.com:%s/' % ('OpenSnaproute')
     else:
-        userRepoPrefix = 'https://github.com/%s/' %(usrName)
+        userRepoPrefix = 'https://github.com/%s/' % (usrName)
         remoteRepoPrefix = 'https://github.com/%s/' % ('OpenSnaproute')
     extSrcDir = setupHandler().getExtSrcDir()
     _setupGitRepo ( repo,
@@ -73,12 +73,12 @@ def _getRepoUrlPrefix(proto='http'):
 
     if gitProto == 'ssh':
         if not internalUser:
-            userRepoPrefix   = 'git@github.com:%s/' %(org)
+            userRepoPrefix   = 'git@github.com:%s/' % (org)
         else:
-            userRepoPrefix   = 'git@github.com:%s/' %(usrName)
+            userRepoPrefix   = 'git@github.com:%s/' % (usrName)
     else:
         if not internalUser:
-            userRepoPrefix   = 'https://github.com/%s/' %(org)
+            userRepoPrefix   = 'https://github.com/%s/' % (org)
         else:
             userRepoPrefix   = 'https://github.com/%s/' % (usrName)
     return userRepoPrefix
@@ -91,7 +91,7 @@ def _getRepoRemoteUrlPrefix(proto='http'):
     remoteRepoPrefix =  None
     if gitProto == 'ssh':
         if internalUser:
-            remoteRepoPrefix = 'git@github.com:%s/' %(org)
+            remoteRepoPrefix = 'git@github.com:%s/' % (org)
     else:
         if internalUser:
             remoteRepoPrefix = 'https://github.com/%s/' % (org)
@@ -106,9 +106,9 @@ def setupGoDeps(comp=None, gitProto='http'):
     for rp in info:
         with lcd(extSrcDir):
             if gitProto == "ssh":
-                repoUrl = 'git@github.com:%s/%s' %(org , rp['repo'])
+                repoUrl = 'git@github.com:%s/%s' % (org , rp['repo'])
             else:
-                repoUrl = 'https://github.com/%s/%s' %(org , rp['repo'])
+                repoUrl = 'https://github.com/%s/%s' % (org , rp['repo'])
             dstDir =  rp['renamedst'] if rp.has_key('renamedst') else ''
             dirToMake = dstDir
             cloned = False
@@ -153,15 +153,15 @@ def setupSRRepos( gitProto = 'http' , comp = None):
         local(cmd)
     if gitProto == "ssh":
         if not internalUser:
-            userRepoPrefix   = 'git@github.com:%s/' %(org)
+            userRepoPrefix   = 'git@github.com:%s/' % (org)
             remoteRepoPrefix = None
             pkgRepoPrefix = 'git@github.com:%s/' % (pkgRepoOrg)
         else:
-            userRepoPrefix   = 'git@github.com:%s/' %(usrName)
-            remoteRepoPrefix = 'git@github.com:%s/' %(org)
+            userRepoPrefix   = 'git@github.com:%s/' % (usrName)
+            remoteRepoPrefix = 'git@github.com:%s/' % (org)
     else:
         if not internalUser:
-            userRepoPrefix   = 'https://github.com/%s/' %(org)
+            userRepoPrefix   = 'https://github.com/%s/' % (org)
             remoteRepoPrefix = None
             pkgRepoPrefix = 'https://github.com/%s/' % (pkgRepoOrg)
         else:

@@ -88,7 +88,7 @@ def _getRepoRemoteUrlPrefix(proto='http'):
     org = setupHandler().getOrg()
     gitProto = setupHandler().getGitProto()
 
-    remoteRepoPrefix =  None
+    remoteRepoPrefix = None
     if gitProto == 'ssh':
         if internalUser:
             remoteRepoPrefix = 'git@github.com:%s/' % (org)
@@ -215,7 +215,7 @@ def installThrift():
             local ('sudo make install')
 
 
-def installNanoMsgLib ():
+def installNanoMsgLib():
     srcDir = setupHandler().getGoDepDirFor('nanomsg')
     with lcd(srcDir):
         cmdList = ['sudo apt-get install -y libtool',
@@ -254,7 +254,7 @@ def installIpTables():
             for cmd in cmdList:
                 local(cmd)
 
-def _createDirectoryStructure() :
+def _createDirectoryStructure():
     dirs = setupHandler().getAllSrcDir()
     for everydir in dirs:
         local('mkdir -p '+ everydir)

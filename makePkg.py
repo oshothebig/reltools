@@ -3,7 +3,7 @@ import sys
 import json
 import time
 import fileinput
-import subprocess 
+import subprocess
 import getpass
 import argparse
 from fabric.api import env,local,run,parallel
@@ -11,8 +11,8 @@ from optparse import OptionParser
 from curator.personality import FlexPersonality
 
 
-PACKAGE_BUILD="PKG_BUILD=TRUE"
-TEMPLATE_BUILD_TYPE="PKG_BUILD=FALSE"
+PACKAGE_BUILD = "PKG_BUILD=TRUE"
+TEMPLATE_BUILD_TYPE = "PKG_BUILD=FALSE"
 TEMPLATE_CHANGELOG_VER = "0.0.1"
 TEMPLATE_BUILD_DIR = "flexswitch-0.0.1"
 TEMPLATE_BUILD_TARGET = "cel_redstone"
@@ -20,7 +20,7 @@ TEMPLATE_PLATFORM_BUILD_TARGET = "dummy"
 TEMPLATE_ALL_TARGET = "ALL_DEPS=buildinfogen codegen installdir ipc exe install"
 PKG_ONLY_ALL_TARGET = "ALL_DEPS=installdir install"
 
-platformHandlers =  {
+platformHandlers = {
     'accton_as5712'     : FlexPersonality(),
     'accton_as5812'     : FlexPersonality(),
     'accton_as6712'     : FlexPersonality(),
@@ -33,18 +33,18 @@ platformHandlers =  {
     'docker'            : FlexPersonality()
 }
 
-def buildDocker (command) :
-    p = subprocess.Popen(command , shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+def buildDocker(command):
+    p = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = p.communicate()
     print out.rstrip(), err.rstrip()
-    print "Docker image return code ", p.returncode 
+    print "Docker image return code ", p.returncode
     print "Check version of  image -- docker images"
     return
 
-def executeCommand (command) :
+def executeCommand(command):
     out = ''
     if type(command) != list:
-        command = [ command]
+        command = [command]
     for cmd in command:
         print 'Executing command %s' %(cmd)
         local(cmd)
@@ -59,12 +59,12 @@ if __name__ == '__main__':
                         default=False,
                         help='Is Release')
     parser.add_argument('--platform',
-                        type = str,
-                        dest = 'platform',
-                        action = 'store',
-                        nargs = '?',
-                        default = "",
-                        help = 'device platform')
+                        type=str,
+                        dest='platform',
+                        action='store',
+                        nargs='?',
+                        default="",
+                        help='device platform')
 
 
     args = parser.parse_args()
@@ -84,10 +84,10 @@ if __name__ == '__main__':
     cfgFile.close()
     firstBuild = True
     buildTargetList = parsedPkgInfo['platforms']
-    pkgVersion =  usrName + '_' + parsedPkgInfo['major']+ '.'\
+    pkgVersion = usrName + '_' + parsedPkgInfo['major']+ '.'\
                   + parsedPkgInfo['minor'] +  '.' + parsedPkgInfo['patch'] + \
                   '.' + parsedPkgInfo['build'] + '.' + parsedPkgInfo['changeindex']
-    pkgVersionNum =  parsedPkgInfo['major']+ '.'\
+    pkgVersionNum = parsedPkgInfo['major']+ '.'\
                   + parsedPkgInfo['minor'] +  '.' + parsedPkgInfo['patch'] + \
                   '.' + parsedPkgInfo['build'] + '.' + parsedPkgInfo['changeindex']
     build_dir = "flexswitch-" + pkgVersion
@@ -124,7 +124,7 @@ if __name__ == '__main__':
                 #Change all target prereqs
                 for line in fileinput.input(build_dir+'/Makefile', inplace=1):
                     print line.replace(TEMPLATE_ALL_TARGET, PKG_ONLY_ALL_TARGET).rstrip('\n')
-            else :
+            else:
                 #Change build target and all target prereqs
                 preProcess = [
                         'sed -i s/' + prevBldTgt +'/' + buildTarget + '/ ' + build_dir + '/Makefile',

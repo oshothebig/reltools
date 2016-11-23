@@ -27,7 +27,7 @@ def setupHandler():
 def setupExternals (comp=None):
     print 'Installing all External dependencies....'
     info = setupHandler().getExternalInstalls(comp)
-    for comp, deps in info.iteritems(): 
+    for comp, deps in info.iteritems():
         print 'Installing dependencies for %s' %(comp)
         for dep in deps:
             cmd = 'sudo apt-get install -y ' + dep
@@ -47,13 +47,13 @@ def setupCliDeps(gitProto='http'):
     extSrcDir = setupHandler().getExtSrcDir()
     _setupGitRepo ( repo,
                     setupHandler().getExtSrcDir(),
-                    userRepoPrefix, 
+                    userRepoPrefix,
                     remoteRepoPrefix)
 
-def _setupGitRepo (repo, srcDir, userRepoPrefix, remoteRepoPrefix): 
+def _setupGitRepo (repo, srcDir, userRepoPrefix, remoteRepoPrefix):
     with lcd(srcDir):
         if not (os.path.exists(srcDir + repo)  and os.path.isdir(srcDir+ repo)):
-            cmd = 'git clone '+ userRepoPrefix + repo 
+            cmd = 'git clone '+ userRepoPrefix + repo
             local(cmd)
         if remoteRepoPrefix:
             with lcd(srcDir +repo):
@@ -96,7 +96,7 @@ def _getRepoRemoteUrlPrefix(proto='http'):
         if internalUser:
             remoteRepoPrefix = 'https://github.com/%s/' % (org)
 
-    return remoteRepoPrefix 
+    return remoteRepoPrefix
 
 def setupGoDeps(comp=None, gitProto='http'):
     print 'Fetching external  Golang repos ....'
@@ -110,7 +110,7 @@ def setupGoDeps(comp=None, gitProto='http'):
             else:
                 repoUrl = 'https://github.com/%s/%s' %(org , rp['repo'])
             dstDir =  rp['renamedst'] if rp.has_key('renamedst') else ''
-            dirToMake = dstDir 
+            dirToMake = dstDir
             cloned = False
             if not (os.path.exists(extSrcDir+ dstDir + '/' + rp['repo'])):
                 cmd = 'git clone '+ repoUrl
@@ -198,7 +198,7 @@ def setupSRRepos( gitProto = 'http' , comp = None):
 def installThrift():
     TMP_DIR = ".tmp"
     thriftVersion = '0.9.3'
-    thriftPkgName = 'thrift-'+thriftVersion 
+    thriftPkgName = 'thrift-'+thriftVersion
     if _verifyThriftInstallation(thriftVersion):
         print 'Thrift Already installed. Skipping installation'
         return
@@ -206,14 +206,14 @@ def installThrift():
     thrift_tar = thriftPkgName +'.tar.gz'
     local('mkdir -p '+TMP_DIR)
     local('wget -O '+ TMP_DIR + '/' +thrift_tar+ ' '+ 'http://www-us.apache.org/dist/thrift/0.9.3/thrift-0.9.3.tar.gz')
-    
+
     with lcd(TMP_DIR):
         local('tar -xvf '+ thrift_tar)
         with lcd (thriftPkgName):
             local ('./configure --with-java=false')
             local ('make')
             local ('sudo make install')
-        
+
 
 def installNanoMsgLib ():
     srcDir = setupHandler().getGoDepDirFor('nanomsg')
@@ -257,7 +257,7 @@ def installIpTables():
 def _createDirectoryStructure() :
     dirs = setupHandler().getAllSrcDir()
     for everydir in dirs:
-        local('mkdir -p '+ everydir) 
+        local('mkdir -p '+ everydir)
 
 def _verifyThriftInstallation(thriftVersion='0.9.3'):
     with settings(warn_only=True):
@@ -289,11 +289,11 @@ def setupDevEnv() :
     installIpTables()
     setupSRRepos(gitProto=gProto)
     printInstruction()
-    
+
 def pushDocker(repo='flex1') :
     print "Push the latest docker image to docker hub"
     print "Keep the usermane and password for dockerhub ready."
     local('docker login')
     cmd = "docker push snapos/flex:"+repo
     local(cmd)
-    print "Success..." 
+    print "Success..."

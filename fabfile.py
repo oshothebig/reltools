@@ -216,15 +216,12 @@ def installThrift():
 def installNanoMsgLib():
     srcDir = setupHandler().getGoDepDirFor('nanomsg')
     with lcd(srcDir):
-        cmdList = ['sudo apt-get install -y libtool',
-                'libtoolize',
-                './autogen.sh',
-                './configure',
-                'make',
-                'sudo make install',
-                ]
-        for cmd in cmdList:
-            local(cmd)
+        local('sudo apt-get install -y libtool')
+        local('libtoolize')
+        local('./autogen.sh')
+        local('./configure')
+        local('make')
+        local('sudo make install')
 
 def installIpTables():
     extSrcDir = setupHandler().getExtSrcDir()

@@ -63,3 +63,6 @@ buildInfo.json
 
 #Debian Pkg
 *.deb
+
+# Temporary directory for download
+.tmp/

@@ -36,7 +36,6 @@ def setupExternals(comp=None):
 
 def setupCliDeps(gitProto='http'):
     print 'Fetching Python dependencies for CLI....'
-    repo = 'extPkgs'
     usrName = setupHandler().getUsrName()
     if gitProto == 'ssh':
         userRepoPrefix   = 'git@github.com:%s/' % (usrName)
@@ -44,7 +43,7 @@ def setupCliDeps(gitProto='http'):
     else:
         userRepoPrefix = 'https://github.com/%s/' % (usrName)
         remoteRepoPrefix = 'https://github.com/%s/' % ('OpenSnaproute')
-    _setupGitRepo(repo,
+    _setupGitRepo('extPkgs',
                     setupHandler().getExtSrcDir(),
                     userRepoPrefix,
                     remoteRepoPrefix)

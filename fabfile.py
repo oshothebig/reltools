@@ -31,7 +31,7 @@ def setupExternals(comp=None):
         print 'Installing dependencies for %s' % (comp)
         for dep in deps:
             with settings(prompts={'Do you want to continue [Y/n]? ': 'Y'}):
-                local('sudo apt-get install -y ' + dep)
+                local('sudo apt-get install -y %s' % dep)
 
 def setupCliDeps(gitProto='http'):
     print 'Fetching Python dependencies for CLI....'
@@ -50,10 +50,10 @@ def setupCliDeps(gitProto='http'):
 def _setupGitRepo(repo, srcDir, userRepoPrefix, remoteRepoPrefix):
     with lcd(srcDir):
         if not (os.path.exists(srcDir + repo)  and os.path.isdir(srcDir+ repo)):
-            local('git clone '+ userRepoPrefix + repo)
+            local('git clone %s' % (userRepoPrefix + repo))
         if remoteRepoPrefix:
             with lcd(srcDir +repo):
-                local('git remote add upstream ' + remoteRepoPrefix + repo + '.git')
+                local('git remote add upstream %s' % (remoteRepoPrefix + repo + '.git'))
                 local('git fetch upstream')
                 local('git checkout master')
                 local('git merge upstream/master')
@@ -106,18 +106,18 @@ def setupGoDeps(comp=None, gitProto='http'):
             dirToMake = dstDir
             cloned = False
             if not os.path.exists(extSrcDir+ dstDir + '/' + rp['repo']):
-                local('git clone ' + repoUrl)
+                local('git clone %s' % repoUrl)
                 cloned = True
                 if rp.has_key('reltag'):
                     with lcd(extSrcDir+rp['repo']):
-                        local('git checkout tags/'+ rp['reltag'])
+                        local('git checkout tags/%s' % rp['reltag'])
 
             if not dstDir.endswith('/'):
                 dirToMake = dstDir[0:dstDir.rfind('/')]
             if dirToMake:
-                local('mkdir -p ' + dirToMake)
+                local('mkdir -p %s' % dirToMake)
             if rp.has_key('renamesrc') and cloned:
-                local('mv ' + extSrcDir+ rp['renamesrc']+ ' ' + extSrcDir+ rp['renamedst'])
+                local('mv %s %s' % (extSrcDir + rp['renamesrc'], extSrcDir + rp['renamedst']))
 
 def setupSRRepos(gitProto='http', comp=None):
     print 'Fetching Snaproute repositories dependencies....'
@@ -138,7 +138,7 @@ def setupSRRepos(gitProto='http', comp=None):
     srPkgRepos = setupHandler().getSRPkgRepos()
 
     if not os.path.isfile(srcDir+'/Makefile'):
-        local('ln -s ' + anchorDir+  '/reltools/Makefile '+  srcDir + 'Makefile')
+        local('ln -s %s %s' % (anchorDir + '/reltools/Makefile', srcDir + 'Makefile'))
     if gitProto == "ssh":
         if not internalUser:
             userRepoPrefix   = 'git@github.com:%s/' % (org)
@@ -163,10 +163,10 @@ def setupSRRepos(gitProto='http', comp=None):
                     prefix = pkgRepoPrefix
                 else:
                     prefix = userRepoPrefix
-                local('git clone '+ prefix + repo)
+                local('git clone %s' % (prefix + repo))
             if remoteRepoPrefix:
                 with lcd(srcDir +repo):
-                    local('git remote add upstream ' + remoteRepoPrefix + repo + '.git')
+                    local('git remote add upstream %s' % (remoteRepoPrefix + repo + '.git'))
                     local('git fetch upstream')
                     local('git checkout master')
                     local('git merge upstream/master')
@@ -185,11 +185,11 @@ def installThrift():
         return
 
     thrift_tar = thriftPkgName +'.tar.gz'
-    local('mkdir -p ' + TMP_DIR)
-    local('wget -O ' + TMP_DIR + '/' + thrift_tar + ' ' + 'http://www-us.apache.org/dist/thrift/0.9.3/thrift-0.9.3.tar.gz')
+    local('mkdir -p %s' % TMP_DIR)
+    local('wget -O %s' % (TMP_DIR + '/' + thrift_tar + ' ' + 'http://www-us.apache.org/dist/thrift/0.9.3/thrift-0.9.3.tar.gz'))
 
     with lcd(TMP_DIR):
-        local('tar -xvf ' + thrift_tar)
+        local('tar -xvf %s' % thrift_tar)
         with lcd(thriftPkgName):
             local('./configure --with-java=false')
             local('make')
@@ -235,7 +235,7 @@ def installIpTables():
 def _createDirectoryStructure():
     dirs = setupHandler().getAllSrcDir()
     for everydir in dirs:
-        local('mkdir -p '+ everydir)
+        local('mkdir -p %s' % everydir)
 
 def _verifyThriftInstallation(thriftVersion='0.9.3'):
     with settings(warn_only=True):
@@ -272,6 +272,5 @@ def pushDocker(repo='flex1'):
     print "Push the latest docker image to docker hub"
     print "Keep the usermane and password for dockerhub ready."
     local('docker login')
-    cmd = "docker push snapos/flex:"+repo
-    local(cmd)
+    local("docker push snapos/flex:%s" % repo)
     print "Success..."

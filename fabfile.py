@@ -111,7 +111,7 @@ def setupGoDeps(comp=None, gitProto='http'):
             dstDir = rp['renamedst'] if rp.has_key('renamedst') else ''
             dirToMake = dstDir
             cloned = False
-            if not (os.path.exists(extSrcDir+ dstDir + '/' + rp['repo'])):
+            if not os.path.exists(extSrcDir+ dstDir + '/' + rp['repo']):
                 cmd = 'git clone ' + repoUrl
                 local(cmd)
                 cloned = True

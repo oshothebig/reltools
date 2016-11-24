@@ -30,9 +30,8 @@ def setupExternals(comp=None):
     for comp, deps in info.iteritems():
         print 'Installing dependencies for %s' % (comp)
         for dep in deps:
-            cmd = 'sudo apt-get install -y ' + dep
             with settings(prompts={'Do you want to continue [Y/n]? ': 'Y'}):
-                local(cmd)
+                local('sudo apt-get install -y ' + dep)
 
 def setupCliDeps(gitProto='http'):
     print 'Fetching Python dependencies for CLI....'
@@ -51,17 +50,13 @@ def setupCliDeps(gitProto='http'):
 def _setupGitRepo(repo, srcDir, userRepoPrefix, remoteRepoPrefix):
     with lcd(srcDir):
         if not (os.path.exists(srcDir + repo)  and os.path.isdir(srcDir+ repo)):
-            cmd = 'git clone '+ userRepoPrefix + repo
-            local(cmd)
+            local('git clone '+ userRepoPrefix + repo)
         if remoteRepoPrefix:
             with lcd(srcDir +repo):
-                cmd = 'git remote add upstream ' + remoteRepoPrefix + repo + '.git'
-                local(cmd)
-                commandsToSync = ['git fetch upstream',
-                                'git checkout master',
-                                'git merge upstream/master']
-                for cmd in commandsToSync:
-                    local(cmd)
+                local('git remote add upstream ' + remoteRepoPrefix + repo + '.git')
+                local('git fetch upstream')
+                local('git checkout master')
+                local('git merge upstream/master')
 
 def _getRepoUrlPrefix(proto='http'):
     internalUser = setupHandler().getUsrRole()
@@ -111,22 +106,18 @@ def setupGoDeps(comp=None, gitProto='http'):
             dirToMake = dstDir
             cloned = False
             if not os.path.exists(extSrcDir+ dstDir + '/' + rp['repo']):
-                cmd = 'git clone ' + repoUrl
-                local(cmd)
+                local('git clone ' + repoUrl)
                 cloned = True
                 if rp.has_key('reltag'):
-                    cmd = 'git checkout tags/'+ rp['reltag']
                     with lcd(extSrcDir+rp['repo']):
-                        local(cmd)
+                        local('git checkout tags/'+ rp['reltag'])
 
             if not dstDir.endswith('/'):
                 dirToMake = dstDir[0:dstDir.rfind('/')]
             if dirToMake:
-                cmd = 'mkdir -p ' + dirToMake
-                local(cmd)
+                local('mkdir -p ' + dirToMake)
             if rp.has_key('renamesrc') and cloned:
-                cmd = 'mv ' + extSrcDir+ rp['renamesrc']+ ' ' + extSrcDir+ rp['renamedst']
-                local(cmd)
+                local('mv ' + extSrcDir+ rp['renamesrc']+ ' ' + extSrcDir+ rp['renamedst'])
 
 def setupSRRepos(gitProto='http', comp=None):
     print 'Fetching Snaproute repositories dependencies....'
@@ -147,8 +138,7 @@ def setupSRRepos(gitProto='http', comp=None):
     srPkgRepos = setupHandler().getSRPkgRepos()
 
     if not os.path.isfile(srcDir+'/Makefile'):
-        cmd = 'ln -s ' + anchorDir+  '/reltools/Makefile '+  srcDir + 'Makefile'
-        local(cmd)
+        local('ln -s ' + anchorDir+  '/reltools/Makefile '+  srcDir + 'Makefile')
     if gitProto == "ssh":
         if not internalUser:
             userRepoPrefix   = 'git@github.com:%s/' % (org)
@@ -173,26 +163,19 @@ def setupSRRepos(gitProto='http', comp=None):
                     prefix = pkgRepoPrefix
                 else:
                     prefix = userRepoPrefix
-                cmd = 'git clone '+ prefix + repo
-                local(cmd)
+                local('git clone '+ prefix + repo)
             if remoteRepoPrefix:
                 with lcd(srcDir +repo):
-                    cmd = 'git remote add upstream ' + remoteRepoPrefix + repo + '.git'
-                    local(cmd)
-                    commandsToSync = ['git fetch upstream',
-                                    'git checkout master',
-                                    'git merge upstream/master']
-                    for cmd in commandsToSync:
-                        local(cmd)
+                    local('git remote add upstream ' + remoteRepoPrefix + repo + '.git')
+                    local('git fetch upstream')
+                    local('git checkout master')
+                    local('git merge upstream/master')
             LFSRepos = setupHandler().getLFSEnabledRepos()
             if repo in LFSRepos:
                 with lcd(srcDir + repo):
-                    commandsToCheckout = [
-                            'git lfs fetch',
-                            'git lfs checkout'
-                            ]
-                    for cmd in commandsToCheckout:
-                        local(cmd)
+                    local('git lfs fetch')
+                    local('git lfs checkout')
+
 def installThrift():
     TMP_DIR = ".tmp"
     thriftVersion = '0.9.3'

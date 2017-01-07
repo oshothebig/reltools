@@ -5,6 +5,7 @@ from heapq import merge
 import sys
 import json
 
+
 SNAP_ROUTE_SRC  = '/snaproute/src/'
 BUILD_INFO_FILE = 'buildInfo.json'
 SRC_INFO_FILE   = 'setupInfo.json'

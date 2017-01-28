@@ -10,22 +10,6 @@
             "platform": "dummy"
         }, 
         {
-            "odm": "accton_as5812", 
-            "platform": "dummy"
-        }, 
-        {
-            "odm": "bcm_accton_as6712", 
-            "platform": "dummy"
-        }, 
-        {
-            "odm": "accton_as6812", 
-            "platform": "dummy"
-        }, 
-        {
-            "odm": "accton_as7712", 
-            "platform": "dummy"
-        }, 
-        {
             "odm": "accton_wedge40", 
             "platform": "dummy"
         }, 
@@ -36,14 +20,6 @@
         {
             "odm": "cel_redstone", 
             "platform": "dummy"
-        }, 
-        {
-            "odm": "bcm_cel_seastone", 
-            "platform": "dummy"
-        }, 
-        {
-            "odm": "bcm_voyager", 
-            "platform": "openBMCVoyager"
         }, 
         {
             "odm": "docker", 

@@ -84,12 +84,10 @@ if __name__ == '__main__':
     cfgFile.close()
     firstBuild = True
     buildTargetList = parsedPkgInfo['platforms']
-    pkgVersion = usrName + '_' + parsedPkgInfo['major']+ '.'\
-                  + parsedPkgInfo['minor'] +  '.' + parsedPkgInfo['patch'] + \
-                  '.' + parsedPkgInfo['build'] + '.' + parsedPkgInfo['changeindex']
     pkgVersionNum = parsedPkgInfo['major']+ '.'\
                   + parsedPkgInfo['minor'] +  '.' + parsedPkgInfo['patch'] + \
                   '.' + parsedPkgInfo['build'] + '.' + parsedPkgInfo['changeindex']
+    pkgVersion = usrName + '_' + pkgVersionNum
     build_dir = "flexswitch-" + pkgVersion
     command = [
             'rm -rf ' + build_dir,

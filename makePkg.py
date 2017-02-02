@@ -83,7 +83,6 @@ if __name__ == '__main__':
         parsedPkgInfo = json.loads(pkgInfo)
     cfgFile.close()
     firstBuild = True
-    buildTargetList = parsedPkgInfo['platforms']
     pkgVersion = usrName + '_' + parsedPkgInfo['major']+ '.'\
                   + parsedPkgInfo['minor'] +  '.' + parsedPkgInfo['patch'] + \
                   '.' + parsedPkgInfo['build'] + '.' + parsedPkgInfo['changeindex']
@@ -97,7 +96,7 @@ if __name__ == '__main__':
             ]
     executeCommand(command)
     startTime = time.time()
-    for buildTargetDetail in buildTargetList:
+    for buildTargetDetail in parsedPkgInfo['platforms']:
         buildTarget = buildTargetDetail['odm']
         if buildTarget == buildPlatform or buildPlatform == '':
             platform = buildTargetDetail['platform']

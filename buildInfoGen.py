@@ -10,17 +10,17 @@ SNAP_ROUTE_SRC  = '/snaproute/src/'
 BUILD_INFO_FILE = 'buildInfo.json'
 SRC_INFO_FILE   = 'setupInfo.json'
 
-def executeCommand (command) :
+def executeCommand(command):
     out = ''
     if type(command) != list:
-        command = [ command]
+        command = [command]
     for cmd in command:
         process = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE)
         out,err = process.communicate()
     return out
 
-class repo (object):
-    def __init__ (self, base, repoName):
+class repo(object):
+    def __init__(self, base, repoName):
         self.name = repoName
         self.base = base
         self.repoDir = base + '/snaproute/src/'

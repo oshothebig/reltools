@@ -55,19 +55,19 @@ if __name__ == '__main__':
     repoPublicList = []
     repoPrivateList = []
     with open(srcFile) as infoFd:
-	info = json.load(infoFd)
-	for rp in info['PublicRepos']:
-	    repoPublicList.append(rp)
+        info = json.load(infoFd)
+    for rp in info['PublicRepos']:
+        repoPublicList.append(rp)
 
     with open(srcFile) as infoFd:
-	info = json.load(infoFd)
-	for rp in info['PrivateRepos']:
-	    repoPrivateList.append(rp)
+        info = json.load(infoFd)
+    for rp in info['PrivateRepos']:
+        repoPrivateList.append(rp)
 
     repoList = list(set(repoPrivateList + repoPublicList))
     for rp in repoList:
-	if os.path.isdir(baseDir + "/snaproute/src/" + rp):
-		repos.append(repo(baseDir, rp))
+        if os.path.isdir(baseDir + "/snaproute/src/" + rp):
+            repos.append(repo(baseDir, rp))
 
     reposInfoList = []
     with open(baseDir + "/reltools/" + BUILD_INFO_FILE, 'w') as bldFile:

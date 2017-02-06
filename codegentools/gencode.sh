@@ -16,7 +16,7 @@ if [[ $srcFile == *."go"* ]]
 then
 	   go fmt $srcFile
 fi
-done    
+done
 cd $SR_CODE_BASE/reltools/codegentools/apigen
-python generateApis.py 
+python generateApis.py
 

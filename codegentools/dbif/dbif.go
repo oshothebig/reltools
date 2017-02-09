@@ -351,20 +351,15 @@ func getObjectMemberInfo(objMap map[string]ObjectInfoJson, objName string) (memb
 	return membersInfo
 }
 
+var reg = regexp.MustCompile("[`\"]")
+var alphas = regexp.MustCompile("[^A-Za-z]")
+
 func getSpecialTagsForAttribute(attrTags string, attrInfo *ObjectMembersInfo) {
-	reg, err := regexp.Compile("[`\"]")
-	if err != nil {
-		fmt.Println("Error in regex ", err)
-	}
 	tags := reg.ReplaceAllString(attrTags, "")
 	splits := strings.Split(tags, ",")
 	for _, part := range splits {
 		keys := strings.Split(part, ":")
 		for idx, key := range keys {
-			alphas, err := regexp.Compile("[^A-Za-z]")
-			if err != nil {
-				fmt.Println("Error in regex ", err)
-			}
 			key = alphas.ReplaceAllString(key, "")
 			switch key {
 			case "SNAPROUTE":

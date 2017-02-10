@@ -90,12 +90,6 @@ func main() {
 }
 
 func processConfigObjects(fset *token.FileSet, base string, listingsFd *os.File, dirStore string) {
-	var goSrcsMap map[string]RawObjSrcInfo
-	var objMap map[string]ObjectInfoJson
-
-	objJsonFile := base + "/snaproute/src/models/objects/genObjectConfig.json"
-	objFileBase := base + "/snaproute/src/models/objects/"
-
 	//
 	// Files generated from yang models are already listed in right format in genObjectConfig.json
 	// However in some cases we have only go objects. Read the goObjInfo.json file and generate a similar
@@ -108,20 +102,24 @@ func processConfigObjects(fset *token.FileSet, base string, listingsFd *os.File,
 		fmt.Println("Error in reading Object configuration file", goObjSources)
 		return
 	}
+	var goSrcsMap map[string]RawObjSrcInfo
 	err = json.Unmarshal(bytes, &goSrcsMap)
 	if err != nil {
 		fmt.Printf("Error in unmarshaling data from ", goObjSources, err)
 	}
 
+	objFileBase := base + "/snaproute/src/models/objects/"
 	for goSrcFile, ownerName := range goSrcsMap {
 		generateHandCodedObjectsInformation(listingsFd, objFileBase, goSrcFile, ownerName.Owner)
 	}
 
+	objJsonFile := base + "/snaproute/src/models/objects/genObjectConfig.json"
 	bytes, err = ioutil.ReadFile(objJsonFile)
 	if err != nil {
 		fmt.Println("Error in reading Object json file", objJsonFile)
 		return
 	}
+	var objMap map[string]ObjectInfoJson
 	err = json.Unmarshal(bytes, &objMap)
 	if err != nil {
 		fmt.Printf("Error in unmarshaling data from ", objJsonFile, err)
@@ -194,11 +192,6 @@ func processConfigObjects(fset *token.FileSet, base string, listingsFd *os.File,
 }
 
 func processActionObjects(fset *token.FileSet, base string, listingsFd *os.File, dirStore string) {
-	var actionMap map[string]ObjectInfoJson
-	var goActionSrcsMap map[string]RawObjSrcInfo
-
-	actionJsonFile := base + "/snaproute/src/models/actions/genObjectAction.json"
-	actionFileBase := base + "/snaproute/src/models/actions/"
 	goActionSources := base + "/snaproute/src/models/actions/goActionInfo.json"
 
 	bytes, err := ioutil.ReadFile(goActionSources)
@@ -206,20 +199,24 @@ func processActionObjects(fset *token.FileSet, base string, listingsFd *os.File,
 		fmt.Println("Error in reading action object file", goActionSources)
 		return
 	}
+	var goActionSrcsMap map[string]RawObjSrcInfo
 	err = json.Unmarshal(bytes, &goActionSrcsMap)
 	if err != nil {
 		fmt.Printf("Error in unmarshaling data from ", goActionSources, err)
 	}
 
+	actionFileBase := base + "/snaproute/src/models/actions/"
 	for goSrcFile, ownerName := range goActionSrcsMap {
 		generateHandCodedActionsInformation(listingsFd, actionFileBase, goSrcFile, ownerName.Owner)
 	}
 
+	actionJsonFile := base + "/snaproute/src/models/actions/genObjectAction.json"
 	bytes, err = ioutil.ReadFile(actionJsonFile)
 	if err != nil {
 		fmt.Println("Error in reading Object action json file", actionJsonFile)
 		return
 	}
+	var actionMap map[string]ObjectInfoJson
 	err = json.Unmarshal(bytes, &actionMap)
 	if err != nil {
 		fmt.Printf("Error in unmarshaling data from ", actionJsonFile, err)
@@ -462,9 +459,6 @@ func generateMembersInfoForAllObjects(str *ast.StructType, objJsonFileName strin
 }
 
 func generateHandCodedObjectsInformation(listingsFd *os.File, objFileBase string, srcFile string, owner string) error {
-	var objMap map[string]ObjectInfoJson
-	objMap = make(map[string]ObjectInfoJson, 1)
-
 	// First read the existing objects
 	genObjInfoFile := objFileBase + "genObjectConfig.json"
 
@@ -473,6 +467,8 @@ func generateHandCodedObjectsInformation(listingsFd *os.File, objFileBase string
 		fmt.Println("Error in reading Object configuration file", genObjInfoFile)
 		return err
 	}
+
+	objMap := make(map[string]ObjectInfoJson, 1)
 	err = json.Unmarshal(bytes, &objMap)
 	if err != nil {
 		fmt.Printf("Error in unmarshaling data from ", genObjInfoFile, err)
@@ -553,12 +549,10 @@ func generateHandCodedObjectsInformation(listingsFd *os.File, objFileBase string
 }
 
 func generateHandCodedActionsInformation(listingsFd *os.File, actionFileBase string, srcFile string, owner string) error {
-	var actionMap map[string]ObjectInfoJson
-	actionMap = make(map[string]ObjectInfoJson, 1)
-
 	// First read the existing objects
 	genActionInfoFile := actionFileBase + "genObjectAction.json"
 
+	actionMap := make(map[string]ObjectInfoJson, 1)
 	bytes, err := ioutil.ReadFile(genActionInfoFile)
 	if err == nil {
 		err = json.Unmarshal(bytes, &actionMap)
@@ -694,13 +688,13 @@ func generateUnmarshalFcn(listingsFd *os.File, objFileBase string, dirStore stri
 		                if field.CanSet() {
 		                        switch field.Kind() {
 		                        case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		                                i, _ := strconv.ParseInt(val[0], 10, 64) 
+		                                i, _ := strconv.ParseInt(val[0], 10, 64)
 		                                field.SetInt(i)
 		                        case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-		                                ui, _ := strconv.ParseUint(val[0], 10, 64) 
+		                                ui, _ := strconv.ParseUint(val[0], 10, 64)
 		                                field.SetUint(ui)
 		                        case reflect.Float64:
-		                                f, _ := strconv.ParseFloat(val[0], 64) 
+		                                f, _ := strconv.ParseFloat(val[0], 64)
 		                                field.SetFloat(f)
 		                        case reflect.Bool:
 		                                b, _ := strconv.ParseBool(val[0])
@@ -710,7 +704,7 @@ func generateUnmarshalFcn(listingsFd *os.File, objFileBase string, dirStore stri
 		                        }
 		                }
 		        }
-		        return retObj, nil 
+		        return retObj, nil
 		}
 		`)
 		}

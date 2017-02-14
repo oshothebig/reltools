@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 )
 
 type KeyInfo struct {
@@ -122,7 +123,7 @@ func genJsonSchema(dirStore string, objectsByOwner map[string][]ObjectInfoJson) 
 			if obj.Access == "x" {
 				continue
 			}
-			jsonFileName := dirStore + obj.ObjName + MEMBER_JSON
+			jsonFileName := filepath.Join(dirStore, obj.ObjName+MEMBER_JSON)
 			bytes, err := ioutil.ReadFile(jsonFileName)
 			if err != nil {
 				fmt.Println("Error in reading Object configuration file", jsonFileName,
@@ -139,7 +140,7 @@ func genJsonSchema(dirStore string, objectsByOwner map[string][]ObjectInfoJson) 
 			ovsTables[obj.ObjName] = table
 		}
 		jsonSchema.Tables = ovsTables
-		extSchemaFile := dirStore + owner + ".extschema"
+		extSchemaFile := filepath.Join(dirStore, owner+".extschema")
 		writeJson(extSchemaFile, jsonSchema)
 	}
 }

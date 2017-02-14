@@ -8,6 +8,7 @@ import (
 	"go/token"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
@@ -74,9 +75,9 @@ func main() {
 	//
 	// Create a directory to store all the temporary files
 	//
-	dirStore := base + "/reltools/codegentools/._genInfo/"
+	dirStore := filepath.Join(base, "/reltools/codegentools/._genInfo/")
 	//os.Mkdir(dirStore, 0777)
-	listingFile := dirStore + "generatedGoFiles.txt"
+	listingFile := filepath.Join(dirStore, "generatedGoFiles.txt")
 
 	listingsFd, err := os.OpenFile(listingFile, os.O_RDWR|os.O_APPEND+os.O_CREATE, 0660)
 	if err != nil {
@@ -95,7 +96,7 @@ func processConfigObjects(fset *token.FileSet, base string, listingsFd *os.File,
 	// However in some cases we have only go objects. Read the goObjInfo.json file and generate a similar
 	// structure here.
 	//
-	goObjSources := base + "/snaproute/src/models/objects/goObjInfo.json"
+	goObjSources := filepath.Join(base, "/snaproute/src/models/objects/goObjInfo.json")
 
 	bytes, err := ioutil.ReadFile(goObjSources)
 	if err != nil {
@@ -108,12 +109,12 @@ func processConfigObjects(fset *token.FileSet, base string, listingsFd *os.File,
 		fmt.Printf("Error in unmarshaling data from ", goObjSources, err)
 	}
 
-	objFileBase := base + "/snaproute/src/models/objects/"
+	objFileBase := filepath.Join(base, "/snaproute/src/models/objects/")
 	for goSrcFile, ownerName := range goSrcsMap {
 		generateHandCodedObjectsInformation(listingsFd, objFileBase, goSrcFile, ownerName.Owner)
 	}
 
-	objJsonFile := base + "/snaproute/src/models/objects/genObjectConfig.json"
+	objJsonFile := filepath.Join(base, "/snaproute/src/models/objects/genObjectConfig.json")
 	bytes, err = ioutil.ReadFile(objJsonFile)
 	if err != nil {
 		fmt.Println("Error in reading Object json file", objJsonFile)
@@ -129,7 +130,7 @@ func processConfigObjects(fset *token.FileSet, base string, listingsFd *os.File,
 	childParent := make(map[string]string, 1)
 	for name, obj := range objMap {
 		obj.ObjName = name
-		srcFile := objFileBase + obj.SrcFile
+		srcFile := filepath.Join(objFileBase, obj.SrcFile)
 		f, err := parser.ParseFile(fset, srcFile, nil, parser.ParseComments)
 		if err != nil {
 			fmt.Println("Failed to parse input file ", srcFile, err)
@@ -145,7 +146,7 @@ func processConfigObjects(fset *token.FileSet, base string, listingsFd *os.File,
 						typ := spec.(*ast.TypeSpec)
 						str, ok := typ.Type.(*ast.StructType)
 						if ok && name == typ.Name.Name {
-							membersInfo := generateMembersInfoForAllObjects(str, dirStore+typ.Name.Name+"Members.json")
+							membersInfo := generateMembersInfoForAllObjects(str, filepath.Join(dirStore, typ.Name.Name+"Members.json"))
 							for _, val := range membersInfo {
 								if val.UsesStateDB == true {
 									obj.UsesStateDB = true
@@ -167,7 +168,7 @@ func processConfigObjects(fset *token.FileSet, base string, listingsFd *os.File,
 								}
 							}
 							if strings.ContainsAny(obj.Access, "rw") {
-								obj.DbFileName = objFileBase + "gen_" + typ.Name.Name + "dbif.go"
+								obj.DbFileName = filepath.Join(objFileBase, "gen_"+typ.Name.Name+"dbif.go")
 								listingsFd.WriteString(obj.DbFileName + "\n")
 								obj.WriteDBFunctions(str, membersInfo, objMap)
 							}
@@ -192,7 +193,7 @@ func processConfigObjects(fset *token.FileSet, base string, listingsFd *os.File,
 }
 
 func processActionObjects(fset *token.FileSet, base string, listingsFd *os.File, dirStore string) {
-	goActionSources := base + "/snaproute/src/models/actions/goActionInfo.json"
+	goActionSources := filepath.Join(base, "/snaproute/src/models/actions/goActionInfo.json")
 
 	bytes, err := ioutil.ReadFile(goActionSources)
 	if err != nil {
@@ -205,12 +206,12 @@ func processActionObjects(fset *token.FileSet, base string, listingsFd *os.File,
 		fmt.Printf("Error in unmarshaling data from ", goActionSources, err)
 	}
 
-	actionFileBase := base + "/snaproute/src/models/actions/"
+	actionFileBase := filepath.Join(base, "/snaproute/src/models/actions/")
 	for goSrcFile, ownerName := range goActionSrcsMap {
 		generateHandCodedActionsInformation(listingsFd, actionFileBase, goSrcFile, ownerName.Owner)
 	}
 
-	actionJsonFile := base + "/snaproute/src/models/actions/genObjectAction.json"
+	actionJsonFile := filepath.Join(base, "/snaproute/src/models/actions/genObjectAction.json")
 	bytes, err = ioutil.ReadFile(actionJsonFile)
 	if err != nil {
 		fmt.Println("Error in reading Object action json file", actionJsonFile)
@@ -224,7 +225,7 @@ func processActionObjects(fset *token.FileSet, base string, listingsFd *os.File,
 
 	for name, action := range actionMap {
 		action.ObjName = name
-		srcFile := actionFileBase + action.SrcFile
+		srcFile := filepath.Join(actionFileBase, action.SrcFile)
 		f, err := parser.ParseFile(fset, srcFile, nil, parser.ParseComments)
 		if err != nil {
 			fmt.Println("Failed to parse input file ", srcFile, err)
@@ -240,7 +241,7 @@ func processActionObjects(fset *token.FileSet, base string, listingsFd *os.File,
 						typ := spec.(*ast.TypeSpec)
 						str, ok := typ.Type.(*ast.StructType)
 						if ok && name == typ.Name.Name {
-							membersInfo := generateMembersInfoForAllObjects(str, dirStore+typ.Name.Name+"Members.json")
+							membersInfo := generateMembersInfoForAllObjects(str, filepath.Join(dirStore, typ.Name.Name+"Members.json"))
 							for _, val := range membersInfo {
 								if val.UsesStateDB == true {
 									action.UsesStateDB = true
@@ -253,7 +254,7 @@ func processActionObjects(fset *token.FileSet, base string, listingsFd *os.File,
 								}
 							}
 							if strings.ContainsAny(action.Access, "rw") {
-								action.DbFileName = actionFileBase + "gen_" + typ.Name.Name + "dbif.go"
+								action.DbFileName = filepath.Join(actionFileBase, "gen_"+typ.Name.Name+"dbif.go")
 								listingsFd.WriteString(action.DbFileName + "\n")
 								action.WriteDBFunctions(str, membersInfo, actionMap)
 							}
@@ -312,11 +313,11 @@ func getObjectMemberInfo(objMap map[string]ObjectInfoJson, objName string) (memb
 		fmt.Println(" Environment Variable SR_CODE_BASE has not been set")
 		return membersInfo
 	}
-	objFileBase := base + "/snaproute/src/models/objects"
+	objFileBase := filepath.Join(base, "/snaproute/src/models/objects")
 	for name, obj := range objMap {
 		if objName == name {
 			obj.ObjName = name
-			srcFile := objFileBase + obj.SrcFile
+			srcFile := filepath.Join(objFileBase, obj.SrcFile)
 			f, err := parser.ParseFile(fset,
 				srcFile,
 				nil,
@@ -460,7 +461,7 @@ func generateMembersInfoForAllObjects(str *ast.StructType, objJsonFileName strin
 
 func generateHandCodedObjectsInformation(listingsFd *os.File, objFileBase string, srcFile string, owner string) error {
 	// First read the existing objects
-	genObjInfoFile := objFileBase + "genObjectConfig.json"
+	genObjInfoFile := filepath.Join(objFileBase, "genObjectConfig.json")
 
 	bytes, err := ioutil.ReadFile(genObjInfoFile)
 	if err != nil {
@@ -477,7 +478,7 @@ func generateHandCodedObjectsInformation(listingsFd *os.File, objFileBase string
 	fset := token.NewFileSet() // positions are relative to fset
 
 	// Now read the contents of Hand coded Go structures
-	f, err := parser.ParseFile(fset, objFileBase+srcFile, nil, parser.ParseComments)
+	f, err := parser.ParseFile(fset, filepath.Join(objFileBase, srcFile), nil, parser.ParseComments)
 	if err != nil {
 		fmt.Println("Failed to parse input file ", srcFile, err)
 		return err
@@ -550,7 +551,7 @@ func generateHandCodedObjectsInformation(listingsFd *os.File, objFileBase string
 
 func generateHandCodedActionsInformation(listingsFd *os.File, actionFileBase string, srcFile string, owner string) error {
 	// First read the existing objects
-	genActionInfoFile := actionFileBase + "genObjectAction.json"
+	genActionInfoFile := filepath.Join(actionFileBase, "genObjectAction.json")
 
 	actionMap := make(map[string]ObjectInfoJson, 1)
 	bytes, err := ioutil.ReadFile(genActionInfoFile)
@@ -564,7 +565,7 @@ func generateHandCodedActionsInformation(listingsFd *os.File, actionFileBase str
 	fset := token.NewFileSet() // positions are relative to fset
 
 	// Now read the contents of Hand coded Go structures
-	f, err := parser.ParseFile(fset, actionFileBase+srcFile, nil, parser.ParseComments)
+	f, err := parser.ParseFile(fset, filepath.Join(actionFileBase, srcFile), nil, parser.ParseComments)
 	if err != nil {
 		fmt.Println("Failed to parse input file ", srcFile, err)
 		return err
@@ -622,7 +623,7 @@ func generateUnmarshalFcn(listingsFd *os.File, objFileBase string, dirStore stri
 	} else {
 		objIf = "ConfigObj"
 	}
-	marshalFcnFile := objFileBase + "gen_" + ownerName + "Objects_serializer.go"
+	marshalFcnFile := filepath.Join(objFileBase, "gen_"+ownerName+"Objects_serializer.go")
 	marshalFcnFd, err := os.Create(marshalFcnFile)
 	if err != nil {
 		fmt.Println("Failed to open the file", marshalFcnFile)
@@ -642,7 +643,7 @@ func generateUnmarshalFcn(listingsFd *os.File, objFileBase string, dirStore stri
 			marshalFcnsLine = append(marshalFcnsLine, "var err error \n")
 
 			// Check all attributes and write default constructor
-			membersInfoFile := dirStore + obj.ObjName + "Members.json"
+			membersInfoFile := filepath.Join(dirStore, obj.ObjName+"Members.json")
 			var objMembers map[string]ObjectMembersInfo
 			objMembers = make(map[string]ObjectMembersInfo, 1)
 			bytes, err := ioutil.ReadFile(membersInfoFile)

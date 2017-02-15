@@ -75,7 +75,7 @@ func main() {
 	//
 	// Create a directory to store all the temporary files
 	//
-	dirStore := filepath.Join(base, "/reltools/codegentools/._genInfo/")
+	dirStore := filepath.Join(base, "reltools/codegentools/._genInfo")
 	//os.Mkdir(dirStore, 0777)
 	listingFile := filepath.Join(dirStore, "generatedGoFiles.txt")
 
@@ -96,7 +96,7 @@ func processConfigObjects(fset *token.FileSet, base string, listingsFd *os.File,
 	// However in some cases we have only go objects. Read the goObjInfo.json file and generate a similar
 	// structure here.
 	//
-	goObjSources := filepath.Join(base, "/snaproute/src/models/objects/goObjInfo.json")
+	goObjSources := filepath.Join(base, "snaproute/src/models/objects/goObjInfo.json")
 
 	bytes, err := ioutil.ReadFile(goObjSources)
 	if err != nil {
@@ -109,12 +109,12 @@ func processConfigObjects(fset *token.FileSet, base string, listingsFd *os.File,
 		fmt.Printf("Error in unmarshaling data from ", goObjSources, err)
 	}
 
-	objFileBase := filepath.Join(base, "/snaproute/src/models/objects/")
+	objFileBase := filepath.Join(base, "snaproute/src/models/objects")
 	for goSrcFile, ownerName := range goSrcsMap {
 		generateHandCodedObjectsInformation(listingsFd, objFileBase, goSrcFile, ownerName.Owner)
 	}
 
-	objJsonFile := filepath.Join(base, "/snaproute/src/models/objects/genObjectConfig.json")
+	objJsonFile := filepath.Join(base, "snaproute/src/models/objects/genObjectConfig.json")
 	bytes, err = ioutil.ReadFile(objJsonFile)
 	if err != nil {
 		fmt.Println("Error in reading Object json file", objJsonFile)
@@ -193,7 +193,7 @@ func processConfigObjects(fset *token.FileSet, base string, listingsFd *os.File,
 }
 
 func processActionObjects(fset *token.FileSet, base string, listingsFd *os.File, dirStore string) {
-	goActionSources := filepath.Join(base, "/snaproute/src/models/actions/goActionInfo.json")
+	goActionSources := filepath.Join(base, "snaproute/src/models/actions/goActionInfo.json")
 
 	bytes, err := ioutil.ReadFile(goActionSources)
 	if err != nil {
@@ -206,12 +206,12 @@ func processActionObjects(fset *token.FileSet, base string, listingsFd *os.File,
 		fmt.Printf("Error in unmarshaling data from ", goActionSources, err)
 	}
 
-	actionFileBase := filepath.Join(base, "/snaproute/src/models/actions/")
+	actionFileBase := filepath.Join(base, "snaproute/src/models/actions")
 	for goSrcFile, ownerName := range goActionSrcsMap {
 		generateHandCodedActionsInformation(listingsFd, actionFileBase, goSrcFile, ownerName.Owner)
 	}
 
-	actionJsonFile := filepath.Join(base, "/snaproute/src/models/actions/genObjectAction.json")
+	actionJsonFile := filepath.Join(base, "snaproute/src/models/actions/genObjectAction.json")
 	bytes, err = ioutil.ReadFile(actionJsonFile)
 	if err != nil {
 		fmt.Println("Error in reading Object action json file", actionJsonFile)
@@ -313,7 +313,7 @@ func getObjectMemberInfo(objMap map[string]ObjectInfoJson, objName string) (memb
 		fmt.Println(" Environment Variable SR_CODE_BASE has not been set")
 		return membersInfo
 	}
-	objFileBase := filepath.Join(base, "/snaproute/src/models/objects")
+	objFileBase := filepath.Join(base, "snaproute/src/models/objects")
 	for name, obj := range objMap {
 		if objName == name {
 			obj.ObjName = name

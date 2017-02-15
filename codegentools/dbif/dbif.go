@@ -14,6 +14,11 @@ import (
 	"strings"
 )
 
+const objectConfigFile = "genObjectConfig.json"
+const objectActionFile = "genObjectAction.json"
+const modelObjectDir = "snaproute/src/models/objects"
+const modelActionDir = "snaproute/src/models/actions"
+
 // This structure represents the json layout for config objects
 type ObjectInfoJson struct {
 	Access        string   `json:"access"`
@@ -96,7 +101,7 @@ func processConfigObjects(fset *token.FileSet, base string, listingsFd *os.File,
 	// However in some cases we have only go objects. Read the goObjInfo.json file and generate a similar
 	// structure here.
 	//
-	goObjSources := filepath.Join(base, "snaproute/src/models/objects/goObjInfo.json")
+	goObjSources := filepath.Join(base, modelObjectDir, "goObjInfo.json")
 
 	bytes, err := ioutil.ReadFile(goObjSources)
 	if err != nil {
@@ -109,12 +114,12 @@ func processConfigObjects(fset *token.FileSet, base string, listingsFd *os.File,
 		fmt.Printf("Error in unmarshaling data from ", goObjSources, err)
 	}
 
-	objFileBase := filepath.Join(base, "snaproute/src/models/objects")
+	objFileBase := filepath.Join(base, modelObjectDir)
 	for goSrcFile, ownerName := range goSrcsMap {
 		generateHandCodedObjectsInformation(listingsFd, objFileBase, goSrcFile, ownerName.Owner)
 	}
 
-	objJsonFile := filepath.Join(base, "snaproute/src/models/objects/genObjectConfig.json")
+	objJsonFile := filepath.Join(base, modelObjectDir, objectConfigFile)
 	bytes, err = ioutil.ReadFile(objJsonFile)
 	if err != nil {
 		fmt.Println("Error in reading Object json file", objJsonFile)
@@ -193,7 +198,7 @@ func processConfigObjects(fset *token.FileSet, base string, listingsFd *os.File,
 }
 
 func processActionObjects(fset *token.FileSet, base string, listingsFd *os.File, dirStore string) {
-	goActionSources := filepath.Join(base, "snaproute/src/models/actions/goActionInfo.json")
+	goActionSources := filepath.Join(base, modelActionDir, "goActionInfo.json")
 
 	bytes, err := ioutil.ReadFile(goActionSources)
 	if err != nil {
@@ -206,12 +211,12 @@ func processActionObjects(fset *token.FileSet, base string, listingsFd *os.File,
 		fmt.Printf("Error in unmarshaling data from ", goActionSources, err)
 	}
 
-	actionFileBase := filepath.Join(base, "snaproute/src/models/actions")
+	actionFileBase := filepath.Join(base, modelActionDir)
 	for goSrcFile, ownerName := range goActionSrcsMap {
 		generateHandCodedActionsInformation(listingsFd, actionFileBase, goSrcFile, ownerName.Owner)
 	}
 
-	actionJsonFile := filepath.Join(base, "snaproute/src/models/actions/genObjectAction.json")
+	actionJsonFile := filepath.Join(base, modelActionDir, objectActionFile)
 	bytes, err = ioutil.ReadFile(actionJsonFile)
 	if err != nil {
 		fmt.Println("Error in reading Object action json file", actionJsonFile)
@@ -313,7 +318,7 @@ func getObjectMemberInfo(objMap map[string]ObjectInfoJson, objName string) (memb
 		fmt.Println(" Environment Variable SR_CODE_BASE has not been set")
 		return membersInfo
 	}
-	objFileBase := filepath.Join(base, "snaproute/src/models/objects")
+	objFileBase := filepath.Join(base, modelObjectDir)
 	for name, obj := range objMap {
 		if objName == name {
 			obj.ObjName = name
@@ -461,7 +466,7 @@ func generateMembersInfoForAllObjects(str *ast.StructType, objJsonFileName strin
 
 func generateHandCodedObjectsInformation(listingsFd *os.File, objFileBase string, srcFile string, owner string) error {
 	// First read the existing objects
-	genObjInfoFile := filepath.Join(objFileBase, "genObjectConfig.json")
+	genObjInfoFile := filepath.Join(objFileBase, objectConfigFile)
 
 	bytes, err := ioutil.ReadFile(genObjInfoFile)
 	if err != nil {
@@ -551,7 +556,7 @@ func generateHandCodedObjectsInformation(listingsFd *os.File, objFileBase string
 
 func generateHandCodedActionsInformation(listingsFd *os.File, actionFileBase string, srcFile string, owner string) error {
 	// First read the existing objects
-	genActionInfoFile := filepath.Join(actionFileBase, "genObjectAction.json")
+	genActionInfoFile := filepath.Join(actionFileBase, objectActionFile)
 
 	actionMap := make(map[string]ObjectInfoJson, 1)
 	bytes, err := ioutil.ReadFile(genActionInfoFile)

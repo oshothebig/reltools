@@ -95,13 +95,13 @@ func main() {
 	processActionObjects(fset, filepath.Join(base, modelActionDir), listingsFd, dirStore)
 }
 
-func processConfigObjects(fset *token.FileSet, objFileBase string, listingsFd *os.File, dirStore string) {
+func processConfigObjects(fset *token.FileSet, base string, listingsFd *os.File, dirStore string) {
 	//
 	// Files generated from yang models are already listed in right format in genObjectConfig.json
 	// However in some cases we have only go objects. Read the goObjInfo.json file and generate a similar
 	// structure here.
 	//
-	goObjSources := filepath.Join(objFileBase, "goObjInfo.json")
+	goObjSources := filepath.Join(base, "goObjInfo.json")
 
 	goSrcsMap, err := readRawObjectSourceInfo(goObjSources)
 	if err != nil {
@@ -109,10 +109,10 @@ func processConfigObjects(fset *token.FileSet, objFileBase string, listingsFd *o
 	}
 
 	for goSrcFile, ownerName := range goSrcsMap {
-		generateHandCodedObjectsInformation(listingsFd, objFileBase, goSrcFile, ownerName.Owner)
+		generateHandCodedObjectsInformation(listingsFd, base, goSrcFile, ownerName.Owner)
 	}
 
-	objJsonFile := filepath.Join(objFileBase, objectConfigFile)
+	objJsonFile := filepath.Join(base, objectConfigFile)
 	objMap, err := readObjectInfo(objJsonFile)
 	if err != nil {
 		return
@@ -122,7 +122,7 @@ func processConfigObjects(fset *token.FileSet, objFileBase string, listingsFd *o
 	childParent := make(map[string]string, 1)
 	for name, obj := range objMap {
 		obj.ObjName = name
-		srcFile := filepath.Join(objFileBase, obj.SrcFile)
+		srcFile := filepath.Join(base, obj.SrcFile)
 		f, err := parser.ParseFile(fset, srcFile, nil, parser.ParseComments)
 		if err != nil {
 			fmt.Println("Failed to parse input file ", srcFile, err)
@@ -160,7 +160,7 @@ func processConfigObjects(fset *token.FileSet, objFileBase string, listingsFd *o
 								}
 							}
 							if strings.ContainsAny(obj.Access, "rw") {
-								obj.DbFileName = filepath.Join(objFileBase, "gen_"+typ.Name.Name+"dbif.go")
+								obj.DbFileName = filepath.Join(base, "gen_"+typ.Name.Name+"dbif.go")
 								listingsFd.WriteString(obj.DbFileName + "\n")
 								obj.WriteDBFunctions(str, membersInfo, objMap)
 							}
@@ -180,7 +180,7 @@ func processConfigObjects(fset *token.FileSet, objFileBase string, listingsFd *o
 	}
 
 	objectsPackage := "objects"
-	generateSerializers(listingsFd, objFileBase, dirStore, objectsByOwner, objectsPackage)
+	generateSerializers(listingsFd, base, dirStore, objectsByOwner, objectsPackage)
 	genJsonSchema(dirStore, objectsByOwner)
 }
 
@@ -214,8 +214,8 @@ func readRawObjectSourceInfo(filename string) (map[string]RawObjSrcInfo, error) 
 	return goActionSrcsMap, nil
 }
 
-func processActionObjects(fset *token.FileSet, actionFileBase string, listingsFd *os.File, dirStore string) {
-	goActionSources := filepath.Join(actionFileBase, "goActionInfo.json")
+func processActionObjects(fset *token.FileSet, base string, listingsFd *os.File, dirStore string) {
+	goActionSources := filepath.Join(base, "goActionInfo.json")
 
 	goActionSrcsMap, err := readRawObjectSourceInfo(goActionSources)
 	if err != nil {
@@ -223,10 +223,10 @@ func processActionObjects(fset *token.FileSet, actionFileBase string, listingsFd
 	}
 
 	for goSrcFile, ownerName := range goActionSrcsMap {
-		generateHandCodedActionsInformation(listingsFd, actionFileBase, goSrcFile, ownerName.Owner)
+		generateHandCodedActionsInformation(listingsFd, base, goSrcFile, ownerName.Owner)
 	}
 
-	actionJsonFile := filepath.Join(actionFileBase, objectActionFile)
+	actionJsonFile := filepath.Join(base, objectActionFile)
 	bytes, err := ioutil.ReadFile(actionJsonFile)
 	if err != nil {
 		fmt.Println("Error in reading Object action json file", actionJsonFile)
@@ -240,7 +240,7 @@ func processActionObjects(fset *token.FileSet, actionFileBase string, listingsFd
 
 	for name, action := range actionMap {
 		action.ObjName = name
-		srcFile := filepath.Join(actionFileBase, action.SrcFile)
+		srcFile := filepath.Join(base, action.SrcFile)
 		f, err := parser.ParseFile(fset, srcFile, nil, parser.ParseComments)
 		if err != nil {
 			fmt.Println("Failed to parse input file ", srcFile, err)
@@ -269,7 +269,7 @@ func processActionObjects(fset *token.FileSet, actionFileBase string, listingsFd
 								}
 							}
 							if strings.ContainsAny(action.Access, "rw") {
-								action.DbFileName = filepath.Join(actionFileBase, "gen_"+typ.Name.Name+"dbif.go")
+								action.DbFileName = filepath.Join(base, "gen_"+typ.Name.Name+"dbif.go")
 								listingsFd.WriteString(action.DbFileName + "\n")
 								action.WriteDBFunctions(str, membersInfo, actionMap)
 							}
@@ -286,7 +286,7 @@ func processActionObjects(fset *token.FileSet, actionFileBase string, listingsFd
 	}
 
 	actionsPackage := "actions"
-	generateSerializers(listingsFd, actionFileBase, dirStore, actionsByOwner, actionsPackage)
+	generateSerializers(listingsFd, base, dirStore, actionsByOwner, actionsPackage)
 	genJsonSchema(dirStore, actionsByOwner)
 }
 

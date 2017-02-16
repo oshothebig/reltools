@@ -101,9 +101,7 @@ func processConfigObjects(fset *token.FileSet, base string, listingsFd *os.File,
 	// However in some cases we have only go objects. Read the goObjInfo.json file and generate a similar
 	// structure here.
 	//
-	goObjSources := filepath.Join(base, "goObjInfo.json")
-
-	goSrcsMap, err := readRawObjectSourceInfo(goObjSources)
+	goSrcsMap, err := readRawObjectSourceInfo(filepath.Join(base, "goObjInfo.json"))
 	if err != nil {
 		return
 	}
@@ -215,9 +213,7 @@ func readRawObjectSourceInfo(filename string) (map[string]RawObjSrcInfo, error) 
 }
 
 func processActionObjects(fset *token.FileSet, base string, listingsFd *os.File, dirStore string) {
-	goActionSources := filepath.Join(base, "goActionInfo.json")
-
-	goActionSrcsMap, err := readRawObjectSourceInfo(goActionSources)
+	goActionSrcsMap, err := readRawObjectSourceInfo(filepath.Join(base, "goActionInfo.json"))
 	if err != nil {
 		return
 	}

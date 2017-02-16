@@ -91,17 +91,16 @@ func main() {
 	}
 	defer listingsFd.Close()
 
-	processConfigObjects(fset, base, listingsFd, dirStore)
-	processActionObjects(fset, base, listingsFd, dirStore)
+	processConfigObjects(fset, filepath.Join(base, modelObjectDir), listingsFd, dirStore)
+	processActionObjects(fset, filepath.Join(base, modelActionDir), listingsFd, dirStore)
 }
 
-func processConfigObjects(fset *token.FileSet, base string, listingsFd *os.File, dirStore string) {
+func processConfigObjects(fset *token.FileSet, objFileBase string, listingsFd *os.File, dirStore string) {
 	//
 	// Files generated from yang models are already listed in right format in genObjectConfig.json
 	// However in some cases we have only go objects. Read the goObjInfo.json file and generate a similar
 	// structure here.
 	//
-	objFileBase := filepath.Join(base, modelObjectDir)
 	goObjSources := filepath.Join(objFileBase, "goObjInfo.json")
 
 	goSrcsMap, err := readRawObjectSourceInfo(goObjSources)
@@ -215,8 +214,7 @@ func readRawObjectSourceInfo(filename string) (map[string]RawObjSrcInfo, error) 
 	return goActionSrcsMap, nil
 }
 
-func processActionObjects(fset *token.FileSet, base string, listingsFd *os.File, dirStore string) {
-	actionFileBase := filepath.Join(base, modelActionDir)
+func processActionObjects(fset *token.FileSet, actionFileBase string, listingsFd *os.File, dirStore string) {
 	goActionSources := filepath.Join(actionFileBase, "goActionInfo.json")
 
 	goActionSrcsMap, err := readRawObjectSourceInfo(goActionSources)

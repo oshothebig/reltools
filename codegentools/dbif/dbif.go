@@ -120,15 +120,9 @@ func processConfigObjects(fset *token.FileSet, base string, listingsFd *os.File,
 	}
 
 	objJsonFile := filepath.Join(objFileBase, objectConfigFile)
-	bytes, err = ioutil.ReadFile(objJsonFile)
+	objMap, err := readObjectInfo(objJsonFile)
 	if err != nil {
-		fmt.Println("Error in reading Object json file", objJsonFile)
 		return
-	}
-	var objMap map[string]ObjectInfoJson
-	err = json.Unmarshal(bytes, &objMap)
-	if err != nil {
-		fmt.Printf("Error in unmarshaling data from ", objJsonFile, err)
 	}
 
 	parentChild := make(map[string][]string, 1)
@@ -195,6 +189,21 @@ func processConfigObjects(fset *token.FileSet, base string, listingsFd *os.File,
 	objectsPackage := "objects"
 	generateSerializers(listingsFd, objFileBase, dirStore, objectsByOwner, objectsPackage)
 	genJsonSchema(dirStore, objectsByOwner)
+}
+
+func readObjectInfo(filename string) (map[string]ObjectInfoJson, error) {
+	bytes, err := ioutil.ReadFile(filename)
+	if err != nil {
+		fmt.Println("Error in reading Object json file", filename)
+		return nil, err
+	}
+	var objMap map[string]ObjectInfoJson
+	err = json.Unmarshal(bytes, &objMap)
+	if err != nil {
+		fmt.Printf("Error in unmarshaling data from ", filename, err)
+		return nil, nil
+	}
+	return objMap, nil
 }
 
 func processActionObjects(fset *token.FileSet, base string, listingsFd *os.File, dirStore string) {
@@ -468,16 +477,9 @@ func generateHandCodedObjectsInformation(listingsFd *os.File, objFileBase string
 	// First read the existing objects
 	genObjInfoFile := filepath.Join(objFileBase, objectConfigFile)
 
-	bytes, err := ioutil.ReadFile(genObjInfoFile)
+	objMap, err := readObjectInfo(genObjInfoFile)
 	if err != nil {
-		fmt.Println("Error in reading Object configuration file", genObjInfoFile)
 		return err
-	}
-
-	objMap := make(map[string]ObjectInfoJson, 1)
-	err = json.Unmarshal(bytes, &objMap)
-	if err != nil {
-		fmt.Printf("Error in unmarshaling data from ", genObjInfoFile, err)
 	}
 
 	fset := token.NewFileSet() // positions are relative to fset

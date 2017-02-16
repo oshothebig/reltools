@@ -104,15 +104,9 @@ func processConfigObjects(fset *token.FileSet, base string, listingsFd *os.File,
 	objFileBase := filepath.Join(base, modelObjectDir)
 	goObjSources := filepath.Join(objFileBase, "goObjInfo.json")
 
-	bytes, err := ioutil.ReadFile(goObjSources)
+	goSrcsMap, err := readRawObjectSourceInfo(goObjSources)
 	if err != nil {
-		fmt.Println("Error in reading Object configuration file", goObjSources)
 		return
-	}
-	var goSrcsMap map[string]RawObjSrcInfo
-	err = json.Unmarshal(bytes, &goSrcsMap)
-	if err != nil {
-		fmt.Printf("Error in unmarshaling data from ", goObjSources, err)
 	}
 
 	for goSrcFile, ownerName := range goSrcsMap {
@@ -206,19 +200,28 @@ func readObjectInfo(filename string) (map[string]ObjectInfoJson, error) {
 	return objMap, nil
 }
 
-func processActionObjects(fset *token.FileSet, base string, listingsFd *os.File, dirStore string) {
-	actionFileBase := filepath.Join(base, modelActionDir)
-	goActionSources := filepath.Join(actionFileBase, "goActionInfo.json")
-
-	bytes, err := ioutil.ReadFile(goActionSources)
+func readRawObjectSourceInfo(filename string) (map[string]RawObjSrcInfo, error) {
+	bytes, err := ioutil.ReadFile(filename)
 	if err != nil {
-		fmt.Println("Error in reading action object file", goActionSources)
-		return
+		fmt.Println("Error in reading action object file", filename)
+		return nil, err
 	}
 	var goActionSrcsMap map[string]RawObjSrcInfo
 	err = json.Unmarshal(bytes, &goActionSrcsMap)
 	if err != nil {
-		fmt.Printf("Error in unmarshaling data from ", goActionSources, err)
+		fmt.Printf("Error in unmarshaling data from ", filename, err)
+		return nil, nil
+	}
+	return goActionSrcsMap, nil
+}
+
+func processActionObjects(fset *token.FileSet, base string, listingsFd *os.File, dirStore string) {
+	actionFileBase := filepath.Join(base, modelActionDir)
+	goActionSources := filepath.Join(actionFileBase, "goActionInfo.json")
+
+	goActionSrcsMap, err := readRawObjectSourceInfo(goActionSources)
+	if err != nil {
+		return
 	}
 
 	for goSrcFile, ownerName := range goActionSrcsMap {
@@ -226,7 +229,7 @@ func processActionObjects(fset *token.FileSet, base string, listingsFd *os.File,
 	}
 
 	actionJsonFile := filepath.Join(actionFileBase, objectActionFile)
-	bytes, err = ioutil.ReadFile(actionJsonFile)
+	bytes, err := ioutil.ReadFile(actionJsonFile)
 	if err != nil {
 		fmt.Println("Error in reading Object action json file", actionJsonFile)
 		return

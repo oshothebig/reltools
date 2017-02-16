@@ -101,7 +101,8 @@ func processConfigObjects(fset *token.FileSet, base string, listingsFd *os.File,
 	// However in some cases we have only go objects. Read the goObjInfo.json file and generate a similar
 	// structure here.
 	//
-	goObjSources := filepath.Join(base, modelObjectDir, "goObjInfo.json")
+	objFileBase := filepath.Join(base, modelObjectDir)
+	goObjSources := filepath.Join(objFileBase, "goObjInfo.json")
 
 	bytes, err := ioutil.ReadFile(goObjSources)
 	if err != nil {
@@ -114,12 +115,11 @@ func processConfigObjects(fset *token.FileSet, base string, listingsFd *os.File,
 		fmt.Printf("Error in unmarshaling data from ", goObjSources, err)
 	}
 
-	objFileBase := filepath.Join(base, modelObjectDir)
 	for goSrcFile, ownerName := range goSrcsMap {
 		generateHandCodedObjectsInformation(listingsFd, objFileBase, goSrcFile, ownerName.Owner)
 	}
 
-	objJsonFile := filepath.Join(base, modelObjectDir, objectConfigFile)
+	objJsonFile := filepath.Join(objFileBase, objectConfigFile)
 	bytes, err = ioutil.ReadFile(objJsonFile)
 	if err != nil {
 		fmt.Println("Error in reading Object json file", objJsonFile)

@@ -207,7 +207,8 @@ func readObjectInfo(filename string) (map[string]ObjectInfoJson, error) {
 }
 
 func processActionObjects(fset *token.FileSet, base string, listingsFd *os.File, dirStore string) {
-	goActionSources := filepath.Join(base, modelActionDir, "goActionInfo.json")
+	actionFileBase := filepath.Join(base, modelActionDir)
+	goActionSources := filepath.Join(actionFileBase, "goActionInfo.json")
 
 	bytes, err := ioutil.ReadFile(goActionSources)
 	if err != nil {
@@ -220,12 +221,11 @@ func processActionObjects(fset *token.FileSet, base string, listingsFd *os.File,
 		fmt.Printf("Error in unmarshaling data from ", goActionSources, err)
 	}
 
-	actionFileBase := filepath.Join(base, modelActionDir)
 	for goSrcFile, ownerName := range goActionSrcsMap {
 		generateHandCodedActionsInformation(listingsFd, actionFileBase, goSrcFile, ownerName.Owner)
 	}
 
-	actionJsonFile := filepath.Join(base, modelActionDir, objectActionFile)
+	actionJsonFile := filepath.Join(actionFileBase, objectActionFile)
 	bytes, err = ioutil.ReadFile(actionJsonFile)
 	if err != nil {
 		fmt.Println("Error in reading Object action json file", actionJsonFile)

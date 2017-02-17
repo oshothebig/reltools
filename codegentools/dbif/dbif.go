@@ -222,8 +222,7 @@ func processActionObjects(fset *token.FileSet, base string, listingsFd *os.File,
 		generateHandCodedActionsInformation(listingsFd, base, goSrcFile, ownerName.Owner)
 	}
 
-	actionJsonFile := filepath.Join(base, objectActionFile)
-	actionMap, err := readObjectInfo(actionJsonFile)
+	actionMap, err := readObjectInfo(filepath.Join(base, objectActionFile))
 	if err != nil {
 		return
 	}

@@ -223,15 +223,9 @@ func processActionObjects(fset *token.FileSet, base string, listingsFd *os.File,
 	}
 
 	actionJsonFile := filepath.Join(base, objectActionFile)
-	bytes, err := ioutil.ReadFile(actionJsonFile)
+	actionMap, err := readObjectInfo(actionJsonFile)
 	if err != nil {
-		fmt.Println("Error in reading Object action json file", actionJsonFile)
 		return
-	}
-	var actionMap map[string]ObjectInfoJson
-	err = json.Unmarshal(bytes, &actionMap)
-	if err != nil {
-		fmt.Printf("Error in unmarshaling data from ", actionJsonFile, err)
 	}
 
 	for name, action := range actionMap {

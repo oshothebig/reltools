@@ -149,40 +149,41 @@ func processConfigObjects(fset *token.FileSet, base string, listingsFd *os.File,
 			}
 
 			for _, spec := range tk.Specs {
-				switch spec.(type) {
-				case *ast.TypeSpec:
-					typ := spec.(*ast.TypeSpec)
-					str, ok := typ.Type.(*ast.StructType)
-					if !ok || name != typ.Name.Name {
-						continue
-					}
+				typ, ok := spec.(*ast.TypeSpec)
+				if !ok {
+					continue
+				}
 
-					membersInfo := generateMembersInfoForAllObjects(str, filepath.Join(dirStore, typ.Name.Name+"Members.json"))
-					for _, val := range membersInfo {
-						if val.UsesStateDB == true {
-							obj.UsesStateDB = true
-						}
-						if val.AutoCreate == true {
-							obj.AutoCreate = true
-						}
-						if val.AutoDiscover == true {
-							obj.AutoDiscover = true
-						}
-						if val.IsParentSet {
-							// Set parent to true when auto create is set
-							// Temporarily store parent child into a map...
-							//fmt.Println("Child:", typ.Name.Name, "Parent:", val.Parent)
-							pEntry := parentChild[val.Parent]
-							pEntry = append(pEntry, typ.Name.Name)
-							parentChild[val.Parent] = pEntry
-							childParent[typ.Name.Name] = val.Parent
-						}
+				str, ok := typ.Type.(*ast.StructType)
+				if !ok || name != typ.Name.Name {
+					continue
+				}
+
+				membersInfo := generateMembersInfoForAllObjects(str, filepath.Join(dirStore, typ.Name.Name+"Members.json"))
+				for _, val := range membersInfo {
+					if val.UsesStateDB == true {
+						obj.UsesStateDB = true
 					}
-					if strings.ContainsAny(obj.Access, "rw") {
-						obj.DbFileName = filepath.Join(objFileBase, "gen_"+typ.Name.Name+"dbif.go")
-						listingsFd.WriteString(obj.DbFileName + "\n")
-						obj.WriteDBFunctions(str, membersInfo, objMap)
+					if val.AutoCreate == true {
+						obj.AutoCreate = true
 					}
+					if val.AutoDiscover == true {
+						obj.AutoDiscover = true
+					}
+					if val.IsParentSet {
+						// Set parent to true when auto create is set
+						// Temporarily store parent child into a map...
+						//fmt.Println("Child:", typ.Name.Name, "Parent:", val.Parent)
+						pEntry := parentChild[val.Parent]
+						pEntry = append(pEntry, typ.Name.Name)
+						parentChild[val.Parent] = pEntry
+						childParent[typ.Name.Name] = val.Parent
+					}
+				}
+				if strings.ContainsAny(obj.Access, "rw") {
+					obj.DbFileName = filepath.Join(objFileBase, "gen_"+typ.Name.Name+"dbif.go")
+					listingsFd.WriteString(obj.DbFileName + "\n")
+					obj.WriteDBFunctions(str, membersInfo, objMap)
 				}
 			}
 		}
@@ -248,31 +249,32 @@ func processActionObjects(fset *token.FileSet, base string, listingsFd *os.File,
 			}
 
 			for _, spec := range tk.Specs {
-				switch spec.(type) {
-				case *ast.TypeSpec:
-					typ := spec.(*ast.TypeSpec)
-					str, ok := typ.Type.(*ast.StructType)
-					if !ok || name != typ.Name.Name {
-						continue
-					}
+				typ, ok := spec.(*ast.TypeSpec)
+				if !ok {
+					continue
+				}
 
-					membersInfo := generateMembersInfoForAllObjects(str, filepath.Join(dirStore, typ.Name.Name+"Members.json"))
-					for _, val := range membersInfo {
-						if val.UsesStateDB == true {
-							action.UsesStateDB = true
-						}
-						if val.AutoCreate == true {
-							action.AutoCreate = true
-						}
-						if val.AutoDiscover == true {
-							action.AutoDiscover = true
-						}
+				str, ok := typ.Type.(*ast.StructType)
+				if !ok || name != typ.Name.Name {
+					continue
+				}
+
+				membersInfo := generateMembersInfoForAllObjects(str, filepath.Join(dirStore, typ.Name.Name+"Members.json"))
+				for _, val := range membersInfo {
+					if val.UsesStateDB == true {
+						action.UsesStateDB = true
 					}
-					if strings.ContainsAny(action.Access, "rw") {
-						action.DbFileName = filepath.Join(actionFileBase, "gen_"+typ.Name.Name+"dbif.go")
-						listingsFd.WriteString(action.DbFileName + "\n")
-						action.WriteDBFunctions(str, membersInfo, actionMap)
+					if val.AutoCreate == true {
+						action.AutoCreate = true
 					}
+					if val.AutoDiscover == true {
+						action.AutoDiscover = true
+					}
+				}
+				if strings.ContainsAny(action.Access, "rw") {
+					action.DbFileName = filepath.Join(actionFileBase, "gen_"+typ.Name.Name+"dbif.go")
+					listingsFd.WriteString(action.DbFileName + "\n")
+					action.WriteDBFunctions(str, membersInfo, actionMap)
 				}
 			}
 		}
@@ -351,17 +353,18 @@ func getObjectMemberInfo(objMap map[string]ObjectInfoJson, objName string) (memb
 			}
 
 			for _, spec := range tk.Specs {
-				switch spec.(type) {
-				case *ast.TypeSpec:
-					typ := spec.(*ast.TypeSpec)
-					str, ok := typ.Type.(*ast.StructType)
-					if !ok || name != typ.Name.Name {
-						continue
-					}
-
-					membersInfo = generateMembersInfoForAllObjects(str, "")
-					return membersInfo
+				typ, ok := spec.(*ast.TypeSpec)
+				if !ok {
+					continue
 				}
+
+				str, ok := typ.Type.(*ast.StructType)
+				if !ok || name != typ.Name.Name {
+					continue
+				}
+
+				membersInfo = generateMembersInfoForAllObjects(str, "")
+				return membersInfo
 			}
 		}
 	}
@@ -526,36 +529,37 @@ func generateHandCodedObjectsInformation(listingsFd *os.File, objFileBase string
 						continue
 					}
 
-					switch fld.Type.(type) {
-					case *ast.Ident:
-						if fld.Tag == nil {
-							continue
-						}
+					if _, ok := fld.Type.(*ast.Ident); !ok {
+						continue
+					}
 
-						if !strings.Contains(fld.Tag.Value, "SNAPROUTE") {
-							continue
-						}
+					if fld.Tag == nil {
+						continue
+					}
 
-						for _, elem := range strings.Split(fld.Tag.Value, ",") {
-							splits := strings.Split(elem, ":")
-							switch strings.Trim(splits[0], " ") {
-							case "ACCESS":
-								obj.Access = strings.Trim(splits[1], "\"")
+					if !strings.Contains(fld.Tag.Value, "SNAPROUTE") {
+						continue
+					}
 
-							case "MULTIPLICITY":
-								tmpString := strings.Trim(splits[1], "`")
-								obj.Multiplicity = strings.Trim(tmpString, "\"")
+					for _, elem := range strings.Split(fld.Tag.Value, ",") {
+						splits := strings.Split(elem, ":")
+						switch strings.Trim(splits[0], " ") {
+						case "ACCESS":
+							obj.Access = strings.Trim(splits[1], "\"")
 
-							case "ACCELERATED":
-								obj.Accelerated = true
+						case "MULTIPLICITY":
+							tmpString := strings.Trim(splits[1], "`")
+							obj.Multiplicity = strings.Trim(tmpString, "\"")
 
-							case "USESTATEDB":
-								obj.UsesStateDB = true
-							case "AUTOCREATE":
-								obj.AutoCreate = true
-							case "AUTODISCOVER":
-								obj.AutoDiscover = true
-							}
+						case "ACCELERATED":
+							obj.Accelerated = true
+
+						case "USESTATEDB":
+							obj.UsesStateDB = true
+						case "AUTOCREATE":
+							obj.AutoCreate = true
+						case "AUTODISCOVER":
+							obj.AutoDiscover = true
 						}
 					}
 				}
@@ -608,15 +612,16 @@ func generateHandCodedActionsInformation(listingsFd *os.File, actionFileBase str
 		}
 
 		for _, spec := range tk.Specs {
-			switch spec.(type) {
-			case *ast.TypeSpec:
-				typ := spec.(*ast.TypeSpec)
-				action := ObjectInfoJson{}
-				action.SrcFile = srcFile
-				action.Owner = owner
-				action.Access = "x"
-				actionMap[typ.Name.Name] = action
+			typ, ok := spec.(*ast.TypeSpec)
+			if !ok {
+				continue
 			}
+
+			action := ObjectInfoJson{}
+			action.SrcFile = srcFile
+			action.Owner = owner
+			action.Access = "x"
+			actionMap[typ.Name.Name] = action
 
 			lines, err := json.MarshalIndent(actionMap, "", " ")
 			if err != nil {

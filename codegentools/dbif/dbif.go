@@ -695,14 +695,17 @@ func generateUnmarshalFcn(listingsFd *os.File, objFileBase string, dirStore stri
 				return err
 			}
 			for attrName, attrInfo := range objMembers {
-				if attrInfo.IsDefaultSet {
-					if attrInfo.VarType == "string" {
-						marshalFcnsLine = append(marshalFcnsLine, "obj."+attrName+" = "+"\""+attrInfo.DefaultVal+"\""+"\n")
-					} else if attrInfo.IsArray {
-						marshalFcnsLine = append(marshalFcnsLine, "obj."+attrName+"= make([]"+attrInfo.VarType+", 0)"+"\n")
-					} else {
-						marshalFcnsLine = append(marshalFcnsLine, "obj."+attrName+" = "+attrInfo.DefaultVal+"\n")
-					}
+				if !attrInfo.IsDefaultSet {
+					continue
+				}
+
+				switch {
+				case attrInfo.VarType == "string":
+					marshalFcnsLine = append(marshalFcnsLine, "obj."+attrName+" = "+"\""+attrInfo.DefaultVal+"\""+"\n")
+				case attrInfo.IsArray:
+					marshalFcnsLine = append(marshalFcnsLine, "obj."+attrName+"= make([]"+attrInfo.VarType+", 0)"+"\n")
+				default:
+					marshalFcnsLine = append(marshalFcnsLine, "obj."+attrName+" = "+attrInfo.DefaultVal+"\n")
 				}
 			}
 			marshalFcnsLine = append(marshalFcnsLine, `

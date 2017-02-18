@@ -114,7 +114,7 @@ func processConfigObjects(fset *token.FileSet, base string, listingsFd *os.File,
 	}
 
 	for goSrcFile, ownerName := range goSrcsMap {
-		generateHandCodedObjectsInformation(listingsFd, objFileBase, goSrcFile, ownerName.Owner)
+		generateHandCodedObjectsInformation(objFileBase, goSrcFile, ownerName.Owner)
 	}
 
 	bytes, err = ioutil.ReadFile(objJsonFile)
@@ -212,7 +212,7 @@ func processActionObjects(fset *token.FileSet, base string, listingsFd *os.File,
 	}
 
 	for goSrcFile, ownerName := range goActionSrcsMap {
-		generateHandCodedActionsInformation(listingsFd, actionFileBase, goSrcFile, ownerName.Owner)
+		generateHandCodedActionsInformation(actionFileBase, goSrcFile, ownerName.Owner)
 	}
 
 	bytes, err = ioutil.ReadFile(actionJsonFile)
@@ -461,7 +461,7 @@ func generateMembersInfoForAllObjects(str *ast.StructType, objJsonFileName strin
 	return objMembers
 }
 
-func generateHandCodedObjectsInformation(listingsFd *os.File, objFileBase string, srcFile string, owner string) error {
+func generateHandCodedObjectsInformation(objFileBase string, srcFile string, owner string) error {
 	var objMap map[string]ObjectInfoJson
 	objMap = make(map[string]ObjectInfoJson, 1)
 
@@ -552,7 +552,7 @@ func generateHandCodedObjectsInformation(listingsFd *os.File, objFileBase string
 	return nil
 }
 
-func generateHandCodedActionsInformation(listingsFd *os.File, actionFileBase string, srcFile string, owner string) error {
+func generateHandCodedActionsInformation(actionFileBase string, srcFile string, owner string) error {
 	var actionMap map[string]ObjectInfoJson
 	actionMap = make(map[string]ObjectInfoJson, 1)
 
@@ -694,13 +694,13 @@ func generateUnmarshalFcn(listingsFd *os.File, objFileBase string, dirStore stri
 		                if field.CanSet() {
 		                        switch field.Kind() {
 		                        case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		                                i, _ := strconv.ParseInt(val[0], 10, 64) 
+		                                i, _ := strconv.ParseInt(val[0], 10, 64)
 		                                field.SetInt(i)
 		                        case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-		                                ui, _ := strconv.ParseUint(val[0], 10, 64) 
+		                                ui, _ := strconv.ParseUint(val[0], 10, 64)
 		                                field.SetUint(ui)
 		                        case reflect.Float64:
-		                                f, _ := strconv.ParseFloat(val[0], 64) 
+		                                f, _ := strconv.ParseFloat(val[0], 64)
 		                                field.SetFloat(f)
 		                        case reflect.Bool:
 		                                b, _ := strconv.ParseBool(val[0])
@@ -710,7 +710,7 @@ func generateUnmarshalFcn(listingsFd *os.File, objFileBase string, dirStore stri
 		                        }
 		                }
 		        }
-		        return retObj, nil 
+		        return retObj, nil
 		}
 		`)
 		}
